@@ -68,7 +68,7 @@
                 @foreach ($leaveTypes as $type)
                     <div>
                         <strong>{{ $type->name }}</strong>
-                        <span>{{ $type->unit }} · {{ $type->consumes_balance ? 'consume saldo' : 'no consume saldo' }}</span>
+                        <span>{{ $type->unit }} &middot; {{ $type->consumes_balance ? 'consume saldo' : 'no consume saldo' }}</span>
                     </div>
                 @endforeach
             </div>

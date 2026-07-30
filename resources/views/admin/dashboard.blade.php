@@ -23,7 +23,7 @@
                     <div>
                         <span class="status status-{{ strtolower($leaveRequest->status) }}">{{ $leaveRequest->statusLabel() }}</span>
                         <h3>{{ $leaveRequest->employeeProfile->user->name }}</h3>
-                        <p>{{ $leaveRequest->leaveType->name }} · {{ $leaveRequest->start_date->format('d/m/Y') }} - {{ $leaveRequest->end_date->format('d/m/Y') }} · {{ $leaveRequest->requested_units }} {{ $leaveRequest->unit === 'DAYS' ? 'dias' : 'min' }}</p>
+                        <p>{{ $leaveRequest->leaveType->name }} &middot; {{ $leaveRequest->start_date->format('d/m/Y') }} - {{ $leaveRequest->end_date->format('d/m/Y') }} &middot; {{ $leaveRequest->requested_units }} {{ $leaveRequest->unit === 'DAYS' ? 'dias' : 'min' }}</p>
                     </div>
 
                     @if ($leaveRequest->status === \App\Models\LeaveRequest::STATUS_PENDING)
