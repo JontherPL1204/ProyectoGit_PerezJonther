@@ -14,14 +14,14 @@ class DashboardController extends Controller
     public function __invoke(Request $request): View
     {
         $user = $request->user();
-        $profile = $user->employeeProfile()->with(['allowances.movements'])->first();
+        $profile = $user->employeeProfile()->first();
 
         abort_unless($profile, 403, 'El usuario no tiene perfil de empleado.');
 
         $vacationAllowance = $profile->allowances()
             ->where('balance_code', 'VACATIONS')
             ->latest('period_start')
-            ->with('movements')
+            ->withSum('movements', 'amount')
             ->first();
 
         $requests = $profile->leaveRequests()
