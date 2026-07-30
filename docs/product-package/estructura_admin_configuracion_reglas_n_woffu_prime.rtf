@@ -1,0 +1,206 @@
+{\rtf1\ansi\ansicpg65001\deff0
+{\fonttbl{\f0 Calibri;}}
+\fs30\b Estructura del apartado administrativo de configuracion de reglas\b0\par
+\fs22 Proyecto: N-Woffu Prime\par
+Fecha: 30 de julio de 2026\par
+Estado: Propuesta para aprobacion\par
+Objetivo: Definir como el administrador podra crear, editar y mantener manualmente las reglas del sistema desde la aplicacion.\par
+\par
+\fs26\b Principio del modulo\b0\par
+\fs22 El sistema debe permitir que las reglas principales se modifiquen desde el panel de administrador sin cambiar codigo. Para mantener seguridad y control, no todos los administradores deberian tener necesariamente acceso a estas opciones. La configuracion de reglas debe estar protegida por un permiso especifico.\par
+\par
+Permiso recomendado: can_manage_company_rules\par
+\par
+\fs26\b Ubicacion en la aplicacion\b0\par
+\fs22 Menu administrador:\par
+1. Solicitudes\par
+2. Calendario\par
+3. Usuarios\par
+4. Jornadas\par
+5. Festivos\par
+6. Tipos de ausencia\par
+7. Saldos\par
+8. Informes\par
+9. Configuracion de reglas\par
+10. Auditoria\par
+\par
+\fs26\b Pantalla principal: Configuracion de reglas\b0\par
+\fs22 La pantalla debe mostrar bloques separados por area. Cada bloque tendra valores actuales, boton de editar y registro de ultima modificacion.\par
+\par
+Bloques recomendados:\par
+- Reglas generales: periodo, zona horaria, idioma, moneda si aplica y modo interno/SaaS.\par
+- Vacaciones: dias anuales, anticipacion minima, saldo negativo, prorrateo y traspaso.\par
+- Permisos y ausencias: unidad, aprobacion, duracion minima/maxima y consumo de saldo.\par
+- Adjuntos: tipos permitidos, tamano maximo, obligatoriedad y privacidad.\par
+- Documentos medicos: quien puede verlos, auditoria obligatoria y conservacion.\par
+- Notificaciones: canal activo, destinatarios y eventos que envian correo.\par
+- Cancelaciones: reglas para cancelar pendientes y aprobadas.\par
+- Excepciones: casos permitidos con comentario obligatorio.\par
+\par
+\fs26\b Configuracion general\b0\par
+\fs22
+- Nombre de empresa: texto, valor inicial Empresa interna.\par
+- Modo de uso: selector, valor inicial Interno. Opciones: interno, SaaS.\par
+- Periodo de saldo: selector, valor inicial Anual.\par
+- Inicio del periodo anual: fecha o mes-dia, valor inicial 1 de enero.\par
+- Zona horaria: selector, valor inicial America/Guayaquil.\par
+- Idioma principal: selector, valor inicial Espanol.\par
+\par
+\fs26\b Reglas de vacaciones\b0\par
+\fs22
+- Dias de vacaciones por periodo: numero, valor inicial 15.\par
+- Unidad de vacaciones: selector, valor inicial dias.\par
+- Anticipacion minima: numero, valor inicial 30.\par
+- Unidad de anticipacion: selector, valor inicial dias naturales.\par
+- Permitir saldo negativo: interruptor, valor inicial no.\par
+- Reservar saldo en solicitudes pendientes: interruptor, valor inicial si.\par
+- Prorratear por fecha de ingreso: interruptor, pendiente de decision.\par
+- Permitir traspaso al siguiente periodo: interruptor, pendiente de decision.\par
+- Requiere aprobacion: interruptor, valor inicial si.\par
+- Permitir excepcion administrativa: interruptor, valor inicial si.\par
+- Comentario obligatorio en excepcion: interruptor, valor inicial si.\par
+\par
+Validaciones:\par
+- Los dias de vacaciones deben ser mayores o iguales a 0.\par
+- La anticipacion minima no puede ser negativa.\par
+- Si se permite saldo negativo, debe existir un limite maximo configurable.\par
+- Si se permite excepcion administrativa, el comentario debe ser obligatorio.\par
+\par
+\fs26\b Tipos de ausencia\b0\par
+\fs22 El administrador debe poder crear y editar tipos de ausencia.\par
+\par
+Campos recomendados:\par
+- Nombre.\par
+- Codigo interno.\par
+- Estado activo o inactivo.\par
+- Unidad: dias, horas o minutos.\par
+- Consume saldo: si o no.\par
+- Bolsa de saldo asociada.\par
+- Requiere aprobacion.\par
+- Requiere adjunto: no, opcional u obligatorio.\par
+- Es documento medico: si o no.\par
+- Anticipacion minima.\par
+- Unidad de anticipacion: dias naturales u horas.\par
+- Duracion minima.\par
+- Duracion maxima.\par
+- Permite solicitudes retroactivas.\par
+- Visible para empleados.\par
+\par
+Regla importante: un tipo de ausencia usado en solicitudes historicas no debe eliminarse fisicamente. Solo debe desactivarse.\par
+\par
+\fs26\b Reglas de adjuntos\b0\par
+\fs22
+- Permitir adjuntos: si.\par
+- Formatos permitidos: JPG, PNG, PDF.\par
+- Tamano maximo por archivo: 5 MB.\par
+- Cantidad maxima por solicitud: configurable.\par
+- Renombrado interno obligatorio: si.\par
+- Almacenamiento privado: si.\par
+- Enlaces temporales: si.\par
+\par
+Validaciones:\par
+- No permitir tipos de archivo fuera de la lista configurada.\par
+- No confiar en el nombre original del archivo.\par
+- Validar MIME real, extension y tamano.\par
+\par
+\fs26\b Reglas de documentos medicos\b0\par
+\fs22
+- Administrador puede ver documentos medicos: si.\par
+- Requiere permiso separado: si.\par
+- Permiso requerido: can_view_medical_attachments.\par
+- Auditar visualizaciones: si.\par
+- Auditar descargas: si.\par
+- Incluir enlaces en correos: no.\par
+- Incluir enlaces en exportaciones: no.\par
+- Tiempo de conservacion: pendiente.\par
+\par
+Regla recomendada: aunque el administrador pueda ver documentos medicos, esa capacidad debe poder quitarse a ciertos administradores mediante permisos.\par
+\par
+\fs26\b Reglas de notificaciones\b0\par
+\fs22 Canal inicial: correo electronico.\par
+\par
+Eventos configurables:\par
+- Solicitud creada: destinatario administrador, activo por defecto si.\par
+- Solicitud aprobada: destinatario usuario, activo por defecto si.\par
+- Solicitud rechazada: destinatario usuario, activo por defecto si.\par
+- Cancelacion solicitada: destinatario administrador, activo por defecto si.\par
+- Cancelacion aceptada: destinatario usuario, activo por defecto si.\par
+- Cancelacion rechazada: destinatario usuario, activo por defecto si.\par
+- Recordatorio de pendientes: destinatario administrador, activo por defecto opcional.\par
+\par
+Campos recomendados:\par
+- Correo remitente.\par
+- Nombre visible del remitente.\par
+- Lista de administradores notificables.\par
+- Activar o desactivar cada evento.\par
+- Plantilla basica de asunto y mensaje.\par
+\par
+\fs26\b Excepciones administrativas\b0\par
+\fs22 El sistema debe permitir excepciones controladas para casos donde la regla general no aplique.\par
+\par
+Ejemplos:\par
+- Aprobar vacaciones con menos de 30 dias de anticipacion.\par
+- Registrar una ausencia retroactiva.\par
+- Ajustar saldo manualmente.\par
+- Permitir saldo negativo temporal.\par
+\par
+Cada excepcion debe exigir:\par
+- Administrador responsable.\par
+- Comentario obligatorio.\par
+- Fecha y hora.\par
+- Regla omitida.\par
+- Valor anterior y valor aplicado.\par
+- Evento de auditoria.\par
+\par
+\fs26\b Auditoria de cambios de reglas\b0\par
+\fs22 Cada cambio en configuracion debe crear un evento de auditoria.\par
+\par
+Datos minimos:\par
+- Entidad modificada.\par
+- Campo modificado.\par
+- Valor anterior.\par
+- Valor nuevo.\par
+- Actor.\par
+- Comentario.\par
+- Fecha.\par
+- IP y agente cuando sea razonable.\par
+\par
+Cambios sensibles que deben exigir comentario:\par
+- Permitir saldo negativo.\par
+- Cambiar dias anuales de vacaciones.\par
+- Cambiar anticipacion minima.\par
+- Activar o desactivar visibilidad de documentos medicos.\par
+- Cambiar conservacion de documentos.\par
+- Permitir solicitudes retroactivas.\par
+\par
+\fs26\b Estructura tecnica recomendada\b0\par
+\fs22 Tablas sugeridas:\par
+- company_settings: configuracion general por empresa.\par
+- leave_type_rules: reglas especificas por tipo de ausencia.\par
+- attachment_rules: reglas de archivos por empresa o tipo de ausencia.\par
+- notification_rules: eventos y destinatarios configurables.\par
+- admin_permissions: permisos especiales de administradores.\par
+- rule_change_events: auditoria de cambios de configuracion.\par
+\par
+\fs26\b Flujo de edicion recomendado\b0\par
+\fs22
+1. Administrador entra a Configuracion de reglas.\par
+2. Selecciona el bloque que quiere editar.\par
+3. El sistema muestra valores actuales y advertencias si el cambio afecta saldos, permisos o privacidad.\par
+4. Administrador modifica los campos permitidos.\par
+5. Si el cambio es sensible, debe escribir comentario.\par
+6. El sistema valida los valores.\par
+7. El administrador confirma el cambio.\par
+8. El sistema guarda configuracion y crea evento de auditoria.\par
+9. El sistema muestra mensaje de exito y fecha de ultima modificacion.\par
+\par
+\fs26\b Recomendacion para el MVP interno\b0\par
+\fs22 Para empezar de forma sencilla, implementar primero estas secciones:\par
+1. Reglas de vacaciones.\par
+2. Tipos de ausencia.\par
+3. Adjuntos y documentos medicos.\par
+4. Notificaciones por correo.\par
+5. Auditoria de cambios de reglas.\par
+\par
+Las secciones de equipos, aprobadores avanzados y reglas por ubicacion pueden quedar preparadas en base de datos, pero no necesitan interfaz completa en la primera version interna.\par
+}

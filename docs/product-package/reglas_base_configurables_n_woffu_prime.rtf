@@ -1,0 +1,115 @@
+{\rtf1\ansi\ansicpg65001\deff0
+{\fonttbl{\f0 Calibri;}}
+\fs30\b Reglas base configurables de N-Woffu Prime\b0\par
+\fs22 Fecha: 30 de julio de 2026\par
+Estado: Propuesta base para aprobacion\par
+Objetivo: Definir reglas iniciales sencillas para el uso interno del equipo, dejando la estructura preparada para que cada regla pueda cambiarse si el producto evoluciona a SaaS.\par
+\par
+\fs26\b Principio general\b0\par
+\fs22 N-Woffu Prime no debe tener reglas importantes escritas de forma fija en el codigo. Las reglas de vacaciones, permisos, adjuntos, anticipacion, aprobacion y visibilidad deben guardarse como configuracion por empresa, tipo de ausencia o perfil. El sistema puede nacer con valores por defecto simples, pero debe permitir cambiarlos sin reprogramar.\par
+\par
+\fs26\b Configuracion inicial recomendada\b0\par
+\fs22
+- Nombre del producto: N-Woffu Prime. Configurable: si.\par
+- Uso inicial: interno para el equipo. Configurable: si.\par
+- Modelo futuro: preparado para multiempresa/SaaS. Configurable: si.\par
+- Periodo de vacaciones: anual. Configurable: si.\par
+- Dias de vacaciones base: 15 dias por empleado y periodo. Configurable: si.\par
+- Anticipacion minima para vacaciones: 30 dias naturales antes del inicio. Configurable: si.\par
+- Canal oficial de notificacion: correo electronico. Configurable: si.\par
+- Aprobacion de vacaciones: requiere administrador. Configurable: si.\par
+- Aprobacion de permisos medicos: requiere administrador, salvo politica distinta. Configurable: si.\par
+- Adjuntos medicos: permitidos y privados. Configurable: si.\par
+- Visibilidad de adjuntos medicos: administrador autorizado puede verlos. Configurable mediante permiso separado.\par
+- Saldos negativos: no permitidos por defecto. Configurable: si.\par
+- Solicitudes pendientes: reservan saldo provisional por defecto. Configurable: si.\par
+- Cancelacion de aprobadas: requiere aprobacion administrativa. Configurable: si.\par
+- Exportaciones: base CSV, Excel opcional. Configurable: si.\par
+\par
+\fs26\b Tipos de ausencia iniciales\b0\par
+\fs22
+\b Vacaciones\b0\par
+Unidad: dias. Consume saldo: si. Anticipacion: 30 dias naturales. Adjunto: no requerido. Aprobacion: si.\par
+\par
+\b Permiso medico\b0\par
+Unidad: horas/minutos. Consume saldo: no por defecto. Anticipacion: sin minimo por defecto. Adjunto: opcional u obligatorio segun politica. Aprobacion: si.\par
+\par
+\b Asuntos personales\b0\par
+Unidad: dias u horas. Consume saldo: configurable. Anticipacion: configurable. Adjunto: no requerido por defecto. Aprobacion: si.\par
+\par
+\b Formacion\b0\par
+Unidad: dias u horas. Consume saldo: no por defecto. Anticipacion: configurable. Adjunto: opcional. Aprobacion: si.\par
+\par
+\fs26\b Reglas de saldo\b0\par
+\fs22
+- Cada empleado recibe una asignacion anual inicial de 15 dias para vacaciones.\par
+- El saldo se calcula mediante movimientos: asignacion, consumo, devolucion, ajuste y traspaso.\par
+- Una solicitud aprobada crea un movimiento negativo.\par
+- Una cancelacion aceptada crea un movimiento positivo de devolucion.\par
+- El saldo no se edita directamente desde pantalla.\par
+- Por defecto no se permite saldo negativo.\par
+- Los cambios manuales de saldo solo los puede hacer un administrador y deben quedar auditados.\par
+\par
+\fs26\b Reglas de anticipacion\b0\par
+\fs22
+- Para vacaciones, la regla base sera solicitar con al menos 30 dias naturales de anticipacion.\par
+- La anticipacion debe validarse en servidor antes de guardar.\par
+- El administrador podra registrar excepciones con comentario obligatorio.\par
+- En modo SaaS, cada empresa podra definir otra anticipacion por tipo de ausencia.\par
+\par
+\fs26\b Reglas de aprobacion\b0\par
+\fs22
+- Las vacaciones requieren aprobacion administrativa.\par
+- Los permisos medicos requieren aprobacion administrativa en la configuracion base.\par
+- Rechazar una solicitud requiere comentario obligatorio.\par
+- Aprobar, rechazar o aceptar una cancelacion debe ejecutarse en una transaccion.\par
+- Dos administradores no deben poder aprobar o rechazar la misma solicitud dos veces.\par
+\par
+\fs26\b Reglas de documentos medicos\b0\par
+\fs22
+- Los documentos medicos se guardan en almacenamiento privado.\par
+- El administrador puede verlos en la configuracion inicial.\par
+- La capacidad de ver documentos medicos debe ser un permiso separado: can_view_medical_attachments.\par
+- Cada consulta o descarga de documento medico debe registrarse en auditoria.\par
+- Los correos y exportaciones no deben incluir enlaces permanentes a documentos medicos.\par
+\par
+\fs26\b Reglas de notificacion\b0\par
+\fs22
+- El canal oficial inicial sera el correo electronico.\par
+- Se enviara correo al administrador cuando se cree una solicitud que requiere decision.\par
+- Se enviara correo al usuario cuando su solicitud sea aprobada, rechazada o cuando se resuelva una cancelacion.\par
+- Las notificaciones deben poder activarse o desactivarse por empresa en una version SaaS.\par
+\par
+\fs26\b Parametros iniciales recomendados\b0\par
+\fs22
+- annual_vacation_days: 15\par
+- vacation_notice_days: 30\par
+- allow_negative_balance: false\par
+- pending_requests_reserve_balance: true\par
+- default_notification_channel: email\par
+- admin_can_view_medical_attachments: true\par
+- medical_attachment_audit_required: true\par
+- approved_request_requires_cancel_flow: true\par
+\par
+\fs26\b Apartado administrativo para modificar reglas\b0\par
+\fs22 La aplicacion debe incluir un apartado dentro del panel de administrador llamado Configuracion de reglas. Desde esa seccion, un administrador autorizado podra modificar manualmente las reglas de vacaciones, permisos, adjuntos, aprobaciones y notificaciones.\par
+\par
+La estructura recomendada para este apartado queda detallada en el documento: estructura_admin_configuracion_reglas_n_woffu_prime.\par
+\par
+\fs26\b Pendientes de confirmacion\b0\par
+\fs22
+- Confirmar si "un mes de anticipacion" significa 30 dias naturales o el mismo dia del mes anterior.\par
+- Definir si los 15 dias se prorratean cuando una persona entra a mitad de ano.\par
+- Definir si existen dias acumulables o traspaso de saldo al siguiente periodo.\par
+- Definir cuanto tiempo se conservaran los documentos medicos.\par
+- Definir si en el futuro habra aprobadores por equipo o solo administradores generales.\par
+\par
+\fs26\b Recomendacion para aprobar ahora\b0\par
+\fs22
+1. Vacaciones: 15 dias anuales configurables.\par
+2. Anticipacion: 30 dias naturales configurables.\par
+3. Solicitudes pendientes: reservan saldo provisional.\par
+4. Documentos medicos: privados, visibles para administrador autorizado y auditados.\par
+5. Notificaciones: correo electronico como canal oficial inicial.\par
+6. Reglas guardadas como configuracion por empresa y tipo de ausencia.\par
+}

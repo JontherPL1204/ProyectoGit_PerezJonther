@@ -1,0 +1,157 @@
+{\rtf1\ansi\ansicpg65001\deff0
+{\fonttbl{\f0 Calibri;}}
+\fs30\b Guia de diseno responsive y despliegue\b0\par
+\fs22 Proyecto: N-Woffu Prime\par
+Fecha: 30 de julio de 2026\par
+Estado: Propuesta para aprobacion\par
+Objetivo: Definir como la aplicacion debe funcionar correctamente en PC, tablet y telefono antes de publicarse.\par
+\par
+\fs26\b Decision principal\b0\par
+\fs22 N-Woffu Prime debe desarrollarse como una aplicacion web responsive desde el inicio. Esto significa que la misma aplicacion debe adaptarse a escritorio y telefono sin crear dos sistemas separados.\par
+\par
+El despliegue en una plataforma de hosting no vuelve responsive la aplicacion automaticamente. La adaptacion a PC y telefono debe resolverse en el diseno, HTML, CSS y componentes del frontend.\par
+\par
+\fs26\b Enfoque recomendado\b0\par
+\fs22
+- PC / escritorio: panel completo, tablas, filtros visibles, calendario amplio y acciones rapidas.\par
+- Tablet: diseno intermedio, filtros compactos y calendario adaptable.\par
+- Telefono: navegacion simple, formularios verticales, tablas convertidas en tarjetas y acciones tactiles.\par
+\par
+\fs26\b Puntos de corte recomendados\b0\par
+\fs22
+- Movil: hasta 767 px.\par
+- Tablet: 768 px a 1023 px.\par
+- Escritorio: 1024 px en adelante.\par
+\par
+\fs26\b Navegacion\b0\par
+\fs22
+\b Escritorio\b0\par
+- Menu lateral fijo o superior compacto.\par
+- Acceso directo a solicitudes, calendario, usuarios, informes y configuracion.\par
+- Filtros visibles en el panel administrativo.\par
+\par
+\b Telefono\b0\par
+- Menu inferior o menu lateral plegable.\par
+- Botones grandes y faciles de tocar.\par
+- Priorizar las acciones principales: nueva solicitud, calendario, historial y perfil.\par
+- En administracion movil, mostrar primero pendientes y acciones esenciales.\par
+\par
+\fs26\b Dashboard de usuario\b0\par
+\fs22
+\b Escritorio\b0\par
+- Resumen de saldo en la parte superior.\par
+- Calendario y solicitudes recientes visibles en la misma pantalla.\par
+- Boton principal: Nueva solicitud.\par
+\par
+\b Telefono\b0\par
+- Tarjetas compactas: saldo disponible, pendiente y proxima ausencia.\par
+- Boton Nueva solicitud siempre visible o facil de alcanzar.\par
+- Historial como lista vertical.\par
+\par
+\fs26\b Panel administrador\b0\par
+\fs22
+\b Escritorio\b0\par
+- Bandeja de solicitudes con tabla, filtros y acciones rapidas.\par
+- Calendario de equipo amplio.\par
+- Acceso completo a configuracion de reglas.\par
+\par
+\b Telefono\b0\par
+- La bandeja debe convertirse en tarjetas.\par
+- Los filtros deben abrirse en un panel desplegable.\par
+- Las acciones de aprobar/rechazar deben pedir confirmacion.\par
+- La configuracion avanzada puede ser visible, pero con formularios divididos por secciones.\par
+\par
+\fs26\b Calendario\b0\par
+\fs22
+\b Escritorio\b0\par
+- Vista mensual completa.\par
+- Filtros por empleado, estado, motivo, equipo y ubicacion.\par
+- Diferenciar festivos, no laborables, pendientes y aprobadas.\par
+\par
+\b Telefono\b0\par
+- Vista agenda como predeterminada.\par
+- Vista mensual compacta opcional.\par
+- Cada dia debe abrir un detalle claro con solicitudes y estados.\par
+\par
+\fs26\b Formularios\b0\par
+\fs22
+- En escritorio pueden tener dos columnas cuando el contenido lo permita.\par
+- En telefono deben ser de una sola columna.\par
+- Los campos de fecha y hora deben ser grandes y faciles de usar.\par
+- El calculo preliminar de dias u horas debe mostrarse antes de enviar.\par
+- Los errores deben aparecer junto al campo correspondiente.\par
+\par
+\fs26\b Tablas y listados\b0\par
+\fs22 En escritorio se pueden usar tablas completas.\par
+\par
+En telefono, las tablas deben convertirse en tarjetas con esta estructura:\par
+- Nombre del empleado o motivo.\par
+- Rango de fechas.\par
+- Estado.\par
+- Duracion.\par
+- Accion principal.\par
+- Acciones secundarias en menu.\par
+\par
+\fs26\b Estilo visual\b0\par
+\fs22 Se recomienda mantener el estilo minimalista inspirado en la referencia visual indicada:\par
+- Fondo claro.\par
+- Texto negro o gris muy oscuro.\par
+- Verde lima como acento principal.\par
+- Bordes visibles y limpios.\par
+- Tarjetas sencillas, sin exceso de decoracion.\par
+- Iconos claros para acciones.\par
+- Uso moderado del color para no cansar en uso diario.\par
+\par
+\fs26\b Accesibilidad tactil\b0\par
+\fs22
+- Botones tactiles de al menos 44 px de alto.\par
+- Espaciado suficiente entre acciones.\par
+- Contraste alto en textos importantes.\par
+- Estados identificables por color y texto, no solo por color.\par
+- Formularios navegables con teclado en escritorio.\par
+\par
+\fs26\b PWA opcional\b0\par
+\fs22 Aunque no se desarrollen aplicaciones nativas para iOS o Android en el MVP, se puede preparar la aplicacion como PWA en una fase posterior.\par
+\par
+Ventajas:\par
+- Acceso desde icono en el telefono.\par
+- Mejor experiencia movil.\par
+- Posibilidad futura de notificaciones push.\par
+- No requiere crear una app nativa al inicio.\par
+\par
+Para el MVP, la prioridad debe ser primero una web responsive estable. La PWA puede ser una mejora posterior.\par
+\par
+\fs26\b Consideracion sobre despliegue\b0\par
+\fs22 Si la plataforma donde se subira el proyecto soporta PHP, la aplicacion completa puede desplegarse alli junto con la conexion a Supabase.\par
+\par
+Si la plataforma no soporta PHP o esta orientada solo a frontend estatico/JavaScript, se recomienda separar:\par
+- Frontend responsive en la plataforma de despliegue.\par
+- Backend PHP en un hosting compatible con PHP.\par
+- Base de datos y archivos en Supabase.\par
+\par
+Antes de publicar, se debe confirmar que el hosting elegido soporta:\par
+- PHP.\par
+- Variables de entorno.\par
+- HTTPS.\par
+- Conexion externa a Supabase/PostgreSQL.\par
+- Envio de correos o integracion SMTP.\par
+- Tareas programadas o alternativa para recordatorios.\par
+\par
+\fs26\b Criterios de aceptacion responsive\b0\par
+\fs22
+1. El usuario puede iniciar sesion desde telefono y PC.\par
+2. El usuario puede crear una solicitud completa desde telefono.\par
+3. El administrador puede aprobar o rechazar desde PC.\par
+4. El administrador puede revisar pendientes desde telefono.\par
+5. El calendario no se rompe en pantallas pequenas.\par
+6. Los formularios no tienen textos montados o botones fuera de pantalla.\par
+7. Los adjuntos pueden subirse desde telefono.\par
+8. Las tablas administrativas se convierten correctamente en tarjetas moviles.\par
+9. Los correos se envian correctamente despues de crear, aprobar o rechazar solicitudes.\par
+10. La configuracion de reglas puede verse y editarse en escritorio; en movil debe poder consultarse y modificar reglas simples.\par
+\par
+\fs26\b Recomendacion para N-Woffu Prime\b0\par
+\fs22 Construir primero una web responsive completa. Para escritorio, priorizar productividad administrativa. Para telefono, priorizar solicitudes rapidas, consulta de saldo, historial y aprobaciones simples.\par
+\par
+La aplicacion debe verse moderna y minimalista, pero su diseno debe seguir siendo practico para uso diario de empleados y administradores.\par
+}
