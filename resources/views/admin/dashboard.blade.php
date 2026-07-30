@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Administracion')
+@section('title', 'Revision')
 
 @section('content')
     <section class="metric-grid">

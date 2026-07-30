@@ -112,6 +112,7 @@ class LeaveRequestFlowTest extends TestCase
 
         $this->actingAs($employee)->post(route('leave-requests.store'), [
             'leave_type_id' => $types['MEDICAL']->id,
+            'duration_unit' => 'MINUTES',
             'start_date' => '2026-09-09',
             'end_date' => '2026-09-09',
             'start_time' => '09:00',
@@ -233,10 +234,19 @@ class LeaveRequestFlowTest extends TestCase
         ])->assertSessionHasErrors('request');
 
         $this->actingAs($employee)->post(route('leave-requests.store'), [
+            'leave_type_id' => $types['PERSONAL']->id,
+            'start_date' => '2026-09-16',
+            'end_date' => '2026-09-15',
+        ])->assertSessionHasErrors([
+            'end_date' => 'La fecha de fin debe ser igual o posterior a la fecha de inicio.',
+        ]);
+
+        $this->actingAs($employee)->post(route('leave-requests.store'), [
             'leave_type_id' => $types['MEDICAL']->id,
+            'duration_unit' => 'MINUTES',
             'start_date' => '2026-09-07',
             'end_date' => '2026-09-07',
-        ])->assertSessionHasErrors('request');
+        ])->assertSessionHasErrors('start_time');
 
         $this->actingAs($employee)->post(route('leave-requests.store'), [
             'leave_type_id' => $types['PERSONAL']->id,
@@ -301,6 +311,7 @@ class LeaveRequestFlowTest extends TestCase
 
         $this->actingAs($employee)->post(route('leave-requests.store'), [
             'leave_type_id' => $medical->id,
+            'duration_unit' => 'MINUTES',
             'start_date' => '2026-09-07',
             'end_date' => '2026-09-07',
             'start_time' => '09:00',
@@ -318,5 +329,31 @@ class LeaveRequestFlowTest extends TestCase
             'original_name' => 'justificante.pdf',
             'is_medical' => true,
         ]);
+    }
+
+    public function test_medical_request_can_be_requested_by_days(): void
+    {
+        Carbon::setTestNow('2026-07-30 10:00:00');
+        $this->seed();
+
+        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
+        $medical = LeaveType::where('code', 'MEDICAL')->firstOrFail();
+
+        $this->actingAs($employee)->post(route('leave-requests.store'), [
+            'leave_type_id' => $medical->id,
+            'duration_unit' => 'DAYS',
+            'start_date' => '2026-09-07',
+            'end_date' => '2026-09-09',
+            'start_time' => '09:00',
+            'end_time' => '11:00',
+            'user_comment' => 'Reposo medico.',
+        ])->assertRedirect();
+
+        $leaveRequest = LeaveRequest::where('leave_type_id', $medical->id)->firstOrFail();
+
+        $this->assertSame('DAYS', $leaveRequest->unit);
+        $this->assertSame(3, $leaveRequest->requested_units);
+        $this->assertNull($leaveRequest->start_time);
+        $this->assertNull($leaveRequest->end_time);
     }
 }

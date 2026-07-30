@@ -28,7 +28,7 @@
                     @if (auth()->user()->isAdmin())
                         <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                             <i data-lucide="inbox"></i>
-                            <span>Admin</span>
+                            <span>Revision</span>
                         </a>
                     @endif
                     @if (auth()->user()->canManageCompanyRules())
@@ -58,7 +58,6 @@
                     </div>
                     <div class="user-chip">
                         <span>{{ auth()->user()->name }}</span>
-                        <strong>{{ auth()->user()->isAdmin() ? 'Admin' : 'Usuario' }}</strong>
                     </div>
                 </header>
             @endauth

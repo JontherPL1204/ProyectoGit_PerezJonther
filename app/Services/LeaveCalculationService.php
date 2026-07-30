@@ -77,7 +77,7 @@ class LeaveCalculationService
         ?string $endTime,
     ): array {
         if (! $startTime || ! $endTime) {
-            throw new InvalidArgumentException('Los permisos por horas requieren hora de inicio y fin.');
+            throw new InvalidArgumentException('Para pedir un permiso por horas, indica hora de inicio y hora de fin.');
         }
 
         $startsAt = CarbonImmutable::parse($date->toDateString().' '.$startTime);
@@ -91,13 +91,13 @@ class LeaveCalculationService
         $holiday = $this->holidayFor($employee, $date);
 
         if (! $scheduleDay?->is_working_day || $holiday) {
-            throw new InvalidArgumentException('El permiso por horas debe estar dentro de un dia laborable.');
+            throw new InvalidArgumentException('El permiso por horas debe pedirse en un dia laborable.');
         }
 
         $minutes = $startsAt->diffInMinutes($endsAt);
 
         if ($minutes > $scheduleDay->work_minutes) {
-            throw new InvalidArgumentException('Las horas solicitadas superan la jornada efectiva del dia.');
+            throw new InvalidArgumentException('Las horas solicitadas superan la jornada laboral de ese dia.');
         }
 
         return [

@@ -13,33 +13,68 @@
 
         <form method="POST" action="{{ route('leave-requests.store') }}" class="form-grid" enctype="multipart/form-data">
             @csrf
-            <label>
-                <span>Motivo</span>
-                <select name="leave_type_id" required>
+            @php
+                $typeHelp = [
+                    'VACATIONS' => 'Vacaciones descuenta saldo y debe pedirse con 30 dias naturales de anticipacion.',
+                    'MEDICAL' => 'Permiso medico puede pedirse por dias completos o por horas. Adjunta soporte si lo tienes.',
+                    'PERSONAL' => 'Asuntos personales no descuenta vacaciones y requiere revision de la persona responsable.',
+                    'TRAINING' => 'Formacion sirve para cursos o capacitaciones y requiere aprobacion.',
+                ];
+            @endphp
+            <label class="full">
+                <span class="field-title">
+                    Motivo
+                    <span class="field-help" tabindex="0" data-leave-type-help title="">
+                        <i data-lucide="info"></i>
+                        <span class="tooltip" role="tooltip"></span>
+                    </span>
+                </span>
+                <select name="leave_type_id" required data-leave-type-select>
                     @foreach ($types as $type)
-                        <option value="{{ $type->id }}" @selected(old('leave_type_id') == $type->id)>
-                            {{ $type->name }} - {{ $type->unit === 'DAYS' ? 'dias' : 'horas/minutos' }}
+                        <option
+                            value="{{ $type->id }}"
+                            data-code="{{ $type->code }}"
+                            data-unit="{{ $type->unit }}"
+                            data-is-medical="{{ $type->is_medical ? '1' : '0' }}"
+                            data-help="{{ $typeHelp[$type->code] ?? 'Este motivo requiere revision de la persona responsable.' }}"
+                            @selected(old('leave_type_id') == $type->id)
+                        >
+                            {{ $type->name }}
                         </option>
                     @endforeach
                 </select>
             </label>
 
-            <label>
-                <span>Fecha inicio</span>
-                <input type="date" name="start_date" value="{{ old('start_date') }}" required>
+            <div class="full segmented-field" data-medical-duration-field hidden>
+                <span>Como sera el permiso medico</span>
+                <div class="segmented-control">
+                    <label>
+                        <input type="radio" name="duration_unit" value="DAYS" @checked(old('duration_unit', 'DAYS') === 'DAYS')>
+                        <span>Por dias</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="duration_unit" value="MINUTES" @checked(old('duration_unit') === 'MINUTES')>
+                        <span>Por horas</span>
+                    </label>
+                </div>
+            </div>
+
+            <label data-start-date-field>
+                <span data-start-date-label>Fecha inicio</span>
+                <input type="date" name="start_date" value="{{ old('start_date') }}" required data-start-date>
             </label>
 
-            <label>
+            <label data-end-date-field>
                 <span>Fecha fin</span>
-                <input type="date" name="end_date" value="{{ old('end_date') }}" required>
+                <input type="date" name="end_date" value="{{ old('end_date') }}" required data-end-date>
             </label>
 
-            <label>
+            <label data-time-field hidden>
                 <span>Hora inicio</span>
                 <input type="time" name="start_time" value="{{ old('start_time') }}">
             </label>
 
-            <label>
+            <label data-time-field hidden>
                 <span>Hora fin</span>
                 <input type="time" name="end_time" value="{{ old('end_time') }}">
             </label>
@@ -56,7 +91,7 @@
 
             <div class="form-note full">
                 <i data-lucide="info"></i>
-                <span>Vacaciones usa 30 dias naturales de anticipacion. Adjuntos permitidos: JPG, PNG y PDF hasta 5 MB.</span>
+                <span data-request-guidance>Selecciona un motivo para ver como se calcula la solicitud.</span>
             </div>
 
             <div class="form-actions full">

@@ -7,7 +7,7 @@
         <article class="panel wide">
             <div class="section-head">
                 <div>
-                    <p class="eyebrow">Admin</p>
+                    <p class="eyebrow">Configuracion</p>
                     <h2>Reglas configurables</h2>
                 </div>
             </div>
@@ -40,7 +40,7 @@
                 <div class="toggle-grid full">
                     <label class="check-row"><input type="checkbox" name="pending_requests_reserve_balance" value="1" @checked(old('pending_requests_reserve_balance', $settings->pending_requests_reserve_balance))><span>Pendientes reservan saldo</span></label>
                     <label class="check-row"><input type="checkbox" name="allow_negative_balance" value="1" @checked(old('allow_negative_balance', $settings->allow_negative_balance))><span>Permitir saldo negativo</span></label>
-                    <label class="check-row"><input type="checkbox" name="admin_can_view_medical_attachments" value="1" @checked(old('admin_can_view_medical_attachments', $settings->admin_can_view_medical_attachments))><span>Admin ve documentos medicos</span></label>
+                    <label class="check-row"><input type="checkbox" name="admin_can_view_medical_attachments" value="1" @checked(old('admin_can_view_medical_attachments', $settings->admin_can_view_medical_attachments))><span>Responsable ve documentos medicos</span></label>
                     <label class="check-row"><input type="checkbox" name="medical_attachment_audit_required" value="1" @checked(old('medical_attachment_audit_required', $settings->medical_attachment_audit_required))><span>Auditar documentos medicos</span></label>
                     <label class="check-row"><input type="checkbox" name="approved_request_requires_cancel_flow" value="1" @checked(old('approved_request_requires_cancel_flow', $settings->approved_request_requires_cancel_flow))><span>Aprobadas usan flujo de cancelacion</span></label>
                     <label class="check-row"><input type="checkbox" name="prorate_vacations" value="1" @checked(old('prorate_vacations', $settings->prorate_vacations))><span>Prorrateo activo</span></label>

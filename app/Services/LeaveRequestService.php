@@ -29,11 +29,11 @@ class LeaveRequestService
         $start = CarbonImmutable::parse($data['start_date']);
 
         if (! $leaveType->allow_retroactive && $start->isPast() && ! $start->isToday()) {
-            throw new InvalidArgumentException('No se permiten solicitudes retroactivas para este motivo.');
+            throw new InvalidArgumentException('La fecha de inicio ya paso. Este motivo no permite solicitudes retroactivas.');
         }
 
         if ($leaveType->notice_value > 0 && now()->startOfDay()->diffInDays($start, false) < $leaveType->notice_value) {
-            throw new InvalidArgumentException('Este motivo requiere al menos '.$leaveType->notice_value.' dias naturales de anticipacion.');
+            throw new InvalidArgumentException('Este motivo debe pedirse con al menos '.$leaveType->notice_value.' dias naturales de anticipacion.');
         }
 
         $calculation = $this->calculator->calculate(
@@ -46,15 +46,15 @@ class LeaveRequestService
         );
 
         if ($calculation['units'] <= 0) {
-            throw new InvalidArgumentException('La solicitud no contiene dias u horas computables.');
+            throw new InvalidArgumentException('Las fechas seleccionadas no incluyen dias laborables u horas validas para solicitar.');
         }
 
         if ($leaveType->min_units !== null && $calculation['units'] < $leaveType->min_units) {
-            throw new InvalidArgumentException('La duracion es menor que el minimo configurado.');
+            throw new InvalidArgumentException('La duracion solicitada es menor que el minimo permitido para este motivo.');
         }
 
         if ($leaveType->max_units !== null && $calculation['units'] > $leaveType->max_units) {
-            throw new InvalidArgumentException('La duracion supera el maximo configurado.');
+            throw new InvalidArgumentException('La duracion solicitada supera el maximo permitido para este motivo.');
         }
 
         $this->assertNoOverlap($employee, $data['start_date'], $data['end_date']);
@@ -63,11 +63,11 @@ class LeaveRequestService
             $available = $this->balances->availableBalance($employee, $leaveType, $start, $settings->pending_requests_reserve_balance);
 
             if ($available === null) {
-                throw new InvalidArgumentException('No existe una bolsa de saldo para este periodo.');
+                throw new InvalidArgumentException('No hay saldo configurado para este periodo. Contacta a la persona responsable.');
             }
 
             if (! $settings->allow_negative_balance && $available < $calculation['units']) {
-                throw new InvalidArgumentException('Saldo insuficiente para esta solicitud.');
+                throw new InvalidArgumentException('No tienes saldo suficiente para esta solicitud.');
             }
         }
 
@@ -108,7 +108,7 @@ class LeaveRequestService
     public function cancelPending(LeaveRequest $leaveRequest, User $actor, ?Request $httpRequest = null): LeaveRequest
     {
         if ($leaveRequest->status !== LeaveRequest::STATUS_PENDING) {
-            throw new InvalidArgumentException('Solo se pueden cancelar directamente solicitudes pendientes.');
+            throw new InvalidArgumentException('Solo puedes cancelar directamente solicitudes que aun estan pendientes.');
         }
 
         return DB::transaction(function () use ($leaveRequest, $actor, $httpRequest): LeaveRequest {
@@ -128,7 +128,7 @@ class LeaveRequestService
     public function requestCancellation(LeaveRequest $leaveRequest, User $actor, ?Request $httpRequest = null): LeaveRequest
     {
         if ($leaveRequest->status !== LeaveRequest::STATUS_APPROVED) {
-            throw new InvalidArgumentException('Solo se puede solicitar cancelacion de solicitudes aprobadas.');
+            throw new InvalidArgumentException('Solo puedes pedir cancelacion de una solicitud aprobada.');
         }
 
         return DB::transaction(function () use ($leaveRequest, $actor, $httpRequest): LeaveRequest {

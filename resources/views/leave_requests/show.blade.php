@@ -22,14 +22,14 @@
 
             @if ($leaveRequest->user_comment)
                 <div class="comment-box">
-                    <strong>Comentario del usuario</strong>
+                    <strong>Comentario del empleado</strong>
                     <p>{{ $leaveRequest->user_comment }}</p>
                 </div>
             @endif
 
             @if ($leaveRequest->admin_comment)
                 <div class="comment-box">
-                    <strong>Comentario administrativo</strong>
+                    <strong>Comentario de revision</strong>
                     <p>{{ $leaveRequest->admin_comment }}</p>
                 </div>
             @endif
