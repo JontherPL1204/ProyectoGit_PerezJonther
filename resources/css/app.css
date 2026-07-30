@@ -392,6 +392,14 @@ button {
     max-width: 640px;
 }
 
+.team-promote-form {
+    grid-template-columns: minmax(220px, 1fr) minmax(170px, 0.6fr) minmax(190px, 0.8fr) auto;
+}
+
+.team-filter-form {
+    grid-template-columns: minmax(220px, 420px) auto;
+}
+
 .filter-actions {
     display: flex;
     gap: 8px;
@@ -730,6 +738,22 @@ dd {
     gap: 8px;
 }
 
+.team-row {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 560px);
+}
+
+.user-permission-form {
+    display: grid;
+    gap: 10px;
+    align-content: center;
+}
+
+.permission-switches {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
 .toggle-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -964,7 +988,10 @@ dd {
     .admin-filter-form,
     .history-filter-form,
     .report-filter-form,
-    .notifications-filter-form {
+    .notifications-filter-form,
+    .team-promote-form,
+    .team-filter-form,
+    .team-row {
         grid-template-columns: 1fr;
     }
 }
@@ -1009,6 +1036,7 @@ dd {
 
     .rule-form-grid,
     .rule-switches,
+    .permission-switches,
     .report-table-head,
     .report-table-row {
         grid-template-columns: 1fr;

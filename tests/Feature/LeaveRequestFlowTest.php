@@ -57,6 +57,10 @@ class LeaveRequestFlowTest extends TestCase
             ->assertForbidden();
 
         $this->actingAs($employee)
+            ->get(route('admin.users.index'))
+            ->assertForbidden();
+
+        $this->actingAs($employee)
             ->get(route('admin.rules.edit'))
             ->assertForbidden();
 
@@ -82,6 +86,10 @@ class LeaveRequestFlowTest extends TestCase
 
         $this->actingAs($admin)
             ->get(route('admin.notifications.index'))
+            ->assertOk();
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.index'))
             ->assertOk();
 
         $this->actingAs($admin)
@@ -462,6 +470,71 @@ class LeaveRequestFlowTest extends TestCase
             ->assertSessionHas('status');
 
         $this->assertSame('sent', $notification->refresh()->status);
+    }
+
+    public function test_admin_can_grant_and_revoke_admin_permissions(): void
+    {
+        Carbon::setTestNow('2026-07-30 10:00:00');
+        $this->seed();
+
+        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
+        $admin = User::where('email', 'javierperezlopez1204@gmail.com')->firstOrFail();
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertSee('Equipo registrado')
+            ->assertSee($employee->email);
+
+        $this->actingAs($admin)
+            ->post(route('admin.users.promote'), [
+                'email' => 'EMPLEADO@n-woffu-prime.local',
+                'can_manage_company_rules' => '1',
+            ])
+            ->assertSessionHas('status');
+
+        $employee->refresh();
+
+        $this->assertTrue($employee->isAdmin());
+        $this->assertTrue($employee->can_manage_company_rules);
+        $this->assertFalse($employee->can_view_medical_attachments);
+        $this->assertDatabaseHas('rule_change_events', [
+            'entity_type' => 'users',
+            'entity_id' => $employee->id,
+            'field_name' => 'role',
+            'new_value' => 'admin',
+        ]);
+
+        $this->actingAs($employee)
+            ->get(route('admin.rules.edit'))
+            ->assertOk();
+
+        $this->actingAs($admin)
+            ->post(route('admin.users.update', $employee), [
+                'is_admin' => '1',
+                'can_view_medical_attachments' => '1',
+            ])
+            ->assertSessionHas('status');
+
+        $employee->refresh();
+
+        $this->assertTrue($employee->isAdmin());
+        $this->assertFalse($employee->can_manage_company_rules);
+        $this->assertTrue($employee->can_view_medical_attachments);
+
+        $this->actingAs($admin)
+            ->post(route('admin.users.update', $employee), [])
+            ->assertSessionHas('status');
+
+        $employee->refresh();
+
+        $this->assertFalse($employee->isAdmin());
+        $this->assertFalse($employee->can_manage_company_rules);
+        $this->assertFalse($employee->can_view_medical_attachments);
+
+        $this->actingAs($admin)
+            ->post(route('admin.users.update', $admin), [])
+            ->assertSessionHasErrors('is_admin');
     }
 
     public function test_employee_request_errors_are_reported_before_admin_review(): void
