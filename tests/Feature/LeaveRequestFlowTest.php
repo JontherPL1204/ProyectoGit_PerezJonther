@@ -21,6 +21,38 @@ class LeaveRequestFlowTest extends TestCase
         $this->get('/dashboard')->assertRedirect('/login');
     }
 
+    public function test_admin_and_user_roles_have_expected_access(): void
+    {
+        $this->seed();
+
+        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
+        $admin = User::where('email', 'javierperezlopez1204@gmail.com')->firstOrFail();
+
+        $this->actingAs($employee)
+            ->get(route('dashboard'))
+            ->assertOk();
+
+        $this->actingAs($employee)
+            ->get(route('admin.dashboard'))
+            ->assertForbidden();
+
+        $this->actingAs($employee)
+            ->get(route('admin.rules.edit'))
+            ->assertForbidden();
+
+        $this->actingAs($admin)
+            ->get(route('dashboard'))
+            ->assertOk();
+
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard'))
+            ->assertOk();
+
+        $this->actingAs($admin)
+            ->get(route('admin.rules.edit'))
+            ->assertOk();
+    }
+
     public function test_employee_can_request_vacation_and_admin_can_approve_it(): void
     {
         Carbon::setTestNow('2026-07-30 10:00:00');
