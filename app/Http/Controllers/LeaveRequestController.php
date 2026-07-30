@@ -8,6 +8,7 @@ use App\Services\ApprovalService;
 use App\Services\AttachmentService;
 use App\Services\LeaveRequestService;
 use App\Services\NotificationService;
+use App\Services\OrganizationDataCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -21,24 +22,20 @@ class LeaveRequestController extends Controller
         private readonly ApprovalService $approvals,
         private readonly NotificationService $notifications,
         private readonly AttachmentService $attachments,
+        private readonly OrganizationDataCache $dataCache,
     ) {}
 
     public function create(Request $request): View
     {
         $profile = $request->user()->employeeProfile()->firstOrFail();
 
-        $types = LeaveType::where('organization_id', $request->user()->organization_id)
+        $types = $this->dataCache->leaveTypes($request->user()->organization_id)
             ->where('is_active', true)
             ->where('visible_to_employees', true)
-            ->where(function ($query) use ($profile): void {
-                $query->whereNull('department_id');
-
-                if ($profile->department_id !== null) {
-                    $query->orWhere('department_id', $profile->department_id);
-                }
+            ->filter(function ($type) use ($profile): bool {
+                return $type->department_id === null || (int) $type->department_id === (int) $profile->department_id;
             })
-            ->orderBy('position')
-            ->get();
+            ->values();
 
         return view('leave_requests.create', ['types' => $types]);
     }
@@ -94,6 +91,7 @@ class LeaveRequestController extends Controller
 
             $leaveRequest = $this->leaveRequests->create($profile, $type, $validated, $user, $request);
             $this->attachments->storeMany($leaveRequest->load('leaveType'), $request->file('attachments', []), $user);
+            $this->dataCache->forgetRequestData($user->organization_id);
 
             if ($type->auto_approve || ! $type->requires_approval) {
                 $leaveRequest = $this->approvals->approve(
@@ -138,6 +136,7 @@ class LeaveRequestController extends Controller
 
         try {
             $this->leaveRequests->cancelPending($leaveRequest, $request->user(), $request);
+            $this->dataCache->forgetRequestData($request->user()->organization_id);
         } catch (InvalidArgumentException $exception) {
             return back()->withErrors(['request' => $exception->getMessage()]);
         }
@@ -152,6 +151,7 @@ class LeaveRequestController extends Controller
         try {
             $updated = $this->leaveRequests->requestCancellation($leaveRequest, $request->user(), $request);
             $this->notifications->cancellationRequested($updated->load(['employeeProfile.user', 'leaveType']));
+            $this->dataCache->forgetRequestData($request->user()->organization_id);
         } catch (InvalidArgumentException $exception) {
             return back()->withErrors(['request' => $exception->getMessage()]);
         }

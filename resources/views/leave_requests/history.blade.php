@@ -77,11 +77,11 @@
 
         <div class="request-list">
             @forelse ($requests as $leaveRequest)
-                <a class="request-row" href="{{ route('leave-requests.show', $leaveRequest) }}">
+                <a class="request-row" href="{{ route('leave-requests.show', $leaveRequest->id) }}">
                     <div>
-                        <strong>{{ $leaveRequest->leaveType->name }}</strong>
+                        <strong>{{ $leaveRequest->leave_type_name }}</strong>
                         <span>
-                            {{ $leaveRequest->employeeProfile->user->name }}
+                            {{ $leaveRequest->employee_name }}
                             &middot;
                             {{ $leaveRequest->start_date->format('d/m/Y') }} - {{ $leaveRequest->end_date->format('d/m/Y') }}
                         </span>
@@ -90,7 +90,7 @@
                         @endif
                     </div>
                     <div class="row-meta">
-                        <span class="status status-{{ strtolower($leaveRequest->status) }}">{{ $leaveRequest->statusLabel() }}</span>
+                        <span class="status status-{{ strtolower($leaveRequest->status) }}">{{ $leaveRequest->status_label }}</span>
                         <span>{{ $leaveRequest->requested_units }} {{ $leaveRequest->unit === 'DAYS' ? 'dias' : 'min' }}</span>
                     </div>
                 </a>

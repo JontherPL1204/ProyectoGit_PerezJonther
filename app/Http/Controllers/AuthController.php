@@ -58,6 +58,13 @@ class AuthController extends Controller
 
         RateLimiter::clear($key);
         $request->session()->regenerate();
+        $profile = $user->employeeProfile()->first();
+
+        if ($profile) {
+            $request->session()->put('employee_profile_id', $profile->id);
+            $request->session()->put('employee_department_id', $profile->department_id);
+        }
+
         $user->forceFill(['last_login_at' => now()])->save();
 
         return redirect()->intended(route('dashboard'));

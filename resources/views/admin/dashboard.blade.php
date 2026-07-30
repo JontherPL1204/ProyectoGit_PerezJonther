@@ -75,14 +75,14 @@
             @forelse ($requests as $leaveRequest)
                 <article class="admin-request">
                     <div>
-                        <span class="status status-{{ strtolower($leaveRequest->status) }}">{{ $leaveRequest->statusLabel() }}</span>
-                        <h3>{{ $leaveRequest->employeeProfile->user->name }}</h3>
-                        <p>{{ $leaveRequest->leaveType->name }} &middot; {{ $leaveRequest->start_date->format('d/m/Y') }} - {{ $leaveRequest->end_date->format('d/m/Y') }} &middot; {{ $leaveRequest->requested_units }} {{ $leaveRequest->unit === 'DAYS' ? 'dias' : 'min' }}</p>
+                        <span class="status status-{{ strtolower($leaveRequest->status) }}">{{ $leaveRequest->status_label }}</span>
+                        <h3>{{ $leaveRequest->employee_name }}</h3>
+                        <p>{{ $leaveRequest->leave_type_name }} &middot; {{ $leaveRequest->start_date->format('d/m/Y') }} - {{ $leaveRequest->end_date->format('d/m/Y') }} &middot; {{ $leaveRequest->requested_units }} {{ $leaveRequest->unit === 'DAYS' ? 'dias' : 'min' }}</p>
                         @if ($leaveRequest->overlap_warnings->isNotEmpty())
                             <div class="overlap-alert">
                                 <strong>Coincide con otras ausencias</strong>
                                 @foreach ($leaveRequest->overlap_warnings as $overlap)
-                                    <span>{{ $overlap->employeeProfile->user->name }} &middot; {{ $overlap->leaveType->name }} &middot; {{ $overlap->start_date->format('d/m/Y') }} - {{ $overlap->end_date->format('d/m/Y') }}</span>
+                                    <span>{{ $overlap->employee_name }} &middot; {{ $overlap->leave_type_name }} &middot; {{ $overlap->start_date->format('d/m/Y') }} - {{ $overlap->end_date->format('d/m/Y') }}</span>
                                 @endforeach
                             </div>
                         @endif
@@ -90,7 +90,7 @@
 
                     @if ($leaveRequest->status === \App\Models\LeaveRequest::STATUS_PENDING)
                         <div class="admin-actions">
-                            <form method="POST" action="{{ route('admin.requests.approve', $leaveRequest) }}">
+                            <form method="POST" action="{{ route('admin.requests.approve', $leaveRequest->id) }}">
                                 @csrf
                                 <input type="text" name="admin_comment" placeholder="Comentario opcional">
                                 <button class="primary-button compact" type="submit">
@@ -98,7 +98,7 @@
                                     <span>Aprobar</span>
                                 </button>
                             </form>
-                            <form method="POST" action="{{ route('admin.requests.reject', $leaveRequest) }}">
+                            <form method="POST" action="{{ route('admin.requests.reject', $leaveRequest->id) }}">
                                 @csrf
                                 <input type="text" name="admin_comment" placeholder="Motivo obligatorio" required>
                                 <button class="danger-button compact" type="submit">
@@ -109,7 +109,7 @@
                         </div>
                     @elseif ($leaveRequest->status === \App\Models\LeaveRequest::STATUS_PENDING_CANCELLATION)
                         <div class="admin-actions">
-                            <form method="POST" action="{{ route('admin.requests.accept-cancellation', $leaveRequest) }}">
+                            <form method="POST" action="{{ route('admin.requests.accept-cancellation', $leaveRequest->id) }}">
                                 @csrf
                                 <input type="text" name="admin_comment" placeholder="Comentario opcional">
                                 <button class="primary-button compact" type="submit">
@@ -117,7 +117,7 @@
                                     <span>Aceptar</span>
                                 </button>
                             </form>
-                            <form method="POST" action="{{ route('admin.requests.reject-cancellation', $leaveRequest) }}">
+                            <form method="POST" action="{{ route('admin.requests.reject-cancellation', $leaveRequest->id) }}">
                                 @csrf
                                 <input type="text" name="admin_comment" placeholder="Motivo obligatorio" required>
                                 <button class="danger-button compact" type="submit">
@@ -128,7 +128,7 @@
                         </div>
                     @else
                         <div class="admin-actions readonly">
-                            <a class="ghost-button compact" href="{{ route('leave-requests.show', $leaveRequest) }}">
+                            <a class="ghost-button compact" href="{{ route('leave-requests.show', $leaveRequest->id) }}">
                                 <i data-lucide="eye"></i>
                                 <span>Ver detalle</span>
                             </a>
@@ -141,6 +141,10 @@
                     <p>No hay solicitudes en esta vista.</p>
                 </div>
             @endforelse
+        </div>
+
+        <div class="pagination-wrap">
+            {{ $requests->links() }}
         </div>
     </section>
 @endsection

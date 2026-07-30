@@ -126,9 +126,9 @@
             <h2>Pendientes</h2>
             <div class="mini-list">
                 @forelse ($pendingJustifications as $leaveRequest)
-                    <a href="{{ route('leave-requests.show', $leaveRequest) }}">
-                        <strong>{{ $leaveRequest->employeeProfile->user->name }}</strong>
-                        <span>{{ $leaveRequest->leaveType->name }} &middot; {{ $leaveRequest->start_date->format('d/m/Y') }}</span>
+                    <a href="{{ route('leave-requests.show', $leaveRequest->id) }}">
+                        <strong>{{ $leaveRequest->employee_name }}</strong>
+                        <span>{{ $leaveRequest->leave_type_name }} &middot; {{ $leaveRequest->start_date->format('d/m/Y') }}</span>
                     </a>
                 @empty
                     <div>
@@ -144,9 +144,9 @@
             <h2>Recibidos</h2>
             <div class="mini-list">
                 @forelse ($recentAttachments as $attachment)
-                    <a href="{{ route('leave-requests.show', $attachment->leaveRequest) }}">
+                    <a href="{{ route('leave-requests.show', $attachment->leave_request_id) }}">
                         <strong>{{ $attachment->original_name }}</strong>
-                        <span>{{ $attachment->justificationLabel() }} &middot; {{ $attachment->created_at->format('d/m/Y') }}</span>
+                        <span>{{ $attachment->justification_label }} &middot; {{ $attachment->created_at->format('d/m/Y') }}</span>
                     </a>
                 @empty
                     <div>

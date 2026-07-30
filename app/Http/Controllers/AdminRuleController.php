@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\CompanySetting;
-use App\Models\Department;
 use App\Models\LeaveType;
 use App\Services\AuditService;
+use App\Services\OrganizationDataCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -14,21 +14,19 @@ use Illuminate\View\View;
 
 class AdminRuleController extends Controller
 {
-    public function __construct(private readonly AuditService $audit) {}
+    public function __construct(
+        private readonly AuditService $audit,
+        private readonly OrganizationDataCache $dataCache,
+    ) {}
 
     public function edit(Request $request): View
     {
         $this->authorizeRules($request);
 
         return view('admin.rules', [
-            'settings' => CompanySetting::where('organization_id', $request->user()->organization_id)->firstOrFail(),
-            'leaveTypes' => LeaveType::where('organization_id', $request->user()->organization_id)
-                ->with('department')
-                ->orderBy('position')
-                ->get(),
-            'departments' => Department::where('organization_id', $request->user()->organization_id)
-                ->orderBy('name')
-                ->get(),
+            'settings' => $this->dataCache->settings($request->user()->organization_id),
+            'leaveTypes' => $this->dataCache->leaveTypes($request->user()->organization_id, true),
+            'departments' => $this->dataCache->departments($request->user()->organization_id),
         ]);
     }
 
@@ -133,6 +131,7 @@ class AdminRuleController extends Controller
             ]);
 
         $this->updateLeaveTypes($request, $settings, $data);
+        $this->dataCache->forgetOrganization($settings->organization_id);
 
         return back()->with('status', 'Reglas actualizadas correctamente.');
     }
