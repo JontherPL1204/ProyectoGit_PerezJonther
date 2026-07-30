@@ -7,10 +7,12 @@ use App\Models\HolidayCalendar;
 use App\Models\LeaveBalanceMovement;
 use App\Models\LeaveRequest;
 use App\Models\LeaveType;
+use App\Models\NotificationOutbox;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -39,7 +41,19 @@ class LeaveRequestFlowTest extends TestCase
             ->assertOk();
 
         $this->actingAs($employee)
+            ->get(route('history'))
+            ->assertOk();
+
+        $this->actingAs($employee)
             ->get(route('admin.dashboard'))
+            ->assertForbidden();
+
+        $this->actingAs($employee)
+            ->get(route('admin.reports'))
+            ->assertForbidden();
+
+        $this->actingAs($employee)
+            ->get(route('admin.notifications.index'))
             ->assertForbidden();
 
         $this->actingAs($employee)
@@ -55,7 +69,19 @@ class LeaveRequestFlowTest extends TestCase
             ->assertOk();
 
         $this->actingAs($admin)
+            ->get(route('history'))
+            ->assertOk();
+
+        $this->actingAs($admin)
             ->get(route('admin.dashboard'))
+            ->assertOk();
+
+        $this->actingAs($admin)
+            ->get(route('admin.reports'))
+            ->assertOk();
+
+        $this->actingAs($admin)
+            ->get(route('admin.notifications.index'))
             ->assertOk();
 
         $this->actingAs($admin)
@@ -357,6 +383,87 @@ class LeaveRequestFlowTest extends TestCase
             ->assertDontSee('Formacion &middot;', false);
     }
 
+    public function test_history_reports_and_notification_resend_work(): void
+    {
+        Carbon::setTestNow('2026-07-30 10:00:00');
+        $this->seed();
+
+        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
+        $admin = User::where('email', 'javierperezlopez1204@gmail.com')->firstOrFail();
+        $personal = LeaveType::where('code', 'PERSONAL')->firstOrFail();
+        $vacations = LeaveType::where('code', 'VACATIONS')->firstOrFail();
+
+        $personalRequest = LeaveRequest::create([
+            'organization_id' => $employee->organization_id,
+            'employee_profile_id' => $employee->employeeProfile->id,
+            'leave_type_id' => $personal->id,
+            'unit' => 'DAYS',
+            'start_date' => '2026-09-14',
+            'end_date' => '2026-09-14',
+            'requested_units' => 1,
+            'status' => LeaveRequest::STATUS_REJECTED,
+            'user_comment' => 'Tramite especial',
+            'admin_comment' => 'Sin cobertura',
+        ]);
+
+        LeaveRequest::create([
+            'organization_id' => $employee->organization_id,
+            'employee_profile_id' => $employee->employeeProfile->id,
+            'leave_type_id' => $vacations->id,
+            'unit' => 'DAYS',
+            'start_date' => '2026-09-21',
+            'end_date' => '2026-09-25',
+            'requested_units' => 5,
+            'status' => LeaveRequest::STATUS_APPROVED,
+        ]);
+
+        $this->actingAs($employee)
+            ->get(route('history', ['q' => 'especial', 'estado' => LeaveRequest::STATUS_REJECTED]))
+            ->assertOk()
+            ->assertSee('Tramite especial')
+            ->assertSee('Rechazada');
+
+        $this->actingAs($admin)
+            ->get(route('history', ['empleado' => $employee->employeeProfile->id, 'tipo' => $vacations->id]))
+            ->assertOk()
+            ->assertSee('Vacaciones')
+            ->assertSee('Empleado Demo');
+
+        $this->actingAs($admin)
+            ->get(route('admin.reports', ['mes' => 9, 'anio' => 2026]))
+            ->assertOk()
+            ->assertSee('Balance mensual')
+            ->assertSee('Vacaciones usadas')
+            ->assertSee('5');
+
+        $notification = NotificationOutbox::create([
+            'organization_id' => $employee->organization_id,
+            'leave_request_id' => $personalRequest->id,
+            'event' => 'REQUEST_REJECTED',
+            'recipient_email' => $employee->email,
+            'subject' => '[N-Woffu Prime] Prueba',
+            'body' => 'Correo de prueba',
+            'status' => 'failed',
+            'attempts' => 3,
+            'available_at' => now(),
+            'last_error' => 'SMTP temporal',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.notifications.index', ['estado' => 'failed']))
+            ->assertOk()
+            ->assertSee('Fallido')
+            ->assertSee('SMTP temporal');
+
+        Mail::fake();
+
+        $this->actingAs($admin)
+            ->post(route('admin.notifications.resend', $notification))
+            ->assertSessionHas('status');
+
+        $this->assertSame('sent', $notification->refresh()->status);
+    }
+
     public function test_employee_request_errors_are_reported_before_admin_review(): void
     {
         Carbon::setTestNow('2026-07-30 10:00:00');
@@ -497,6 +604,124 @@ class LeaveRequestFlowTest extends TestCase
         $this->assertNull($leaveRequest->end_time);
     }
 
+    public function test_advanced_rules_enforce_limits_auto_approval_and_justification_status(): void
+    {
+        Carbon::setTestNow('2026-07-30 10:00:00');
+        Storage::fake('local');
+        Mail::fake();
+        $this->seed();
+
+        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
+        $admin = User::where('email', 'javierperezlopez1204@gmail.com')->firstOrFail();
+        $medical = LeaveType::where('code', 'MEDICAL')->firstOrFail();
+
+        $this->actingAs($admin)->post(route('admin.rules.update'), [
+            'annual_vacation_days' => 15,
+            'vacation_notice_days' => 30,
+            'medical_documents_retention_policy' => 'retain',
+            'pending_requests_reserve_balance' => '1',
+            'admin_can_view_medical_attachments' => '1',
+            'medical_attachment_audit_required' => '1',
+            'approved_request_requires_cancel_flow' => '1',
+            'prorate_vacations' => '1',
+            'carry_over_unused_balance' => '1',
+            'change_comment' => 'Regla medica configurable para pruebas.',
+            'leave_types' => [
+                $medical->id => [
+                    'name' => 'Permiso medico',
+                    'department_id' => (string) $employee->employeeProfile->department_id,
+                    'is_active' => '1',
+                    'visible_to_employees' => '1',
+                    'requires_approval' => '1',
+                    'auto_approve' => '1',
+                    'allow_half_day' => '1',
+                    'allow_retroactive' => '0',
+                    'attachment_requirement' => 'required',
+                    'notice_value' => '0',
+                    'min_units' => '30',
+                    'max_units' => '480',
+                    'monthly_limit_units' => '180',
+                    'yearly_limit_units' => '500',
+                    'approval_level_count' => '2',
+                ],
+            ],
+        ])->assertSessionHas('status');
+
+        $medical->refresh();
+
+        $this->assertTrue($medical->auto_approve);
+        $this->assertTrue($medical->allow_half_day);
+        $this->assertSame(180, $medical->monthly_limit_units);
+        $this->assertSame(2, $medical->approval_level_count);
+
+        $this->actingAs($employee)->post(route('leave-requests.store'), [
+            'leave_type_id' => $medical->id,
+            'duration_unit' => 'MINUTES',
+            'start_date' => '2026-09-07',
+            'end_date' => '2026-09-07',
+            'start_time' => '09:00',
+            'end_time' => '10:00',
+        ])->assertSessionHasErrors('attachments');
+
+        $this->actingAs($employee)->post(route('leave-requests.store'), [
+            'leave_type_id' => $medical->id,
+            'duration_unit' => 'MINUTES',
+            'start_date' => '2026-09-07',
+            'end_date' => '2026-09-07',
+            'start_time' => '09:00',
+            'end_time' => '10:00',
+            'attachments' => [
+                UploadedFile::fake()->create('justificante-1.pdf', 64, 'application/pdf'),
+            ],
+        ])->assertSessionHas('status');
+
+        $firstRequest = LeaveRequest::where('leave_type_id', $medical->id)->firstOrFail();
+
+        $this->assertSame(LeaveRequest::STATUS_APPROVED, $firstRequest->status);
+        $this->assertDatabaseHas('notification_outbox', [
+            'leave_request_id' => $firstRequest->id,
+            'event' => 'REQUEST_APPROVED',
+            'status' => 'sent',
+        ]);
+        $this->assertDatabaseHas('request_attachments', [
+            'leave_request_id' => $firstRequest->id,
+            'original_name' => 'justificante-1.pdf',
+            'justification_status' => 'received',
+        ]);
+
+        $attachment = $firstRequest->attachments()->firstOrFail();
+
+        $this->actingAs($admin)
+            ->post(route('attachments.review', $attachment))
+            ->assertSessionHas('status');
+
+        $this->assertSame('reviewed', $attachment->refresh()->justification_status);
+
+        $this->actingAs($employee)->post(route('leave-requests.store'), [
+            'leave_type_id' => $medical->id,
+            'duration_unit' => 'MINUTES',
+            'start_date' => '2026-09-08',
+            'end_date' => '2026-09-08',
+            'start_time' => '09:00',
+            'end_time' => '11:00',
+            'attachments' => [
+                UploadedFile::fake()->create('justificante-2.pdf', 64, 'application/pdf'),
+            ],
+        ])->assertSessionHas('status');
+
+        $this->actingAs($employee)->post(route('leave-requests.store'), [
+            'leave_type_id' => $medical->id,
+            'duration_unit' => 'MINUTES',
+            'start_date' => '2026-09-09',
+            'end_date' => '2026-09-09',
+            'start_time' => '09:00',
+            'end_time' => '10:00',
+            'attachments' => [
+                UploadedFile::fake()->create('justificante-3.pdf', 64, 'application/pdf'),
+            ],
+        ])->assertSessionHasErrors('request');
+    }
+
     public function test_admin_can_edit_active_and_inactive_leave_type_rules(): void
     {
         Carbon::setTestNow('2026-07-30 10:00:00');
@@ -520,14 +745,20 @@ class LeaveRequestFlowTest extends TestCase
             'leave_types' => [
                 $medical->id => [
                     'name' => 'Permiso medico temporal',
+                    'department_id' => '',
                     'is_active' => '0',
                     'visible_to_employees' => '0',
                     'requires_approval' => '1',
+                    'auto_approve' => '0',
+                    'allow_half_day' => '0',
                     'allow_retroactive' => '1',
                     'attachment_requirement' => 'required',
                     'notice_value' => '2',
                     'min_units' => '30',
                     'max_units' => '480',
+                    'monthly_limit_units' => '',
+                    'yearly_limit_units' => '',
+                    'approval_level_count' => '1',
                 ],
             ],
         ])->assertSessionHas('status');

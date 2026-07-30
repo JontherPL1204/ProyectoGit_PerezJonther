@@ -30,6 +30,18 @@ class NotificationService
         }
     }
 
+    public function cancellationRequested(LeaveRequest $leaveRequest): void
+    {
+        $admins = User::where('organization_id', $leaveRequest->organization_id)
+            ->where('role', 'admin')
+            ->where('status', 'active')
+            ->get();
+
+        foreach ($admins as $admin) {
+            $this->enqueue($leaveRequest, 'CANCELLATION_REQUESTED', $admin->email);
+        }
+    }
+
     public function requestResolved(LeaveRequest $leaveRequest, string $event): void
     {
         $email = $leaveRequest->employeeProfile?->user?->email;
@@ -71,7 +83,7 @@ class NotificationService
         }
     }
 
-    private function sendNow(NotificationOutbox $notification): void
+    public function sendNow(NotificationOutbox $notification): void
     {
         try {
             Mail::raw($notification->body, function ($message) use ($notification): void {
@@ -83,11 +95,12 @@ class NotificationService
                 'status' => 'sent',
                 'sent_at' => now(),
                 'attempts' => $notification->attempts + 1,
+                'available_at' => null,
                 'last_error' => null,
             ]);
         } catch (Throwable $exception) {
             $notification->update([
-                'status' => 'pending',
+                'status' => $notification->attempts >= 2 ? 'failed' : 'pending',
                 'attempts' => $notification->attempts + 1,
                 'available_at' => now()->addMinutes(10),
                 'last_error' => $exception->getMessage(),

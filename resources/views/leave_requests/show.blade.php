@@ -87,17 +87,33 @@
                     @if ($canSeeMedical)
                         <div>
                             <strong>{{ $attachment->original_name }}</strong>
-                            <span>{{ strtoupper(pathinfo($attachment->original_name, PATHINFO_EXTENSION)) }} &middot; {{ number_format($attachment->size_bytes / 1024, 1) }} KB</span>
-                            <a class="ghost-button compact" href="{{ route('attachments.download', $attachment) }}">
-                                <i data-lucide="download"></i>
-                                <span>Descargar</span>
-                            </a>
+                            <span>{{ strtoupper(pathinfo($attachment->original_name, PATHINFO_EXTENSION)) }} &middot; {{ number_format($attachment->size_bytes / 1024, 1) }} KB &middot; {{ $attachment->justificationLabel() }}</span>
+                            <div class="inline-actions">
+                                <a class="ghost-button compact" href="{{ route('attachments.download', $attachment) }}">
+                                    <i data-lucide="download"></i>
+                                    <span>Descargar</span>
+                                </a>
+                                @if (auth()->user()->isAdmin() && $attachment->justification_status !== 'reviewed')
+                                    <form method="POST" action="{{ route('attachments.review', $attachment) }}">
+                                        @csrf
+                                        <button class="ghost-button compact" type="submit">
+                                            <i data-lucide="file-check-2"></i>
+                                            <span>Revisado</span>
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                         </div>
                     @endif
                 @empty
                     <div>
-                        <strong>Sin adjuntos</strong>
-                        <span>No se cargaron archivos para esta solicitud.</span>
+                        @if ($leaveRequest->leaveType->attachment_requirement === 'required')
+                            <strong>Pendiente de justificar</strong>
+                            <span>Este motivo requiere justificante y aun no tiene archivo cargado.</span>
+                        @else
+                            <strong>Sin adjuntos</strong>
+                            <span>No se cargaron archivos para esta solicitud.</span>
+                        @endif
                     </div>
                 @endforelse
             </div>

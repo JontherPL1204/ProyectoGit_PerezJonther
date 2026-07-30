@@ -1,6 +1,7 @@
 import {
     ArrowLeft,
     ArrowRight,
+    BarChart3,
     CalendarDays,
     CalendarPlus,
     Check,
@@ -22,12 +23,16 @@ import {
     X,
     XCircle,
     Eye,
+    FileCheck2,
+    History,
+    Mail,
     createIcons,
 } from 'lucide';
 
 const icons = {
     ArrowLeft,
     ArrowRight,
+    BarChart3,
     CalendarDays,
     CalendarPlus,
     Check,
@@ -49,6 +54,9 @@ const icons = {
     X,
     XCircle,
     Eye,
+    FileCheck2,
+    History,
+    Mail,
 };
 
 document.addEventListener('DOMContentLoaded', () => {
