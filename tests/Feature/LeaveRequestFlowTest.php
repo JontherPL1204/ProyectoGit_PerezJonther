@@ -91,7 +91,11 @@ class LeaveRequestFlowTest extends TestCase
 
         $this->assertSame(LeaveRequest::STATUS_APPROVED, $leaveRequest->status);
         $this->assertSame(-5, LeaveBalanceMovement::where('leave_request_id', $leaveRequest->id)->where('movement_type', 'CONSUMPTION')->value('amount'));
-        $this->assertDatabaseHas('notification_outbox', ['event' => 'REQUEST_APPROVED']);
+        $this->assertDatabaseHas('notification_outbox', [
+            'event' => 'REQUEST_APPROVED',
+            'recipient_email' => $employee->email,
+            'status' => 'sent',
+        ]);
     }
 
     public function test_all_employee_request_types_receive_admin_responses(): void
@@ -176,6 +180,19 @@ class LeaveRequestFlowTest extends TestCase
         $this->assertSame(LeaveRequest::STATUS_REJECTED, $requests['PERSONAL']->refresh()->status);
         $this->assertSame(LeaveRequest::STATUS_REJECTED, $requests['TRAINING']->refresh()->status);
 
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard', ['estado' => 'aprobadas']))
+            ->assertOk()
+            ->assertSee('Vacaciones')
+            ->assertSee('Permiso medico')
+            ->assertDontSee('Asuntos personales');
+
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard', ['estado' => 'rechazadas']))
+            ->assertOk()
+            ->assertSee('Asuntos personales')
+            ->assertSee('Formacion');
+
         $this->actingAs($employee)
             ->get(route('leave-requests.show', $requests['VACATIONS']))
             ->assertOk()
@@ -221,6 +238,10 @@ class LeaveRequestFlowTest extends TestCase
             ->assertOk()
             ->assertSee('Cancelada')
             ->assertSee('Cancelacion aceptada.');
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard', ['estado' => 'canceladas']))
+            ->assertOk()
+            ->assertSee('Permiso medico');
         $this->assertDatabaseHas('request_events', ['leave_request_id' => $requests['MEDICAL']->id, 'action' => 'CANCELLATION_ACCEPTED']);
     }
 
@@ -362,5 +383,67 @@ class LeaveRequestFlowTest extends TestCase
         $this->assertSame(3, $leaveRequest->requested_units);
         $this->assertNull($leaveRequest->start_time);
         $this->assertNull($leaveRequest->end_time);
+    }
+
+    public function test_admin_can_edit_active_and_inactive_leave_type_rules(): void
+    {
+        Carbon::setTestNow('2026-07-30 10:00:00');
+        $this->seed();
+
+        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
+        $admin = User::where('email', 'javierperezlopez1204@gmail.com')->firstOrFail();
+        $medical = LeaveType::where('code', 'MEDICAL')->firstOrFail();
+
+        $this->actingAs($admin)->post(route('admin.rules.update'), [
+            'annual_vacation_days' => 15,
+            'vacation_notice_days' => 30,
+            'medical_documents_retention_policy' => 'retain',
+            'pending_requests_reserve_balance' => '1',
+            'admin_can_view_medical_attachments' => '1',
+            'medical_attachment_audit_required' => '1',
+            'approved_request_requires_cancel_flow' => '1',
+            'prorate_vacations' => '1',
+            'carry_over_unused_balance' => '1',
+            'change_comment' => 'Se desactiva temporalmente permiso medico.',
+            'leave_types' => [
+                $medical->id => [
+                    'name' => 'Permiso medico temporal',
+                    'is_active' => '0',
+                    'visible_to_employees' => '0',
+                    'requires_approval' => '1',
+                    'allow_retroactive' => '1',
+                    'attachment_requirement' => 'required',
+                    'notice_value' => '2',
+                    'min_units' => '30',
+                    'max_units' => '480',
+                ],
+            ],
+        ])->assertSessionHas('status');
+
+        $medical->refresh();
+
+        $this->assertSame('Permiso medico temporal', $medical->name);
+        $this->assertFalse($medical->is_active);
+        $this->assertFalse($medical->visible_to_employees);
+        $this->assertTrue($medical->allow_retroactive);
+        $this->assertSame('required', $medical->attachment_requirement);
+        $this->assertSame(2, $medical->notice_value);
+        $this->assertDatabaseHas('rule_change_events', [
+            'entity_type' => 'leave_types',
+            'entity_id' => $medical->id,
+            'field_name' => 'is_active',
+            'new_value' => 'false',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.rules.edit'))
+            ->assertOk()
+            ->assertSee('Reglas activas e inactivas')
+            ->assertSee('Inactiva');
+
+        $this->actingAs($employee)
+            ->get(route('leave-requests.create'))
+            ->assertOk()
+            ->assertDontSee('Permiso medico temporal');
     }
 }
