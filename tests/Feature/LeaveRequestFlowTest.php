@@ -76,6 +76,13 @@ class LeaveRequestFlowTest extends TestCase
         $this->assertDatabaseHas('request_events', ['action' => 'REQUEST_CREATED']);
         $this->assertDatabaseHas('notification_outbox', ['event' => 'REQUEST_CREATED']);
 
+        $this->actingAs($admin)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Solicitudes pendientes')
+            ->assertSee('Empleado Demo')
+            ->assertSee('Vacaciones');
+
         $this->actingAs($admin)->post(route('admin.requests.approve', $leaveRequest), [
             'admin_comment' => 'Aprobado.',
         ])->assertSessionHas('status');

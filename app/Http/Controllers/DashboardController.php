@@ -37,9 +37,20 @@ class DashboardController extends Controller
             ->orderBy('start_date')
             ->first();
 
-        $pendingCount = LeaveRequest::where('organization_id', $user->organization_id)
-            ->whereIn('status', [LeaveRequest::STATUS_PENDING, LeaveRequest::STATUS_PENDING_CANCELLATION])
-            ->count();
+        $pendingCount = 0;
+        $pendingReviewRequests = collect();
+
+        if ($user->isAdmin()) {
+            $pendingReviewBase = LeaveRequest::where('organization_id', $user->organization_id)
+                ->whereIn('status', [LeaveRequest::STATUS_PENDING, LeaveRequest::STATUS_PENDING_CANCELLATION]);
+
+            $pendingCount = (clone $pendingReviewBase)->count();
+            $pendingReviewRequests = (clone $pendingReviewBase)
+                ->with(['employeeProfile.user', 'leaveType'])
+                ->orderBy('start_date')
+                ->limit(5)
+                ->get();
+        }
 
         return view('dashboard', [
             'profile' => $profile,
@@ -48,6 +59,7 @@ class DashboardController extends Controller
             'requests' => $requests,
             'nextApproved' => $nextApproved,
             'pendingCount' => $pendingCount,
+            'pendingReviewRequests' => $pendingReviewRequests,
         ]);
     }
 }
