@@ -48,9 +48,9 @@
                         @endforeach
 
                         @foreach ($day['requests'] as $leaveRequest)
-                            <a class="calendar-item {{ strtolower($leaveRequest->status) }}" href="{{ route('leave-requests.show', $leaveRequest) }}">
-                                <strong>{{ auth()->user()->isAdmin() ? $leaveRequest->employeeProfile->user->name : $leaveRequest->leaveType->name }}</strong>
-                                <span>{{ auth()->user()->isAdmin() ? $leaveRequest->leaveType->name : $leaveRequest->statusLabel() }}</span>
+                            <a class="calendar-item {{ strtolower($leaveRequest->status) }}" href="{{ route('leave-requests.show', $leaveRequest->id) }}">
+                                <strong>{{ $isAdmin ? $leaveRequest->employee_name : $leaveRequest->leave_type_name }}</strong>
+                                <span>{{ $isAdmin ? $leaveRequest->leave_type_name : $leaveRequest->status_label }}</span>
                             </a>
                         @endforeach
                     </div>

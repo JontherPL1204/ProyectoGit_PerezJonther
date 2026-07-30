@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\AuditService;
+use App\Services\OrganizationDataCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -12,7 +13,10 @@ use Illuminate\View\View;
 
 class AdminUserController extends Controller
 {
-    public function __construct(private readonly AuditService $audit) {}
+    public function __construct(
+        private readonly AuditService $audit,
+        private readonly OrganizationDataCache $dataCache,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -20,18 +24,15 @@ class AdminUserController extends Controller
 
         $search = trim((string) $request->query('q', ''));
 
-        $users = User::with(['employeeProfile.department'])
-            ->where('organization_id', $request->user()->organization_id)
-            ->when($search !== '', function ($query) use ($search): void {
-                $needle = '%'.$search.'%';
-                $query->where(function ($inner) use ($needle): void {
-                    $inner->where('name', 'like', $needle)
-                        ->orWhere('email', 'like', $needle);
-                });
-            })
-            ->orderByRaw("CASE WHEN role = 'admin' THEN 0 ELSE 1 END")
-            ->orderBy('name')
-            ->get();
+        $users = $this->dataCache->users($request->user()->organization_id);
+
+        if ($search !== '') {
+            $needle = Str::lower($search);
+            $users = $users
+                ->filter(fn ($user) => str_contains(Str::lower($user->name), $needle)
+                    || str_contains(Str::lower($user->email), $needle))
+                ->values();
+        }
 
         return view('admin.users', compact('search', 'users'));
     }
@@ -64,6 +65,7 @@ class AdminUserController extends Controller
             'can_manage_company_rules' => $request->boolean('can_manage_company_rules'),
             'can_view_medical_attachments' => $request->boolean('can_view_medical_attachments'),
         ], 'Permisos asignados por correo.');
+        $this->dataCache->forgetOrganization($request->user()->organization_id);
 
         return back()->with('status', 'Permisos de administrador actualizados para '.$target->name.'.');
     }
@@ -100,6 +102,7 @@ class AdminUserController extends Controller
             'can_manage_company_rules' => $canManageRules,
             'can_view_medical_attachments' => $canViewMedical,
         ], 'Permisos actualizados desde Equipo.');
+        $this->dataCache->forgetOrganization($request->user()->organization_id);
 
         return back()->with('status', 'Permisos actualizados para '.$user->name.'.');
     }

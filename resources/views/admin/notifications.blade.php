@@ -55,15 +55,15 @@
                 @endphp
                 <article class="admin-request notification-row">
                     <div>
-                        <span class="status status-{{ $statusClass }}">{{ $notification->statusLabel() }}</span>
-                        <h3>{{ $notification->eventLabel() }}</h3>
+                        <span class="status status-{{ $statusClass }}">{{ $notification->status_label }}</span>
+                        <h3>{{ $notification->event_label }}</h3>
                         <p>{{ $notification->recipient_email }} &middot; {{ $notification->created_at->format('d/m/Y H:i') }}</p>
                         <p>{{ $notification->subject }}</p>
-                        @if ($notification->leaveRequest)
+                        @if ($notification->leave_request_id)
                             <p>
-                                {{ $notification->leaveRequest->employeeProfile->user->name }}
+                                {{ $notification->employee_name ?? 'Empleado' }}
                                 &middot;
-                                {{ $notification->leaveRequest->leaveType->name }}
+                                {{ $notification->leave_type_name ?? 'Solicitud' }}
                             </p>
                         @endif
                         @if ($notification->last_error)
@@ -75,15 +75,15 @@
                     </div>
 
                     <div class="admin-actions readonly">
-                        <form method="POST" action="{{ route('admin.notifications.resend', $notification) }}">
+                        <form method="POST" action="{{ route('admin.notifications.resend', $notification->id) }}">
                             @csrf
                             <button class="ghost-button compact" type="submit">
                                 <i data-lucide="mail"></i>
                                 <span>Reenviar</span>
                             </button>
                         </form>
-                        @if ($notification->leaveRequest)
-                            <a class="ghost-button compact" href="{{ route('leave-requests.show', $notification->leaveRequest) }}">
+                        @if ($notification->leave_request_id)
+                            <a class="ghost-button compact" href="{{ route('leave-requests.show', $notification->leave_request_id) }}">
                                 <i data-lucide="eye"></i>
                                 <span>Solicitud</span>
                             </a>

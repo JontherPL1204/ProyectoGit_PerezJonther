@@ -17,7 +17,7 @@
         <article class="metric-card">
             <p>Proxima ausencia</p>
             <strong>{{ $nextApproved ? $nextApproved->start_date->format('d/m') : '--' }}</strong>
-            <span>{{ $nextApproved?->leaveType?->name ?? 'sin ausencias aprobadas' }}</span>
+            <span>{{ $nextApproved?->leave_type_name ?? 'sin ausencias aprobadas' }}</span>
         </article>
         @if (auth()->user()->isAdmin())
             <article class="metric-card dark">
@@ -45,11 +45,11 @@
                 @forelse ($pendingReviewRequests as $reviewRequest)
                     <a class="request-row" href="{{ route('admin.dashboard') }}">
                         <div>
-                            <strong>{{ $reviewRequest->employeeProfile->user->name }}</strong>
-                            <span>{{ $reviewRequest->leaveType->name }} &middot; {{ $reviewRequest->start_date->format('d/m/Y') }} - {{ $reviewRequest->end_date->format('d/m/Y') }}</span>
+                            <strong>{{ $reviewRequest->employee_name }}</strong>
+                            <span>{{ $reviewRequest->leave_type_name }} &middot; {{ $reviewRequest->start_date->format('d/m/Y') }} - {{ $reviewRequest->end_date->format('d/m/Y') }}</span>
                         </div>
                         <div class="row-meta">
-                            <span class="status status-{{ strtolower($reviewRequest->status) }}">{{ $reviewRequest->statusLabel() }}</span>
+                            <span class="status status-{{ strtolower($reviewRequest->status) }}">{{ $reviewRequest->status_label }}</span>
                             <span>{{ $reviewRequest->requested_units }} {{ $reviewRequest->unit === 'DAYS' ? 'dias' : 'min' }}</span>
                         </div>
                     </a>
@@ -82,13 +82,13 @@
 
             <div class="request-list">
                 @forelse ($requests as $leaveRequest)
-                    <a class="request-row" href="{{ route('leave-requests.show', $leaveRequest) }}">
+                    <a class="request-row" href="{{ route('leave-requests.show', $leaveRequest->id) }}">
                         <div>
-                            <strong>{{ $leaveRequest->leaveType->name }}</strong>
+                            <strong>{{ $leaveRequest->leave_type_name }}</strong>
                             <span>{{ $leaveRequest->start_date->format('d/m/Y') }} - {{ $leaveRequest->end_date->format('d/m/Y') }}</span>
                         </div>
                         <div class="row-meta">
-                            <span class="status status-{{ strtolower($leaveRequest->status) }}">{{ $leaveRequest->statusLabel() }}</span>
+                            <span class="status status-{{ strtolower($leaveRequest->status) }}">{{ $leaveRequest->status_label }}</span>
                             <span>{{ $leaveRequest->requested_units }} {{ $leaveRequest->unit === 'DAYS' ? 'dias' : 'min' }}</span>
                         </div>
                     </a>

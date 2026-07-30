@@ -78,17 +78,18 @@
         <div class="admin-list">
             @forelse ($users as $member)
                 @php
-                    $isCurrentUser = $member->is(auth()->user());
+                    $isCurrentUser = (int) $member->id === (int) auth()->id();
+                    $isAdmin = $member->role === 'admin';
                 @endphp
                 <article class="admin-request team-row">
                     <div>
-                        <span class="status {{ $member->isAdmin() ? 'status-approved' : 'status-cancelled' }}">{{ $member->isAdmin() ? 'Administrador' : 'Empleado' }}</span>
+                        <span class="status {{ $isAdmin ? 'status-approved' : 'status-cancelled' }}">{{ $isAdmin ? 'Administrador' : 'Empleado' }}</span>
                         <h3>{{ $member->name }}</h3>
                         <p>{{ $member->email }}</p>
                         <p>{{ $member->employeeProfile?->department?->name ?? 'Sin departamento' }}</p>
                     </div>
 
-                    <form class="user-permission-form" method="POST" action="{{ route('admin.users.update', $member) }}">
+                    <form class="user-permission-form" method="POST" action="{{ route('admin.users.update', $member->id) }}">
                         @csrf
 
                         @if ($isCurrentUser)
@@ -98,7 +99,7 @@
 
                         <div class="permission-switches">
                             <label class="check-row">
-                                <input type="checkbox" name="is_admin" value="1" @checked($member->isAdmin()) @disabled($isCurrentUser)>
+                                <input type="checkbox" name="is_admin" value="1" @checked($isAdmin) @disabled($isCurrentUser)>
                                 <span>Admin</span>
                             </label>
 
