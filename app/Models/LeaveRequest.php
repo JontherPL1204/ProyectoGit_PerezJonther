@@ -81,7 +81,7 @@ class LeaveRequest extends Model
             self::STATUS_APPROVED => 'Aprobada',
             self::STATUS_REJECTED => 'Rechazada',
             self::STATUS_CANCELLED => 'Cancelada',
-            self::STATUS_PENDING_CANCELLATION => 'Pend. cancelacion',
+            self::STATUS_PENDING_CANCELLATION => 'Cancelacion pendiente',
             default => $this->status,
         };
     }

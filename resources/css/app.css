@@ -176,24 +176,19 @@ button {
 }
 
 .user-chip {
-    display: flex;
+    display: inline-flex;
     min-height: 48px;
     align-items: center;
-    gap: 12px;
     border: 2px solid var(--line);
     border-radius: var(--radius);
     background: var(--paper);
-    padding: 8px 12px;
-}
-
-.user-chip span,
-.user-chip strong {
-    display: block;
+    padding: 8px 14px;
+    font-weight: 800;
 }
 
 .user-chip span {
-    color: var(--muted);
-    font-size: 12px;
+    color: var(--ink);
+    font-size: 14px;
 }
 
 .metric-grid {
@@ -435,6 +430,54 @@ label span {
     font-weight: 900;
 }
 
+.field-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.field-help {
+    position: relative;
+    display: inline-grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--ink);
+    cursor: help;
+}
+
+.field-help svg {
+    width: 16px;
+    height: 16px;
+}
+
+.tooltip {
+    position: absolute;
+    z-index: 20;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    display: none;
+    width: min(280px, 80vw);
+    transform: translateX(-50%);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 10px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.field-help:hover .tooltip,
+.field-help:focus .tooltip,
+.field-help:focus-within .tooltip {
+    display: block;
+}
+
 input,
 select,
 textarea {
@@ -467,6 +510,46 @@ textarea {
 .check-row span {
     margin: 0;
     color: var(--ink);
+}
+
+.segmented-field > span {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.segmented-control {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.segmented-control label {
+    cursor: pointer;
+}
+
+.segmented-control input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.segmented-control span {
+    display: grid;
+    min-height: 44px;
+    place-items: center;
+    border: 2px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    color: var(--ink);
+    font-weight: 900;
+}
+
+.segmented-control input:checked + span {
+    background: var(--accent);
+    box-shadow: 0 4px 0 var(--line);
 }
 
 .form-actions {

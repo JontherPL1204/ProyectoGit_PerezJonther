@@ -21,7 +21,7 @@
         </article>
         @if (auth()->user()->isAdmin())
             <article class="metric-card dark">
-                <p>Pendientes admin</p>
+                <p>Pendientes</p>
                 <strong>{{ $pendingCount }}</strong>
                 <span>requieren decision</span>
             </article>
