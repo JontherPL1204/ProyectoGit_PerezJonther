@@ -316,6 +316,33 @@ button {
     font-size: 14px;
 }
 
+.mini-list > a {
+    display: block;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    padding: 14px;
+}
+
+.mini-list > a:hover {
+    background: var(--accent-soft);
+}
+
+.pagination-wrap {
+    margin-top: 16px;
+}
+
+.inline-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.inline-actions form {
+    margin: 0;
+}
+
 .row-meta {
     display: flex;
     flex-wrap: wrap;
@@ -353,6 +380,16 @@ button {
     gap: 10px;
     align-items: end;
     margin: 0 0 16px;
+}
+
+.history-filter-form {
+    grid-template-columns: minmax(200px, 1.4fr) repeat(5, minmax(130px, 1fr)) auto;
+}
+
+.report-filter-form,
+.notifications-filter-form {
+    grid-template-columns: minmax(160px, 1fr) minmax(140px, 0.8fr) auto;
+    max-width: 640px;
 }
 
 .filter-actions {
@@ -742,8 +779,38 @@ dd {
 .rule-switches {
     display: grid;
     grid-column: 1 / -1;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
+}
+
+.report-table {
+    display: grid;
+    gap: 8px;
+}
+
+.report-table-head,
+.report-table-row {
+    display: grid;
+    grid-template-columns: minmax(180px, 1.4fr) repeat(4, minmax(82px, 0.7fr));
+    gap: 10px;
+    align-items: center;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    padding: 12px;
+}
+
+.report-table-head {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.report-table-row span {
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 800;
 }
 
 .calendar-panel {
@@ -894,7 +961,10 @@ dd {
     .content-grid,
     .login-screen,
     .admin-request,
-    .admin-filter-form {
+    .admin-filter-form,
+    .history-filter-form,
+    .report-filter-form,
+    .notifications-filter-form {
         grid-template-columns: 1fr;
     }
 }
@@ -938,7 +1008,9 @@ dd {
     }
 
     .rule-form-grid,
-    .rule-switches {
+    .rule-switches,
+    .report-table-head,
+    .report-table-row {
         grid-template-columns: 1fr;
     }
 

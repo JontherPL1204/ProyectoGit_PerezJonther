@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\RequestAttachment;
 use App\Services\AuditService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -41,5 +42,37 @@ class AttachmentController extends Controller
 
         return Storage::disk($requestAttachment->storage_disk)
             ->download($requestAttachment->storage_path, $requestAttachment->original_name);
+    }
+
+    public function markReviewed(Request $request, RequestAttachment $requestAttachment): RedirectResponse
+    {
+        $user = $request->user();
+        $leaveRequest = $requestAttachment->leaveRequest()->firstOrFail();
+
+        abort_unless($user?->isAdmin(), 403);
+        abort_unless($requestAttachment->organization_id === $user->organization_id, 404);
+
+        if ($requestAttachment->is_medical) {
+            abort_unless($user->canViewMedicalAttachments(), 403);
+        }
+
+        $requestAttachment->update([
+            'justification_status' => 'reviewed',
+            'reviewed_at' => now(),
+            'reviewed_by' => $user->id,
+        ]);
+
+        $this->audit->requestEvent(
+            $leaveRequest,
+            'ATTACHMENT_REVIEWED',
+            $user,
+            $leaveRequest->status,
+            $leaveRequest->status,
+            'Justificante revisado',
+            ['attachment_id' => $requestAttachment->id],
+            $request,
+        );
+
+        return back()->with('status', 'Justificante marcado como revisado.');
     }
 }

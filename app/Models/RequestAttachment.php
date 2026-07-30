@@ -21,16 +21,36 @@ class RequestAttachment extends Model
         'mime_type',
         'size_bytes',
         'is_medical',
+        'justification_status',
+        'reviewed_at',
+        'reviewed_by',
         'checksum',
     ];
 
     protected function casts(): array
     {
-        return ['is_medical' => 'boolean'];
+        return [
+            'is_medical' => 'boolean',
+            'reviewed_at' => 'datetime',
+        ];
     }
 
     public function leaveRequest(): BelongsTo
     {
         return $this->belongsTo(LeaveRequest::class);
+    }
+
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    public function justificationLabel(): string
+    {
+        return match ($this->justification_status) {
+            'pending' => 'Pendiente de justificar',
+            'reviewed' => 'Justificante revisado',
+            default => 'Justificante recibido',
+        };
     }
 }

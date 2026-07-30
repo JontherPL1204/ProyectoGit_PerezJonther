@@ -82,6 +82,16 @@
                                 </label>
 
                                 <label>
+                                    <span>Departamento</span>
+                                    <select name="leave_types[{{ $type->id }}][department_id]">
+                                        <option value="">Todos</option>
+                                        @foreach ($departments as $department)
+                                            <option value="{{ $department->id }}" @selected((string) old($typeKey.'.department_id', $type->department_id) === (string) $department->id)>{{ $department->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </label>
+
+                                <label>
                                     <span>Anticipacion</span>
                                     <input type="number" name="leave_types[{{ $type->id }}][notice_value]" min="0" max="365" value="{{ old($typeKey.'.notice_value', $isVacation ? $settings->vacation_notice_days : $type->notice_value) }}" required>
                                 </label>
@@ -93,13 +103,30 @@
 
                                 <label>
                                     <span>Maximo</span>
-                                    <input type="number" name="leave_types[{{ $type->id }}][max_units]" min="0" max="3650" value="{{ old($typeKey.'.max_units', $isVacation ? $settings->annual_vacation_days : $type->max_units) }}">
+                                    <input type="number" name="leave_types[{{ $type->id }}][max_units]" min="0" max="100000" value="{{ old($typeKey.'.max_units', $isVacation ? $settings->annual_vacation_days : $type->max_units) }}">
+                                </label>
+
+                                <label>
+                                    <span>Limite mensual</span>
+                                    <input type="number" name="leave_types[{{ $type->id }}][monthly_limit_units]" min="0" max="100000" value="{{ old($typeKey.'.monthly_limit_units', $type->monthly_limit_units) }}">
+                                </label>
+
+                                <label>
+                                    <span>Limite anual</span>
+                                    <input type="number" name="leave_types[{{ $type->id }}][yearly_limit_units]" min="0" max="100000" value="{{ old($typeKey.'.yearly_limit_units', $type->yearly_limit_units) }}">
+                                </label>
+
+                                <label>
+                                    <span>Niveles aprobacion</span>
+                                    <input type="number" name="leave_types[{{ $type->id }}][approval_level_count]" min="1" max="3" value="{{ old($typeKey.'.approval_level_count', $type->approval_level_count) }}" required>
                                 </label>
 
                                 <div class="rule-switches">
                                     <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][is_active]" value="1" @checked(old($typeKey.'.is_active', $type->is_active))><span>Regla activa</span></label>
                                     <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][visible_to_employees]" value="1" @checked(old($typeKey.'.visible_to_employees', $type->visible_to_employees))><span>Visible al empleado</span></label>
                                     <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][requires_approval]" value="1" @checked(old($typeKey.'.requires_approval', $type->requires_approval))><span>Requiere aprobacion</span></label>
+                                    <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][auto_approve]" value="1" @checked(old($typeKey.'.auto_approve', $type->auto_approve))><span>Autoaprobar</span></label>
+                                    <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][allow_half_day]" value="1" @checked(old($typeKey.'.allow_half_day', $type->allow_half_day))><span>Permite medio dia</span></label>
                                     <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][allow_retroactive]" value="1" @checked(old($typeKey.'.allow_retroactive', $type->allow_retroactive))><span>Permite retroactivo</span></label>
                                 </div>
                             </div>
@@ -128,7 +155,7 @@
                 @foreach ($leaveTypes as $type)
                     <div>
                         <strong>{{ $type->name }}</strong>
-                        <span>{{ $type->is_active ? 'Activa' : 'Inactiva' }} &middot; {{ $type->visible_to_employees ? 'visible' : 'oculta' }} &middot; {{ $type->unit === 'DAYS' ? 'dias' : 'minutos' }}</span>
+                        <span>{{ $type->is_active ? 'Activa' : 'Inactiva' }} &middot; {{ $type->visible_to_employees ? 'visible' : 'oculta' }} &middot; {{ $type->department?->name ?? 'todos' }} &middot; {{ $type->auto_approve ? 'auto' : $type->approval_level_count.' nivel(es)' }}</span>
                     </div>
                 @endforeach
             </div>

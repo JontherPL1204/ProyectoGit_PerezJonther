@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\CompanySetting;
+use App\Models\Department;
 use App\Models\LeaveType;
 use App\Services\AuditService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -21,7 +23,11 @@ class AdminRuleController extends Controller
         return view('admin.rules', [
             'settings' => CompanySetting::where('organization_id', $request->user()->organization_id)->firstOrFail(),
             'leaveTypes' => LeaveType::where('organization_id', $request->user()->organization_id)
+                ->with('department')
                 ->orderBy('position')
+                ->get(),
+            'departments' => Department::where('organization_id', $request->user()->organization_id)
+                ->orderBy('name')
                 ->get(),
         ]);
     }
@@ -47,11 +53,21 @@ class AdminRuleController extends Controller
             'leave_types.*.is_active' => ['nullable', 'boolean'],
             'leave_types.*.visible_to_employees' => ['nullable', 'boolean'],
             'leave_types.*.requires_approval' => ['nullable', 'boolean'],
+            'leave_types.*.auto_approve' => ['nullable', 'boolean'],
+            'leave_types.*.allow_half_day' => ['nullable', 'boolean'],
             'leave_types.*.allow_retroactive' => ['nullable', 'boolean'],
             'leave_types.*.attachment_requirement' => ['required', 'in:none,optional,required'],
             'leave_types.*.notice_value' => ['nullable', 'integer', 'min:0', 'max:365'],
             'leave_types.*.min_units' => ['nullable', 'integer', 'min:0', 'max:3650'],
-            'leave_types.*.max_units' => ['nullable', 'integer', 'min:0', 'max:3650'],
+            'leave_types.*.max_units' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'leave_types.*.monthly_limit_units' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'leave_types.*.yearly_limit_units' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'leave_types.*.approval_level_count' => ['required', 'integer', 'min:1', 'max:3'],
+            'leave_types.*.department_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('departments', 'id')->where('organization_id', $request->user()->organization_id),
+            ],
             'change_comment' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -152,6 +168,8 @@ class AdminRuleController extends Controller
             $maxUnits = $type->code === 'VACATIONS'
                 ? $settings->annual_vacation_days
                 : $this->nullableInteger($values['max_units'] ?? null);
+            $monthlyLimit = $this->nullableInteger($values['monthly_limit_units'] ?? null);
+            $yearlyLimit = $this->nullableInteger($values['yearly_limit_units'] ?? null);
 
             if ($minUnits !== null && $maxUnits !== null && $maxUnits < $minUnits) {
                 throw ValidationException::withMessages([
@@ -159,11 +177,20 @@ class AdminRuleController extends Controller
                 ]);
             }
 
+            if ($monthlyLimit !== null && $yearlyLimit !== null && $yearlyLimit < $monthlyLimit) {
+                throw ValidationException::withMessages([
+                    "leave_types.$id.yearly_limit_units" => 'El limite anual no puede ser menor que el limite mensual en '.$type->name.'.',
+                ]);
+            }
+
             $updates = [
+                'department_id' => $this->nullableInteger($values['department_id'] ?? null),
                 'name' => trim((string) $values['name']),
                 'is_active' => $request->boolean("leave_types.$id.is_active"),
                 'visible_to_employees' => $request->boolean("leave_types.$id.visible_to_employees"),
                 'requires_approval' => $request->boolean("leave_types.$id.requires_approval"),
+                'auto_approve' => $request->boolean("leave_types.$id.auto_approve"),
+                'allow_half_day' => $request->boolean("leave_types.$id.allow_half_day"),
                 'allow_retroactive' => $request->boolean("leave_types.$id.allow_retroactive"),
                 'attachment_requirement' => (string) $values['attachment_requirement'],
                 'notice_value' => $type->code === 'VACATIONS'
@@ -171,6 +198,9 @@ class AdminRuleController extends Controller
                     : (int) ($values['notice_value'] ?? 0),
                 'min_units' => $minUnits,
                 'max_units' => $maxUnits,
+                'monthly_limit_units' => $monthlyLimit,
+                'yearly_limit_units' => $yearlyLimit,
+                'approval_level_count' => (int) ($values['approval_level_count'] ?? 1),
             ];
 
             foreach ($updates as $field => $value) {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CompanySetting;
 use App\Models\LeaveRequest;
 use App\Services\LeaveBalanceService;
 use Illuminate\Http\Request;
@@ -17,6 +18,8 @@ class DashboardController extends Controller
         $profile = $user->employeeProfile()->first();
 
         abort_unless($profile, 403, 'El usuario no tiene perfil de empleado.');
+
+        $settings = CompanySetting::where('organization_id', $user->organization_id)->firstOrFail();
 
         $vacationAllowance = $profile->allowances()
             ->where('balance_code', 'VACATIONS')
@@ -54,6 +57,7 @@ class DashboardController extends Controller
 
         return view('dashboard', [
             'profile' => $profile,
+            'settings' => $settings,
             'vacationAllowance' => $vacationAllowance,
             'vacationBalance' => $vacationAllowance ? $this->balances->currentBalance($vacationAllowance) : 0,
             'requests' => $requests,

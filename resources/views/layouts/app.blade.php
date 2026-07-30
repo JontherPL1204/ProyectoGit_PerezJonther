@@ -29,10 +29,22 @@
                         <i data-lucide="calendar-days"></i>
                         <span>Calendario</span>
                     </a>
+                    <a class="nav-link {{ request()->routeIs('history') ? 'active' : '' }}" href="{{ route('history') }}">
+                        <i data-lucide="history"></i>
+                        <span>Historial</span>
+                    </a>
                     @if (auth()->user()->isAdmin())
                         <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                             <i data-lucide="inbox"></i>
                             <span>Revision</span>
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('admin.reports') ? 'active' : '' }}" href="{{ route('admin.reports') }}">
+                            <i data-lucide="bar-chart-3"></i>
+                            <span>Reportes</span>
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}" href="{{ route('admin.notifications.index') }}">
+                            <i data-lucide="mail"></i>
+                            <span>Correos</span>
                         </a>
                     @endif
                     @if (auth()->user()->canManageCompanyRules())

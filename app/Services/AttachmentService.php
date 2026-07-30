@@ -34,6 +34,7 @@ class AttachmentService
                 'mime_type' => $file->getMimeType() ?: 'application/octet-stream',
                 'size_bytes' => $file->getSize() ?: 0,
                 'is_medical' => $leaveRequest->leaveType->is_medical,
+                'justification_status' => 'received',
                 'checksum' => hash_file('sha256', $file->getRealPath()),
             ]);
         }

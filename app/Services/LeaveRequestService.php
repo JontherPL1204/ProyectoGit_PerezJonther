@@ -28,6 +28,8 @@ class LeaveRequestService
         $settings = CompanySetting::where('organization_id', $employee->organization_id)->firstOrFail();
         $start = CarbonImmutable::parse($data['start_date']);
 
+        $this->assertDepartmentCanUse($employee, $leaveType);
+
         if (! $leaveType->allow_retroactive && $start->isPast() && ! $start->isToday()) {
             throw new InvalidArgumentException('La fecha de inicio ya paso. Este motivo no permite solicitudes retroactivas.');
         }
@@ -57,6 +59,7 @@ class LeaveRequestService
             throw new InvalidArgumentException('La duracion solicitada supera el maximo permitido para este motivo.');
         }
 
+        $this->assertPeriodLimits($employee, $leaveType, $start, $calculation['units']);
         $this->assertNoOverlap($employee, $data['start_date'], $data['end_date']);
 
         if ($leaveType->consumes_balance) {
@@ -143,6 +146,60 @@ class LeaveRequestService
 
             return $leaveRequest;
         });
+    }
+
+    private function assertDepartmentCanUse(EmployeeProfile $employee, LeaveType $leaveType): void
+    {
+        if ($leaveType->department_id === null) {
+            return;
+        }
+
+        if ((int) $leaveType->department_id !== (int) $employee->department_id) {
+            throw new InvalidArgumentException('Este motivo no esta disponible para tu departamento.');
+        }
+    }
+
+    private function assertPeriodLimits(EmployeeProfile $employee, LeaveType $leaveType, CarbonImmutable $start, int $requestedUnits): void
+    {
+        if ($leaveType->monthly_limit_units !== null) {
+            $usedThisMonth = $this->activeUnitsForPeriod(
+                $employee,
+                $leaveType,
+                $start->startOfMonth()->toDateString(),
+                $start->endOfMonth()->toDateString(),
+            );
+
+            if ($usedThisMonth + $requestedUnits > $leaveType->monthly_limit_units) {
+                throw new InvalidArgumentException('Esta solicitud supera el limite mensual configurado para este motivo.');
+            }
+        }
+
+        if ($leaveType->yearly_limit_units !== null) {
+            $usedThisYear = $this->activeUnitsForPeriod(
+                $employee,
+                $leaveType,
+                $start->startOfYear()->toDateString(),
+                $start->endOfYear()->toDateString(),
+            );
+
+            if ($usedThisYear + $requestedUnits > $leaveType->yearly_limit_units) {
+                throw new InvalidArgumentException('Esta solicitud supera el limite anual configurado para este motivo.');
+            }
+        }
+    }
+
+    private function activeUnitsForPeriod(EmployeeProfile $employee, LeaveType $leaveType, string $periodStart, string $periodEnd): int
+    {
+        return (int) LeaveRequest::where('employee_profile_id', $employee->id)
+            ->where('leave_type_id', $leaveType->id)
+            ->whereIn('status', [
+                LeaveRequest::STATUS_PENDING,
+                LeaveRequest::STATUS_APPROVED,
+                LeaveRequest::STATUS_PENDING_CANCELLATION,
+            ])
+            ->whereDate('start_date', '<=', $periodEnd)
+            ->whereDate('end_date', '>=', $periodStart)
+            ->sum('requested_units');
     }
 
     private function assertNoOverlap(EmployeeProfile $employee, string $startDate, string $endDate): void

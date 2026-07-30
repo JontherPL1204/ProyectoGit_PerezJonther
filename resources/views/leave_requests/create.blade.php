@@ -31,12 +31,37 @@
                 </span>
                 <select name="leave_type_id" required data-leave-type-select>
                     @foreach ($types as $type)
+                        @php
+                            $hints = [];
+
+                            if ($type->auto_approve || ! $type->requires_approval) {
+                                $hints[] = 'Se aprueba automaticamente si cumple las reglas.';
+                            } elseif ($type->approval_level_count > 1) {
+                                $hints[] = 'Requiere '.$type->approval_level_count.' niveles de aprobacion configurados.';
+                            }
+
+                            if ($type->attachment_requirement === 'required') {
+                                $hints[] = 'El justificante es obligatorio.';
+                            } elseif ($type->attachment_requirement === 'optional') {
+                                $hints[] = 'Puedes adjuntar justificante si aplica.';
+                            }
+
+                            if ($type->monthly_limit_units) {
+                                $hints[] = 'Limite mensual: '.$type->monthly_limit_units.' '.($type->unit === 'DAYS' ? 'dias' : 'minutos').'.';
+                            }
+
+                            if ($type->yearly_limit_units) {
+                                $hints[] = 'Limite anual: '.$type->yearly_limit_units.' '.($type->unit === 'DAYS' ? 'dias' : 'minutos').'.';
+                            }
+
+                            $helpText = trim(($typeHelp[$type->code] ?? 'Este motivo requiere revision de la persona responsable.').' '.implode(' ', $hints));
+                        @endphp
                         <option
                             value="{{ $type->id }}"
                             data-code="{{ $type->code }}"
                             data-unit="{{ $type->unit }}"
                             data-is-medical="{{ $type->is_medical ? '1' : '0' }}"
-                            data-help="{{ $typeHelp[$type->code] ?? 'Este motivo requiere revision de la persona responsable.' }}"
+                            data-help="{{ $helpText }}"
                             @selected(old('leave_type_id') == $type->id)
                         >
                             {{ $type->name }}

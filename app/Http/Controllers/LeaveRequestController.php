@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LeaveRequest;
 use App\Models\LeaveType;
+use App\Services\ApprovalService;
 use App\Services\AttachmentService;
 use App\Services\LeaveRequestService;
 use App\Services\NotificationService;
@@ -17,15 +18,25 @@ class LeaveRequestController extends Controller
 {
     public function __construct(
         private readonly LeaveRequestService $leaveRequests,
+        private readonly ApprovalService $approvals,
         private readonly NotificationService $notifications,
         private readonly AttachmentService $attachments,
     ) {}
 
     public function create(Request $request): View
     {
+        $profile = $request->user()->employeeProfile()->firstOrFail();
+
         $types = LeaveType::where('organization_id', $request->user()->organization_id)
             ->where('is_active', true)
             ->where('visible_to_employees', true)
+            ->where(function ($query) use ($profile): void {
+                $query->whereNull('department_id');
+
+                if ($profile->department_id !== null) {
+                    $query->orWhere('department_id', $profile->department_id);
+                }
+            })
             ->orderBy('position')
             ->get();
 
@@ -64,6 +75,7 @@ class LeaveRequestController extends Controller
         $profile = $user->employeeProfile()->firstOrFail();
         $type = LeaveType::where('organization_id', $user->organization_id)
             ->where('is_active', true)
+            ->where('visible_to_employees', true)
             ->findOrFail($validated['leave_type_id']);
 
         if ($type->is_medical) {
@@ -74,8 +86,28 @@ class LeaveRequestController extends Controller
         }
 
         try {
+            if ($type->attachment_requirement === 'required' && ! $request->hasFile('attachments')) {
+                throw ValidationException::withMessages([
+                    'attachments' => 'Este motivo requiere adjuntar el justificante antes de enviar la solicitud.',
+                ]);
+            }
+
             $leaveRequest = $this->leaveRequests->create($profile, $type, $validated, $user, $request);
             $this->attachments->storeMany($leaveRequest->load('leaveType'), $request->file('attachments', []), $user);
+
+            if ($type->auto_approve || ! $type->requires_approval) {
+                $leaveRequest = $this->approvals->approve(
+                    $leaveRequest->load(['employeeProfile.user', 'leaveType']),
+                    $user,
+                    'Aprobacion automatica por regla.',
+                    $request,
+                );
+                $this->notifications->requestResolved($leaveRequest, 'REQUEST_APPROVED');
+
+                return redirect()->route('leave-requests.show', $leaveRequest)
+                    ->with('status', 'Solicitud creada y aprobada automaticamente.');
+            }
+
             $this->notifications->requestCreated($leaveRequest->load(['employeeProfile.user', 'leaveType']));
         } catch (InvalidArgumentException $exception) {
             return back()->withInput()->withErrors(['request' => $exception->getMessage()]);
@@ -119,7 +151,7 @@ class LeaveRequestController extends Controller
 
         try {
             $updated = $this->leaveRequests->requestCancellation($leaveRequest, $request->user(), $request);
-            $this->notifications->requestResolved($updated->load(['employeeProfile.user', 'leaveType']), 'CANCELLATION_REQUESTED');
+            $this->notifications->cancellationRequested($updated->load(['employeeProfile.user', 'leaveType']));
         } catch (InvalidArgumentException $exception) {
             return back()->withErrors(['request' => $exception->getMessage()]);
         }

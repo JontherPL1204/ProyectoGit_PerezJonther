@@ -74,6 +74,10 @@
                     <i data-lucide="plus"></i>
                     <span>Nueva</span>
                 </a>
+                <a class="ghost-button compact" href="{{ route('history') }}">
+                    <i data-lucide="history"></i>
+                    <span>Historial</span>
+                </a>
             </div>
 
             <div class="request-list">
@@ -101,9 +105,9 @@
             <p class="eyebrow">Reglas activas</p>
             <h2>Base interna</h2>
             <dl class="rule-list">
-                <div><dt>Vacaciones</dt><dd>15 dias anuales</dd></div>
-                <div><dt>Anticipacion</dt><dd>30 dias naturales</dd></div>
-                <div><dt>Pendientes</dt><dd>Reservan saldo</dd></div>
+                <div><dt>Vacaciones</dt><dd>{{ $settings->annual_vacation_days }} dias anuales</dd></div>
+                <div><dt>Anticipacion</dt><dd>{{ $settings->vacation_notice_days }} dias naturales</dd></div>
+                <div><dt>Pendientes</dt><dd>{{ $settings->pending_requests_reserve_balance ? 'Reservan saldo' : 'No reservan saldo' }}</dd></div>
                 <div><dt>Correo</dt><dd>Canal oficial</dd></div>
             </dl>
         </article>
