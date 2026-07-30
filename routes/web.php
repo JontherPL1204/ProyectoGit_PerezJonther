@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AbsenceCalendarController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminRuleController;
 use App\Http\Controllers\AttachmentController;
@@ -23,6 +24,7 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    Route::get('/calendario', AbsenceCalendarController::class)->name('calendar');
 
     Route::get('/solicitudes/nueva', [LeaveRequestController::class, 'create'])->name('leave-requests.create');
     Route::post('/solicitudes', [LeaveRequestController::class, 'store'])->name('leave-requests.store');
