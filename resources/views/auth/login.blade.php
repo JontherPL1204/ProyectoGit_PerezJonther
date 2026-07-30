@@ -36,20 +36,5 @@
                 </button>
             </form>
         </div>
-
-        <div class="login-visual">
-            <div class="visual-card accent">
-                <span>15</span>
-                <small>dias anuales configurables</small>
-            </div>
-            <div class="visual-card">
-                <span>30</span>
-                <small>dias de anticipacion base</small>
-            </div>
-            <div class="visual-card dark">
-                <span>Admin</span>
-                <small>reglas, permisos medicos y auditoria</small>
-            </div>
-        </div>
     </section>
 @endsection

@@ -205,8 +205,7 @@ button {
 
 .metric-card,
 .panel,
-.login-panel,
-.visual-card {
+.login-panel {
     border: 2px solid var(--line);
     border-radius: var(--radius);
     background: var(--paper);
@@ -233,20 +232,17 @@ button {
     line-height: 1;
 }
 
-.metric-card.accent,
-.visual-card.accent {
+.metric-card.accent {
     background: var(--accent);
 }
 
-.metric-card.dark,
-.visual-card.dark {
+.metric-card.dark {
     background: var(--ink);
     color: var(--paper);
 }
 
 .metric-card.dark p,
-.metric-card.dark span,
-.visual-card.dark small {
+.metric-card.dark span {
     color: #d7dae0;
 }
 
@@ -403,44 +399,18 @@ button {
 .login-screen {
     display: grid;
     min-height: 100vh;
-    grid-template-columns: minmax(320px, 470px) minmax(0, 1fr);
-    gap: 24px;
     align-items: center;
+    justify-items: center;
     padding: 28px;
 }
 
 .login-panel {
+    width: min(100%, 470px);
     padding: 26px;
 }
 
 .login-brand {
     margin-bottom: 34px;
-}
-
-.login-visual {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 220px));
-    gap: 18px;
-    align-content: center;
-    justify-content: center;
-}
-
-.visual-card {
-    min-height: 160px;
-    padding: 20px;
-}
-
-.visual-card span {
-    display: block;
-    margin-bottom: 12px;
-    font-size: 42px;
-    font-weight: 900;
-}
-
-.visual-card small {
-    color: var(--muted);
-    font-size: 15px;
-    font-weight: 800;
 }
 
 .form-stack,
@@ -648,8 +618,7 @@ dd {
     .metric-grid,
     .form-grid,
     .detail-grid,
-    .toggle-grid,
-    .login-visual {
+    .toggle-grid {
         grid-template-columns: 1fr;
     }
 
