@@ -25,6 +25,14 @@ class LeaveBalanceService
 
     public function currentBalance(LeaveAllowance $allowance): int
     {
+        if (array_key_exists('movements_sum_amount', $allowance->getAttributes())) {
+            return (int) $allowance->movements_sum_amount;
+        }
+
+        if ($allowance->relationLoaded('movements')) {
+            return (int) $allowance->movements->sum('amount');
+        }
+
         return (int) $allowance->movements()->sum('amount');
     }
 

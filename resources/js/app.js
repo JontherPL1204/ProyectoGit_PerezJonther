@@ -1,4 +1,45 @@
-import { createIcons, icons } from 'lucide';
+import {
+    ArrowLeft,
+    CalendarPlus,
+    Check,
+    CheckCircle2,
+    Download,
+    Inbox,
+    Info,
+    LayoutDashboard,
+    LogIn,
+    LogOut,
+    Plus,
+    PlusCircle,
+    Save,
+    Send,
+    SlidersHorizontal,
+    Undo2,
+    X,
+    XCircle,
+    createIcons,
+} from 'lucide';
+
+const icons = {
+    ArrowLeft,
+    CalendarPlus,
+    Check,
+    CheckCircle2,
+    Download,
+    Inbox,
+    Info,
+    LayoutDashboard,
+    LogIn,
+    LogOut,
+    Plus,
+    PlusCircle,
+    Save,
+    Send,
+    SlidersHorizontal,
+    Undo2,
+    X,
+    XCircle,
+};
 
 document.addEventListener('DOMContentLoaded', () => {
     createIcons({ icons });
