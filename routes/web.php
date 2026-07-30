@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminNotificationController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminRuleController;
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
@@ -50,6 +51,9 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/reportes', AdminReportController::class)->name('reports');
         Route::get('/notificaciones', [AdminNotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notificaciones/{notification}/reenviar', [AdminNotificationController::class, 'resend'])->name('notifications.resend');
+        Route::get('/equipo', [AdminUserController::class, 'index'])->name('users.index');
+        Route::post('/equipo/promover', [AdminUserController::class, 'promoteByEmail'])->name('users.promote');
+        Route::post('/equipo/{user}/permisos', [AdminUserController::class, 'update'])->name('users.update');
         Route::get('/reglas', [AdminRuleController::class, 'edit'])->name('rules.edit');
         Route::post('/reglas', [AdminRuleController::class, 'update'])->name('rules.update');
     });

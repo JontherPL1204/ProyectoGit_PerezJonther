@@ -48,6 +48,10 @@
                         </a>
                     @endif
                     @if (auth()->user()->canManageCompanyRules())
+                        <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
+                            <i data-lucide="users"></i>
+                            <span>Equipo</span>
+                        </a>
                         <a class="nav-link {{ request()->routeIs('admin.rules.*') ? 'active' : '' }}" href="{{ route('admin.rules.edit') }}">
                             <i data-lucide="sliders-horizontal"></i>
                             <span>Reglas</span>
