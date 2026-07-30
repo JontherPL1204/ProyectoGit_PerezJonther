@@ -20,11 +20,56 @@
 
         <nav class="filter-tabs" aria-label="Filtrar solicitudes">
             @foreach ($statusFilters as $key => $filter)
-                <a class="{{ $currentFilter === $key ? 'active' : '' }}" href="{{ route('admin.dashboard', ['estado' => $key]) }}">
+                <a class="{{ $currentFilter === $key ? 'active' : '' }}" href="{{ route('admin.dashboard', array_merge(request()->except('estado'), ['estado' => $key])) }}">
                     {{ $filter['label'] }}
                 </a>
             @endforeach
         </nav>
+
+        <form class="admin-filter-form" method="GET" action="{{ route('admin.dashboard') }}">
+            <input type="hidden" name="estado" value="{{ $currentFilter }}">
+
+            <label>
+                <span>Empleado</span>
+                <select name="empleado">
+                    <option value="">Todos</option>
+                    @foreach ($employees as $employee)
+                        <option value="{{ $employee->id }}" @selected($advancedFilters['employee_profile_id'] === $employee->id)>{{ $employee->user?->name }}</option>
+                    @endforeach
+                </select>
+            </label>
+
+            <label>
+                <span>Tipo</span>
+                <select name="tipo">
+                    <option value="">Todos</option>
+                    @foreach ($leaveTypes as $type)
+                        <option value="{{ $type->id }}" @selected($advancedFilters['leave_type_id'] === $type->id)>{{ $type->name }}</option>
+                    @endforeach
+                </select>
+            </label>
+
+            <label>
+                <span>Desde</span>
+                <input type="date" name="desde" value="{{ $advancedFilters['date_from'] }}">
+            </label>
+
+            <label>
+                <span>Hasta</span>
+                <input type="date" name="hasta" value="{{ $advancedFilters['date_to'] }}">
+            </label>
+
+            <div class="filter-actions">
+                <button class="primary-button compact" type="submit">
+                    <i data-lucide="search"></i>
+                    <span>Filtrar</span>
+                </button>
+                <a class="ghost-button compact" href="{{ route('admin.dashboard', ['estado' => $currentFilter]) }}">
+                    <i data-lucide="rotate-ccw"></i>
+                    <span>Limpiar</span>
+                </a>
+            </div>
+        </form>
 
         <div class="admin-list">
             @forelse ($requests as $leaveRequest)
@@ -33,6 +78,14 @@
                         <span class="status status-{{ strtolower($leaveRequest->status) }}">{{ $leaveRequest->statusLabel() }}</span>
                         <h3>{{ $leaveRequest->employeeProfile->user->name }}</h3>
                         <p>{{ $leaveRequest->leaveType->name }} &middot; {{ $leaveRequest->start_date->format('d/m/Y') }} - {{ $leaveRequest->end_date->format('d/m/Y') }} &middot; {{ $leaveRequest->requested_units }} {{ $leaveRequest->unit === 'DAYS' ? 'dias' : 'min' }}</p>
+                        @if ($leaveRequest->overlap_warnings->isNotEmpty())
+                            <div class="overlap-alert">
+                                <strong>Coincide con otras ausencias</strong>
+                                @foreach ($leaveRequest->overlap_warnings as $overlap)
+                                    <span>{{ $overlap->employeeProfile->user->name }} &middot; {{ $overlap->leaveType->name }} &middot; {{ $overlap->start_date->format('d/m/Y') }} - {{ $overlap->end_date->format('d/m/Y') }}</span>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
 
                     @if ($leaveRequest->status === \App\Models\LeaveRequest::STATUS_PENDING)
@@ -54,7 +107,7 @@
                                 </button>
                             </form>
                         </div>
-                    @else
+                    @elseif ($leaveRequest->status === \App\Models\LeaveRequest::STATUS_PENDING_CANCELLATION)
                         <div class="admin-actions">
                             <form method="POST" action="{{ route('admin.requests.accept-cancellation', $leaveRequest) }}">
                                 @csrf
@@ -72,6 +125,13 @@
                                     <span>Rechazar</span>
                                 </button>
                             </form>
+                        </div>
+                    @else
+                        <div class="admin-actions readonly">
+                            <a class="ghost-button compact" href="{{ route('leave-requests.show', $leaveRequest) }}">
+                                <i data-lucide="eye"></i>
+                                <span>Ver detalle</span>
+                            </a>
                         </div>
                     @endif
                 </article>

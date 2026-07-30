@@ -25,6 +25,10 @@
                         <i data-lucide="plus-circle"></i>
                         <span>Nueva solicitud</span>
                     </a>
+                    <a class="nav-link {{ request()->routeIs('calendar') ? 'active' : '' }}" href="{{ route('calendar') }}">
+                        <i data-lucide="calendar-days"></i>
+                        <span>Calendario</span>
+                    </a>
                     @if (auth()->user()->isAdmin())
                         <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                             <i data-lucide="inbox"></i>

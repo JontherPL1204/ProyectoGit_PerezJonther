@@ -347,6 +347,41 @@ button {
     box-shadow: 0 4px 0 var(--line);
 }
 
+.admin-filter-form {
+    display: grid;
+    grid-template-columns: minmax(180px, 1.2fr) minmax(160px, 1fr) repeat(2, minmax(150px, 0.8fr)) auto;
+    gap: 10px;
+    align-items: end;
+    margin: 0 0 16px;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.overlap-alert {
+    display: grid;
+    gap: 4px;
+    margin-top: 10px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--warning-soft);
+    padding: 10px;
+}
+
+.overlap-alert strong,
+.overlap-alert span {
+    display: block;
+    margin: 0;
+}
+
+.overlap-alert span {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+}
+
 .status {
     display: inline-flex;
     min-height: 30px;
@@ -711,6 +746,126 @@ dd {
     gap: 10px;
 }
 
+.calendar-panel {
+    overflow: hidden;
+}
+
+.calendar-nav,
+.calendar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.calendar-legend {
+    margin-bottom: 14px;
+}
+
+.calendar-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+}
+
+.legend-dot.approved {
+    background: var(--accent);
+}
+
+.legend-dot.pending {
+    background: var(--warning);
+}
+
+.legend-dot.holiday {
+    background: var(--info);
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    border-top: 1.5px solid var(--line);
+    border-left: 1.5px solid var(--line);
+}
+
+.calendar-weekday,
+.calendar-day {
+    border-right: 1.5px solid var(--line);
+    border-bottom: 1.5px solid var(--line);
+    background: var(--paper);
+}
+
+.calendar-weekday {
+    padding: 10px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.calendar-day {
+    display: grid;
+    min-height: 148px;
+    grid-template-rows: auto 1fr;
+    gap: 8px;
+    padding: 10px;
+}
+
+.calendar-day.muted {
+    background: var(--surface);
+}
+
+.calendar-day-number {
+    font-weight: 900;
+}
+
+.calendar-items {
+    display: grid;
+    align-content: start;
+    gap: 6px;
+}
+
+.calendar-item {
+    display: grid;
+    gap: 2px;
+    border: 1.5px solid var(--line);
+    border-radius: 6px;
+    padding: 7px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.calendar-item strong,
+.calendar-item span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.calendar-item span {
+    color: var(--muted);
+}
+
+.calendar-item.approved {
+    background: var(--accent-soft);
+}
+
+.calendar-item.pending,
+.calendar-item.pending_cancellation {
+    background: var(--warning-soft);
+}
+
+.calendar-item.holiday {
+    background: var(--info-soft);
+}
+
 @media (max-width: 1023px) {
     .app-shell {
         grid-template-columns: 1fr;
@@ -724,7 +879,7 @@ dd {
     }
 
     .nav-list {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         margin-top: 18px;
     }
 
@@ -738,7 +893,8 @@ dd {
 
     .content-grid,
     .login-screen,
-    .admin-request {
+    .admin-request,
+    .admin-filter-form {
         grid-template-columns: 1fr;
     }
 }
@@ -771,6 +927,8 @@ dd {
     .row-meta,
     .form-actions,
     .admin-actions form,
+    .calendar-nav,
+    .filter-actions,
     .filter-tabs,
     .rule-card legend {
         align-items: stretch;
@@ -782,6 +940,23 @@ dd {
     .rule-form-grid,
     .rule-switches {
         grid-template-columns: 1fr;
+    }
+
+    .calendar-grid {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: 1fr;
+        border: 0;
+    }
+
+    .calendar-weekday {
+        display: none;
+    }
+
+    .calendar-day {
+        min-height: 120px;
+        border: 1.5px solid var(--line);
+        border-radius: var(--radius);
     }
 
     .primary-button,

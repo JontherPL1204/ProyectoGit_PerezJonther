@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Holiday;
+use App\Models\HolidayCalendar;
 use App\Models\LeaveBalanceMovement;
 use App\Models\LeaveRequest;
 use App\Models\LeaveType;
@@ -33,6 +35,10 @@ class LeaveRequestFlowTest extends TestCase
             ->assertOk();
 
         $this->actingAs($employee)
+            ->get(route('calendar'))
+            ->assertOk();
+
+        $this->actingAs($employee)
             ->get(route('admin.dashboard'))
             ->assertForbidden();
 
@@ -42,6 +48,10 @@ class LeaveRequestFlowTest extends TestCase
 
         $this->actingAs($admin)
             ->get(route('dashboard'))
+            ->assertOk();
+
+        $this->actingAs($admin)
+            ->get(route('calendar'))
             ->assertOk();
 
         $this->actingAs($admin)
@@ -185,7 +195,7 @@ class LeaveRequestFlowTest extends TestCase
             ->assertOk()
             ->assertSee('Vacaciones')
             ->assertSee('Permiso medico')
-            ->assertDontSee('Asuntos personales');
+            ->assertDontSee('Asuntos personales &middot;', false);
 
         $this->actingAs($admin)
             ->get(route('admin.dashboard', ['estado' => 'rechazadas']))
@@ -243,6 +253,108 @@ class LeaveRequestFlowTest extends TestCase
             ->assertOk()
             ->assertSee('Permiso medico');
         $this->assertDatabaseHas('request_events', ['leave_request_id' => $requests['MEDICAL']->id, 'action' => 'CANCELLATION_ACCEPTED']);
+    }
+
+    public function test_calendar_shows_absences_and_holidays_for_employee_and_admin(): void
+    {
+        Carbon::setTestNow('2026-07-30 10:00:00');
+        $this->seed();
+
+        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
+        $admin = User::where('email', 'javierperezlopez1204@gmail.com')->firstOrFail();
+        $vacations = LeaveType::where('code', 'VACATIONS')->firstOrFail();
+        $calendar = HolidayCalendar::firstOrFail();
+
+        Holiday::create([
+            'holiday_calendar_id' => $calendar->id,
+            'holiday_date' => '2026-09-11',
+            'name' => 'Festivo de prueba',
+            'scope' => 'company',
+        ]);
+
+        LeaveRequest::create([
+            'organization_id' => $employee->organization_id,
+            'employee_profile_id' => $employee->employeeProfile->id,
+            'leave_type_id' => $vacations->id,
+            'unit' => 'DAYS',
+            'start_date' => '2026-09-10',
+            'end_date' => '2026-09-12',
+            'requested_units' => 3,
+            'status' => LeaveRequest::STATUS_APPROVED,
+        ]);
+
+        $this->actingAs($employee)
+            ->get(route('calendar', ['mes' => '2026-09']))
+            ->assertOk()
+            ->assertSee('Septiembre 2026')
+            ->assertSee('Vacaciones')
+            ->assertSee('Aprobada')
+            ->assertSee('Festivo de prueba');
+
+        $this->actingAs($admin)
+            ->get(route('calendar', ['mes' => '2026-09']))
+            ->assertOk()
+            ->assertSee('Empleado Demo')
+            ->assertSee('Festivo de prueba');
+    }
+
+    public function test_admin_can_filter_requests_and_see_overlap_warnings(): void
+    {
+        Carbon::setTestNow('2026-07-30 10:00:00');
+        $this->seed();
+
+        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
+        $admin = User::where('email', 'javierperezlopez1204@gmail.com')->firstOrFail();
+        $vacations = LeaveType::where('code', 'VACATIONS')->firstOrFail();
+        $training = LeaveType::where('code', 'TRAINING')->firstOrFail();
+
+        LeaveRequest::create([
+            'organization_id' => $employee->organization_id,
+            'employee_profile_id' => $employee->employeeProfile->id,
+            'leave_type_id' => $vacations->id,
+            'unit' => 'DAYS',
+            'start_date' => '2026-09-10',
+            'end_date' => '2026-09-12',
+            'requested_units' => 3,
+            'status' => LeaveRequest::STATUS_PENDING,
+        ]);
+
+        LeaveRequest::create([
+            'organization_id' => $admin->organization_id,
+            'employee_profile_id' => $admin->employeeProfile->id,
+            'leave_type_id' => $vacations->id,
+            'unit' => 'DAYS',
+            'start_date' => '2026-09-11',
+            'end_date' => '2026-09-11',
+            'requested_units' => 1,
+            'status' => LeaveRequest::STATUS_APPROVED,
+        ]);
+
+        LeaveRequest::create([
+            'organization_id' => $employee->organization_id,
+            'employee_profile_id' => $employee->employeeProfile->id,
+            'leave_type_id' => $training->id,
+            'unit' => 'DAYS',
+            'start_date' => '2026-11-03',
+            'end_date' => '2026-11-03',
+            'requested_units' => 1,
+            'status' => LeaveRequest::STATUS_PENDING,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard', [
+                'estado' => 'pendientes',
+                'empleado' => $employee->employeeProfile->id,
+                'tipo' => $vacations->id,
+                'desde' => '2026-09-01',
+                'hasta' => '2026-09-30',
+            ]))
+            ->assertOk()
+            ->assertSee('Empleado Demo')
+            ->assertSee('Vacaciones')
+            ->assertSee('Coincide con otras ausencias')
+            ->assertSee('Javier Perez')
+            ->assertDontSee('Formacion &middot;', false);
     }
 
     public function test_employee_request_errors_are_reported_before_admin_review(): void

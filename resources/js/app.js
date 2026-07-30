@@ -1,5 +1,7 @@
 import {
     ArrowLeft,
+    ArrowRight,
+    CalendarDays,
     CalendarPlus,
     Check,
     CheckCircle2,
@@ -11,17 +13,22 @@ import {
     LogOut,
     Plus,
     PlusCircle,
+    RotateCcw,
     Save,
+    Search,
     Send,
     SlidersHorizontal,
     Undo2,
     X,
     XCircle,
+    Eye,
     createIcons,
 } from 'lucide';
 
 const icons = {
     ArrowLeft,
+    ArrowRight,
+    CalendarDays,
     CalendarPlus,
     Check,
     CheckCircle2,
@@ -33,12 +40,15 @@ const icons = {
     LogOut,
     Plus,
     PlusCircle,
+    RotateCcw,
     Save,
+    Search,
     Send,
     SlidersHorizontal,
     Undo2,
     X,
     XCircle,
+    Eye,
 };
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\EmployeeProfile;
 use App\Models\LeaveRequest;
+use App\Models\LeaveType;
 use App\Services\ApprovalService;
 use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use InvalidArgumentException;
 
@@ -49,16 +52,30 @@ class AdminController extends Controller
                 ],
             ],
         ];
-        $currentFilter = array_key_exists($request->query('estado'), $statusFilters)
-            ? (string) $request->query('estado')
+        $statusKey = $request->query('estado');
+        $currentFilter = is_string($statusKey) && array_key_exists($statusKey, $statusFilters)
+            ? $statusKey
             : 'pendientes';
+
+        $advancedFilters = [
+            'employee_profile_id' => $request->integer('empleado') ?: null,
+            'leave_type_id' => $request->integer('tipo') ?: null,
+            'date_from' => $this->validDateFilter($request->query('desde')),
+            'date_to' => $this->validDateFilter($request->query('hasta')),
+        ];
 
         $requests = LeaveRequest::with(['employeeProfile.user', 'leaveType'])
             ->where('organization_id', $request->user()->organization_id)
             ->whereIn('status', $statusFilters[$currentFilter]['statuses'])
+            ->when($advancedFilters['employee_profile_id'], fn ($query, $employeeProfileId) => $query->where('employee_profile_id', $employeeProfileId))
+            ->when($advancedFilters['leave_type_id'], fn ($query, $leaveTypeId) => $query->where('leave_type_id', $leaveTypeId))
+            ->when($advancedFilters['date_from'], fn ($query, $dateFrom) => $query->whereDate('end_date', '>=', $dateFrom))
+            ->when($advancedFilters['date_to'], fn ($query, $dateTo) => $query->whereDate('start_date', '<=', $dateTo))
             ->orderBy('start_date')
             ->latest()
             ->get();
+
+        $this->attachOverlapWarnings($requests);
 
         $stats = [
             'pending' => LeaveRequest::where('organization_id', $request->user()->organization_id)
@@ -78,7 +95,24 @@ class AdminController extends Controller
                 ->count(),
         ];
 
-        return view('admin.dashboard', compact('requests', 'stats', 'statusFilters', 'currentFilter'));
+        $employees = EmployeeProfile::with('user')
+            ->where('organization_id', $request->user()->organization_id)
+            ->get()
+            ->sortBy(fn (EmployeeProfile $profile) => $profile->user?->name ?? '');
+
+        $leaveTypes = LeaveType::where('organization_id', $request->user()->organization_id)
+            ->orderBy('position')
+            ->get();
+
+        return view('admin.dashboard', compact(
+            'advancedFilters',
+            'currentFilter',
+            'employees',
+            'leaveTypes',
+            'requests',
+            'stats',
+            'statusFilters',
+        ));
     }
 
     public function approve(Request $request, LeaveRequest $leaveRequest): RedirectResponse
@@ -154,5 +188,40 @@ class AdminController extends Controller
     {
         $this->authorizeAdmin($request);
         abort_unless($leaveRequest->organization_id === $request->user()->organization_id, 404);
+    }
+
+    private function validDateFilter(mixed $value): ?string
+    {
+        if (! is_string($value) || ! preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $value, $matches)) {
+            return null;
+        }
+
+        if (! checkdate((int) $matches[2], (int) $matches[3], (int) $matches[1])) {
+            return null;
+        }
+
+        return $value;
+    }
+
+    private function attachOverlapWarnings(Collection $requests): void
+    {
+        foreach ($requests as $leaveRequest) {
+            $overlaps = LeaveRequest::with(['employeeProfile.user', 'leaveType'])
+                ->where('organization_id', $leaveRequest->organization_id)
+                ->whereKeyNot($leaveRequest->id)
+                ->where('employee_profile_id', '!=', $leaveRequest->employee_profile_id)
+                ->whereIn('status', [
+                    LeaveRequest::STATUS_PENDING,
+                    LeaveRequest::STATUS_PENDING_CANCELLATION,
+                    LeaveRequest::STATUS_APPROVED,
+                ])
+                ->whereDate('start_date', '<=', $leaveRequest->end_date)
+                ->whereDate('end_date', '>=', $leaveRequest->start_date)
+                ->orderBy('start_date')
+                ->limit(3)
+                ->get();
+
+            $leaveRequest->setAttribute('overlap_warnings', $overlaps);
+        }
     }
 }
