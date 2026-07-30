@@ -6,9 +6,18 @@ use App\Models\LeaveRequest;
 use App\Models\NotificationOutbox;
 use App\Models\NotificationRule;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 class NotificationService
 {
+    private const IMMEDIATE_DELIVERY_EVENTS = [
+        'REQUEST_APPROVED',
+        'REQUEST_REJECTED',
+        'CANCELLATION_ACCEPTED',
+        'CANCELLATION_REJECTED',
+    ];
+
     public function requestCreated(LeaveRequest $leaveRequest): void
     {
         $admins = User::where('organization_id', $leaveRequest->organization_id)
@@ -46,7 +55,7 @@ class NotificationService
             return;
         }
 
-        NotificationOutbox::create([
+        $notification = NotificationOutbox::create([
             'organization_id' => $leaveRequest->organization_id,
             'leave_request_id' => $leaveRequest->id,
             'event' => $event,
@@ -56,6 +65,34 @@ class NotificationService
             'status' => 'pending',
             'available_at' => now(),
         ]);
+
+        if (in_array($event, self::IMMEDIATE_DELIVERY_EVENTS, true)) {
+            $this->sendNow($notification);
+        }
+    }
+
+    private function sendNow(NotificationOutbox $notification): void
+    {
+        try {
+            Mail::raw($notification->body, function ($message) use ($notification): void {
+                $message->to($notification->recipient_email)
+                    ->subject($notification->subject);
+            });
+
+            $notification->update([
+                'status' => 'sent',
+                'sent_at' => now(),
+                'attempts' => $notification->attempts + 1,
+                'last_error' => null,
+            ]);
+        } catch (Throwable $exception) {
+            $notification->update([
+                'status' => 'pending',
+                'attempts' => $notification->attempts + 1,
+                'available_at' => now()->addMinutes(10),
+                'last_error' => $exception->getMessage(),
+            ]);
+        }
     }
 
     private function render(string $template, LeaveRequest $leaveRequest): string

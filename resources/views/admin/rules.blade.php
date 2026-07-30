@@ -47,6 +47,66 @@
                     <label class="check-row"><input type="checkbox" name="carry_over_unused_balance" value="1" @checked(old('carry_over_unused_balance', $settings->carry_over_unused_balance))><span>Traspaso activo</span></label>
                 </div>
 
+                <div class="rule-editor full">
+                    <div class="section-head">
+                        <div>
+                            <p class="eyebrow">Tipos de ausencia</p>
+                            <h2>Reglas activas e inactivas</h2>
+                        </div>
+                    </div>
+
+                    @foreach ($leaveTypes as $type)
+                        @php
+                            $typeKey = "leave_types.$type->id";
+                            $isVacation = $type->code === 'VACATIONS';
+                        @endphp
+                        <fieldset class="rule-card">
+                            <legend>
+                                <span>{{ $type->name }}</span>
+                                <strong class="status {{ $type->is_active ? 'status-approved' : 'status-cancelled' }}">{{ $type->is_active ? 'Activa' : 'Inactiva' }}</strong>
+                            </legend>
+
+                            <div class="rule-form-grid">
+                                <label>
+                                    <span>Nombre</span>
+                                    <input type="text" name="leave_types[{{ $type->id }}][name]" value="{{ old($typeKey.'.name', $type->name) }}" required>
+                                </label>
+
+                                <label>
+                                    <span>Adjuntos</span>
+                                    <select name="leave_types[{{ $type->id }}][attachment_requirement]" required>
+                                        <option value="none" @selected(old($typeKey.'.attachment_requirement', $type->attachment_requirement) === 'none')>No requiere</option>
+                                        <option value="optional" @selected(old($typeKey.'.attachment_requirement', $type->attachment_requirement) === 'optional')>Opcional</option>
+                                        <option value="required" @selected(old($typeKey.'.attachment_requirement', $type->attachment_requirement) === 'required')>Obligatorio</option>
+                                    </select>
+                                </label>
+
+                                <label>
+                                    <span>Anticipacion</span>
+                                    <input type="number" name="leave_types[{{ $type->id }}][notice_value]" min="0" max="365" value="{{ old($typeKey.'.notice_value', $isVacation ? $settings->vacation_notice_days : $type->notice_value) }}" required>
+                                </label>
+
+                                <label>
+                                    <span>Minimo</span>
+                                    <input type="number" name="leave_types[{{ $type->id }}][min_units]" min="0" max="3650" value="{{ old($typeKey.'.min_units', $type->min_units) }}">
+                                </label>
+
+                                <label>
+                                    <span>Maximo</span>
+                                    <input type="number" name="leave_types[{{ $type->id }}][max_units]" min="0" max="3650" value="{{ old($typeKey.'.max_units', $isVacation ? $settings->annual_vacation_days : $type->max_units) }}">
+                                </label>
+
+                                <div class="rule-switches">
+                                    <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][is_active]" value="1" @checked(old($typeKey.'.is_active', $type->is_active))><span>Regla activa</span></label>
+                                    <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][visible_to_employees]" value="1" @checked(old($typeKey.'.visible_to_employees', $type->visible_to_employees))><span>Visible al empleado</span></label>
+                                    <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][requires_approval]" value="1" @checked(old($typeKey.'.requires_approval', $type->requires_approval))><span>Requiere aprobacion</span></label>
+                                    <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][allow_retroactive]" value="1" @checked(old($typeKey.'.allow_retroactive', $type->allow_retroactive))><span>Permite retroactivo</span></label>
+                                </div>
+                            </div>
+                        </fieldset>
+                    @endforeach
+                </div>
+
                 <label class="full">
                     <span>Comentario de cambio sensible</span>
                     <textarea name="change_comment" rows="3" maxlength="1000">{{ old('change_comment') }}</textarea>
@@ -63,12 +123,12 @@
 
         <article class="panel">
             <p class="eyebrow">Tipos</p>
-            <h2>Ausencias activas</h2>
+            <h2>Estado actual</h2>
             <div class="mini-list">
                 @foreach ($leaveTypes as $type)
                     <div>
                         <strong>{{ $type->name }}</strong>
-                        <span>{{ $type->unit }} &middot; {{ $type->consumes_balance ? 'consume saldo' : 'no consume saldo' }}</span>
+                        <span>{{ $type->is_active ? 'Activa' : 'Inactiva' }} &middot; {{ $type->visible_to_employees ? 'visible' : 'oculta' }} &middot; {{ $type->unit === 'DAYS' ? 'dias' : 'minutos' }}</span>
                     </div>
                 @endforeach
             </div>

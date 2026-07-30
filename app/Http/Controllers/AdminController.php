@@ -21,9 +21,41 @@ class AdminController extends Controller
     {
         $this->authorizeAdmin($request);
 
+        $statusFilters = [
+            'pendientes' => [
+                'label' => 'Pendientes',
+                'statuses' => [LeaveRequest::STATUS_PENDING, LeaveRequest::STATUS_PENDING_CANCELLATION],
+            ],
+            'aprobadas' => [
+                'label' => 'Aprobadas',
+                'statuses' => [LeaveRequest::STATUS_APPROVED],
+            ],
+            'rechazadas' => [
+                'label' => 'Rechazadas',
+                'statuses' => [LeaveRequest::STATUS_REJECTED],
+            ],
+            'canceladas' => [
+                'label' => 'Canceladas',
+                'statuses' => [LeaveRequest::STATUS_CANCELLED],
+            ],
+            'todas' => [
+                'label' => 'Todas',
+                'statuses' => [
+                    LeaveRequest::STATUS_PENDING,
+                    LeaveRequest::STATUS_PENDING_CANCELLATION,
+                    LeaveRequest::STATUS_APPROVED,
+                    LeaveRequest::STATUS_REJECTED,
+                    LeaveRequest::STATUS_CANCELLED,
+                ],
+            ],
+        ];
+        $currentFilter = array_key_exists($request->query('estado'), $statusFilters)
+            ? (string) $request->query('estado')
+            : 'pendientes';
+
         $requests = LeaveRequest::with(['employeeProfile.user', 'leaveType'])
             ->where('organization_id', $request->user()->organization_id)
-            ->whereIn('status', [LeaveRequest::STATUS_PENDING, LeaveRequest::STATUS_PENDING_CANCELLATION])
+            ->whereIn('status', $statusFilters[$currentFilter]['statuses'])
             ->orderBy('start_date')
             ->latest()
             ->get();
@@ -38,9 +70,15 @@ class AdminController extends Controller
             'pending_cancellation' => LeaveRequest::where('organization_id', $request->user()->organization_id)
                 ->where('status', LeaveRequest::STATUS_PENDING_CANCELLATION)
                 ->count(),
+            'rejected' => LeaveRequest::where('organization_id', $request->user()->organization_id)
+                ->where('status', LeaveRequest::STATUS_REJECTED)
+                ->count(),
+            'cancelled' => LeaveRequest::where('organization_id', $request->user()->organization_id)
+                ->where('status', LeaveRequest::STATUS_CANCELLED)
+                ->count(),
         ];
 
-        return view('admin.dashboard', compact('requests', 'stats'));
+        return view('admin.dashboard', compact('requests', 'stats', 'statusFilters', 'currentFilter'));
     }
 
     public function approve(Request $request, LeaveRequest $leaveRequest): RedirectResponse

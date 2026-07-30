@@ -6,16 +6,25 @@
     <section class="metric-grid">
         <article class="metric-card accent"><p>Pendientes</p><strong>{{ $stats['pending'] }}</strong><span>solicitudes</span></article>
         <article class="metric-card"><p>Aprobadas</p><strong>{{ $stats['approved'] }}</strong><span>historicas</span></article>
-        <article class="metric-card dark"><p>Cancelacion</p><strong>{{ $stats['pending_cancellation'] }}</strong><span>por resolver</span></article>
+        <article class="metric-card"><p>Rechazadas</p><strong>{{ $stats['rejected'] }}</strong><span>historicas</span></article>
+        <article class="metric-card dark"><p>Canceladas</p><strong>{{ $stats['cancelled'] }}</strong><span>cerradas</span></article>
     </section>
 
     <section class="panel">
         <div class="section-head">
             <div>
                 <p class="eyebrow">Bandeja</p>
-                <h2>Solicitudes por decidir</h2>
+                <h2>{{ $statusFilters[$currentFilter]['label'] }}</h2>
             </div>
         </div>
+
+        <nav class="filter-tabs" aria-label="Filtrar solicitudes">
+            @foreach ($statusFilters as $key => $filter)
+                <a class="{{ $currentFilter === $key ? 'active' : '' }}" href="{{ route('admin.dashboard', ['estado' => $key]) }}">
+                    {{ $filter['label'] }}
+                </a>
+            @endforeach
+        </nav>
 
         <div class="admin-list">
             @forelse ($requests as $leaveRequest)
@@ -69,7 +78,7 @@
             @empty
                 <div class="empty-state">
                     <i data-lucide="check-circle-2"></i>
-                    <p>No hay solicitudes pendientes.</p>
+                    <p>No hay solicitudes en esta vista.</p>
                 </div>
             @endforelse
         </div>

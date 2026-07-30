@@ -323,6 +323,30 @@ button {
     gap: 8px;
 }
 
+.filter-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 16px;
+}
+
+.filter-tabs a {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    border: 2px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.filter-tabs a.active {
+    background: var(--accent);
+    box-shadow: 0 4px 0 var(--line);
+}
+
 .status {
     display: inline-flex;
     min-height: 30px;
@@ -649,6 +673,44 @@ dd {
     display: block;
 }
 
+.rule-editor {
+    display: grid;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.rule-card {
+    min-width: 0;
+    margin: 0;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    padding: 14px;
+}
+
+.rule-card legend {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 0 0 10px;
+    font-weight: 900;
+}
+
+.rule-form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.rule-switches {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
 @media (max-width: 1023px) {
     .app-shell {
         grid-template-columns: 1fr;
@@ -708,11 +770,18 @@ dd {
     .request-row,
     .row-meta,
     .form-actions,
-    .admin-actions form {
+    .admin-actions form,
+    .filter-tabs,
+    .rule-card legend {
         align-items: stretch;
         flex-direction: column;
         grid-template-columns: 1fr;
         justify-content: flex-start;
+    }
+
+    .rule-form-grid,
+    .rule-switches {
+        grid-template-columns: 1fr;
     }
 
     .primary-button,
