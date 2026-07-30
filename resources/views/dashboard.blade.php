@@ -28,6 +28,41 @@
         @endif
     </section>
 
+    @if (auth()->user()->isAdmin())
+        <section class="panel">
+            <div class="section-head">
+                <div>
+                    <p class="eyebrow">Revision</p>
+                    <h2>Solicitudes pendientes</h2>
+                </div>
+                <a class="primary-button compact" href="{{ route('admin.dashboard') }}">
+                    <i data-lucide="inbox"></i>
+                    <span>Abrir</span>
+                </a>
+            </div>
+
+            <div class="request-list">
+                @forelse ($pendingReviewRequests as $reviewRequest)
+                    <a class="request-row" href="{{ route('admin.dashboard') }}">
+                        <div>
+                            <strong>{{ $reviewRequest->employeeProfile->user->name }}</strong>
+                            <span>{{ $reviewRequest->leaveType->name }} &middot; {{ $reviewRequest->start_date->format('d/m/Y') }} - {{ $reviewRequest->end_date->format('d/m/Y') }}</span>
+                        </div>
+                        <div class="row-meta">
+                            <span class="status status-{{ strtolower($reviewRequest->status) }}">{{ $reviewRequest->statusLabel() }}</span>
+                            <span>{{ $reviewRequest->requested_units }} {{ $reviewRequest->unit === 'DAYS' ? 'dias' : 'min' }}</span>
+                        </div>
+                    </a>
+                @empty
+                    <div class="empty-state">
+                        <i data-lucide="check-circle-2"></i>
+                        <p>No hay solicitudes pendientes.</p>
+                    </div>
+                @endforelse
+            </div>
+        </section>
+    @endif
+
     <section class="content-grid">
         <article class="panel wide">
             <div class="section-head">
