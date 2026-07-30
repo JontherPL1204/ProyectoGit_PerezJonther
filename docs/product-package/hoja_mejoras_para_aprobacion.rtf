@@ -1,0 +1,88 @@
+{\rtf1\ansi\ansicpg65001\deff0
+{\fonttbl{\f0 Calibri;}}
+\fs30\b Hoja de mejoras para aprobacion\b0\par
+\fs22 Proyecto: N-Woffu Prime\par
+Fecha: 30 de julio de 2026\par
+Objetivo: Revisar y aprobar las mejoras necesarias antes de pasar a diseno tecnico detallado y desarrollo.\par
+\par
+\fs26\b Decisiones ya definidas\b0\par
+\fs22
+- Nombre provisional/actual del producto: N-Woffu Prime.\par
+- Uso inicial: herramienta interna para el equipo.\par
+- Evolucion prevista: preparar la base para posible SaaS multiempresa.\par
+- Vacaciones base de la empresa actual: 15 dias por periodo anual.\par
+- Anticipacion minima actual para vacaciones: un mes o mas.\par
+- Canal oficial inicial de notificaciones: correo electronico.\par
+- El administrador puede ver documentos medicos, pero esta capacidad debe ser configurable.\par
+- Todas las reglas sensibles deben quedar parametrizadas para poder cambiarse por empresa sin reprogramar.\par
+\par
+\fs26\b Mejoras propuestas\b0\par
+\fs22
+\b 1. Definir autenticacion definitiva: PHP propio o Supabase Auth\b0\par
+Prioridad: Alta\par
+Motivo: Evita duplicar sesiones, permisos y reglas de acceso.\par
+Aprobacion: [ ] Aprobar\par
+\par
+\b 2. Crear contrato de API /api/v1\b0\par
+Prioridad: Alta\par
+Motivo: Define entradas, respuestas, errores y permisos antes de programar frontend y backend.\par
+Aprobacion: [ ] Aprobar\par
+\par
+\b 3. Convertir el modelo de datos en migraciones PostgreSQL\b0\par
+Prioridad: Alta\par
+Motivo: Asegura tablas, relaciones, restricciones, indices y datos iniciales verificables.\par
+Aprobacion: [ ] Aprobar\par
+\par
+\b 4. Definir reglas exactas de saldos, prorrateo, anticipos y traspasos\b0\par
+Prioridad: Alta\par
+Motivo: El saldo es el punto mas critico del producto y no debe quedar ambiguo.\par
+Aprobacion: [ ] Aprobar\par
+\par
+\b 5. Decidir si las solicitudes pendientes reservan saldo\b0\par
+Prioridad: Alta\par
+Motivo: Cambia el calculo disponible, las validaciones y la experiencia del usuario.\par
+Aprobacion: [ ] Aprobar\par
+\par
+\b 6. Anadir desglose calculado por dia u hora en cada solicitud\b0\par
+Prioridad: Media\par
+Motivo: Permite auditar por que una solicitud consume determinados dias u horas.\par
+Aprobacion: [ ] Aprobar\par
+\par
+\b 7. Separar permiso de aprobacion y permiso de ver documentos medicos\b0\par
+Prioridad: Alta\par
+Motivo: Protege datos sensibles y reduce riesgos legales y de privacidad.\par
+Aprobacion: [ ] Aprobar\par
+\par
+\b 8. Definir equipos, departamentos o ubicaciones para calendario administrativo\b0\par
+Prioridad: Media\par
+Motivo: Hace posible filtrar ausencias, revisar cobertura y preparar crecimiento multiempresa.\par
+Aprobacion: [ ] Aprobar\par
+\par
+\b 9. Usar cola o patron outbox para notificaciones\b0\par
+Prioridad: Media\par
+Motivo: Evita que una aprobacion falle o quede inconsistente por un error al enviar correo.\par
+Aprobacion: [ ] Aprobar\par
+\par
+\b 10. Preparar wireframes minimos de los flujos principales\b0\par
+Prioridad: Media\par
+Motivo: Reduce cambios caros en interfaz antes de construir pantallas definitivas.\par
+Aprobacion: [ ] Aprobar\par
+\par
+\fs26\b Decisiones que conviene cerrar antes de desarrollar\b0\par
+\fs22
+- Regla exacta para "un mes de anticipacion": 30 dias naturales o mismo dia del mes anterior.\par
+- Reglas de incorporacion a mitad de ano.\par
+- Motivos que consumen saldo y motivos que solo registran ausencia.\par
+- Motivos que requieren justificante obligatorio.\par
+- Politica de conservacion y eliminacion de adjuntos.\par
+- Formato de exportacion: CSV, Excel o ambos.\par
+\par
+\fs26\b Recomendacion\b0\par
+\fs22 Aprobar primero las mejoras 1 a 5 y 7. Son las que afectan directamente a seguridad, permisos, calculo de saldos y consistencia de datos. Las mejoras 6, 8, 9 y 10 pueden prepararse en paralelo, pero no deberian bloquear el inicio del diseno tecnico si las reglas principales ya estan cerradas.\par
+\par
+\fs26\b Resultado esperado tras aprobacion\b0\par
+\fs22 Una vez aprobadas estas mejoras, el siguiente paso recomendado es preparar tres documentos derivados:\par
+1. Migraciones y modelo PostgreSQL.\par
+2. Contrato de API.\par
+3. Backlog tecnico por fases del MVP.\par
+}
