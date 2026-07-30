@@ -87,7 +87,7 @@
                     @if ($canSeeMedical)
                         <div>
                             <strong>{{ $attachment->original_name }}</strong>
-                            <span>{{ strtoupper(pathinfo($attachment->original_name, PATHINFO_EXTENSION)) }} · {{ number_format($attachment->size_bytes / 1024, 1) }} KB</span>
+                            <span>{{ strtoupper(pathinfo($attachment->original_name, PATHINFO_EXTENSION)) }} &middot; {{ number_format($attachment->size_bytes / 1024, 1) }} KB</span>
                             <a class="ghost-button compact" href="{{ route('attachments.download', $attachment) }}">
                                 <i data-lucide="download"></i>
                                 <span>Descargar</span>
