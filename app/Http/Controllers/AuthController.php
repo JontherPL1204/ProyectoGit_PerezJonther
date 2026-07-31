@@ -2,16 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\EmployeeAccountService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class AuthController extends Controller
 {
+    public function __construct(
+        private readonly EmployeeAccountService $accounts,
+    ) {}
+
     public function show(): View|RedirectResponse
     {
         if (Auth::check()) {
@@ -19,6 +25,19 @@ class AuthController extends Controller
         }
 
         return view('auth.login');
+    }
+
+    public function create(): View|RedirectResponse
+    {
+        if (! config('auth.registration_enabled', true)) {
+            abort(404);
+        }
+
+        if (Auth::check()) {
+            return redirect()->route('dashboard');
+        }
+
+        return view('auth.register');
     }
 
     public function login(Request $request): RedirectResponse
@@ -58,16 +77,46 @@ class AuthController extends Controller
 
         RateLimiter::clear($key);
         $request->session()->regenerate();
-        $profile = $user->employeeProfile()->first();
-
-        if ($profile) {
-            $request->session()->put('employee_profile_id', $profile->id);
-            $request->session()->put('employee_department_id', $profile->department_id);
-        }
+        $this->rememberEmployeeProfile($request);
 
         $user->forceFill(['last_login_at' => now()])->save();
 
         return redirect()->intended(route('dashboard'));
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        if (! config('auth.registration_enabled', true)) {
+            abort(404);
+        }
+
+        $request->merge([
+            'name' => trim((string) $request->input('name')),
+            'email' => Str::lower(trim((string) $request->input('email'))),
+        ]);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'confirmed', Password::min(8)],
+        ], [
+            'name.required' => 'Escribe tu nombre.',
+            'email.required' => 'Escribe tu correo.',
+            'email.email' => 'El correo no tiene un formato valido.',
+            'email.unique' => 'Ya existe una cuenta con ese correo.',
+            'password.required' => 'Escribe una contrasena.',
+            'password.confirmed' => 'Las contrasenas no coinciden.',
+        ]);
+
+        $user = $this->accounts->register($data);
+
+        Auth::login($user);
+        $request->session()->regenerate();
+        $this->rememberEmployeeProfile($request);
+
+        $user->forceFill(['last_login_at' => now()])->save();
+
+        return redirect()->route('dashboard')->with('status', 'Cuenta creada correctamente.');
     }
 
     public function logout(Request $request): RedirectResponse
@@ -77,5 +126,15 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+
+    private function rememberEmployeeProfile(Request $request): void
+    {
+        $profile = $request->user()?->employeeProfile()->first();
+
+        if ($profile) {
+            $request->session()->put('employee_profile_id', $profile->id);
+            $request->session()->put('employee_department_id', $profile->department_id);
+        }
     }
 }
