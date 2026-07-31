@@ -37,6 +37,7 @@
         "APP_FALLBACK_LOCALE": "es",
         "APP_FAKER_LOCALE": "es_ES",
         "APP_MAINTENANCE_DRIVER": "file",
+        "AUTH_REGISTRATION_ENABLED": "true",
         "BCRYPT_ROUNDS": "12",
         "LOG_CHANNEL": "stderr",
         "LOG_LEVEL": "error",

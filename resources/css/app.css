@@ -512,6 +512,25 @@ button {
     margin-bottom: 34px;
 }
 
+.auth-switch {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.auth-switch a {
+    color: var(--ink);
+    font-weight: 900;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+}
+
 .form-stack,
 .form-grid {
     display: grid;

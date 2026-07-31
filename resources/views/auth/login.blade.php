@@ -21,7 +21,7 @@
                 </label>
 
                 <label>
-                    <span>Contraseña</span>
+                    <span>Contrasena</span>
                     <input type="password" name="password" autocomplete="current-password" required>
                 </label>
 
@@ -34,6 +34,11 @@
                     <i data-lucide="log-in"></i>
                     <span>Entrar</span>
                 </button>
+
+                <div class="auth-switch">
+                    <span>No tienes cuenta?</span>
+                    <a href="{{ route('register') }}">Crear cuenta</a>
+                </div>
             </form>
         </div>
     </section>
