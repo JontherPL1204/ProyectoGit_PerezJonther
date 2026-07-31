@@ -17,6 +17,10 @@ El proyecto incluye `vercel.json` y `api/index.php` para ejecutar Laravel como
 funcion serverless con `vercel-php`. Vercel debe tener las variables secretas
 configuradas en su panel o con `vercel env add`.
 
+En Vercel usar el pooler IPv4 de Supabase, no el host directo `db.<ref>.supabase.co`,
+porque el host directo puede resolver solo IPv6. El usuario del pooler debe tener
+el formato `postgres.<project-ref>`.
+
 Importante: Vercel solo conserva archivos en disco durante la ejecucion de la
 funcion. Los justificantes o documentos medicos deben moverse a un storage
 persistente antes de usar la app con documentos reales. Mientras no se configure
@@ -38,10 +42,10 @@ No subir credenciales reales al repositorio. Completar `.env` en el servidor.
 
 ```env
 DB_CONNECTION=pgsql
-DB_HOST=db.tu-proyecto.supabase.co
+DB_HOST=aws-1-us-west-2.pooler.supabase.com
 DB_PORT=5432
 DB_DATABASE=postgres
-DB_USERNAME=postgres
+DB_USERNAME=postgres.tu-project-ref
 DB_PASSWORD=
 DB_SSLMODE=require
 ```
