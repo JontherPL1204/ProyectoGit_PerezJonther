@@ -11,6 +11,13 @@ El usuario confirmo que Berserk sera el hosting objetivo. Antes de subir la vers
 - SMTP;
 - tareas programadas o alternativa para ejecutar `nwoffu:send-notifications`.
 
+Decision de base de datos:
+
+- Produccion/Berserk usa Supabase como PostgreSQL online.
+- HeidiSQL y pgAdmin son herramientas de administracion, no alojan la base.
+- PostgreSQL local (`127.0.0.1`, base `nwoffuprime`) queda solo para pruebas en la PC.
+- No configurar `DB_HOST=127.0.0.1` en Berserk.
+
 ## Variables requeridas
 
 No subir credenciales reales al repositorio. Completar `.env` en el servidor.
