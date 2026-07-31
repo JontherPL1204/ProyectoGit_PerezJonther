@@ -35,9 +35,12 @@ Desde esta carpeta:
 
 ```powershell
 & "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\PHP.PHP.8.4_Microsoft.Winget.Source_8wekyb3d8bbwe\php.exe" -c '..\tools\php-8.4.ini' artisan migrate:fresh --seed
+& "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\PHP.PHP.8.4_Microsoft.Winget.Source_8wekyb3d8bbwe\php.exe" -c '..\tools\php-8.4.ini' artisan db:seed --class=DemoDataSeeder --force
 npm run build
-& "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\PHP.PHP.8.4_Microsoft.Winget.Source_8wekyb3d8bbwe\php.exe" -c '..\tools\php-8.4.ini' artisan serve --host=127.0.0.1 --port=8000
+& "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\PHP.PHP.8.4_Microsoft.Winget.Source_8wekyb3d8bbwe\php.exe" -c '..\tools\php-8.4.ini' -S 127.0.0.1:8000 -t public vendor\laravel\framework\src\Illuminate\Foundation\resources\server.php
 ```
+
+Para pruebas locales rapidas se puede usar PostgreSQL local (`127.0.0.1`, base `nwoffuprime`). Para produccion en Berserk se mantiene Supabase/PostgreSQL online.
 
 ## Usuarios de prueba
 
@@ -55,7 +58,7 @@ Cambia estas claves antes de produccion.
 
 ## Variables de entorno importantes
 
-Supabase/PostgreSQL se configura en `.env`:
+Produccion usa Supabase/PostgreSQL online. No usar `127.0.0.1` en Berserk.
 
 ```env
 DB_CONNECTION=pgsql
@@ -65,6 +68,18 @@ DB_DATABASE=postgres
 DB_USERNAME=
 DB_PASSWORD=
 DB_SSLMODE=require
+```
+
+En local, si se quiere probar contra PostgreSQL instalado en la PC:
+
+```env
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=nwoffuprime
+DB_USERNAME=postgres
+DB_PASSWORD=
+DB_SSLMODE=disable
 ```
 
 Correo SMTP:
