@@ -31,9 +31,9 @@
 
 - `composer install`: correcto.
 - `npm install`: correcto.
-- `phpunit`: 5 pruebas, 20 aserciones, todo pasa.
+- `phpunit`: 15 pruebas, 182 aserciones, todo pasa.
 - `npm run build`: correcto.
-- `artisan route:list`: 21 rutas registradas.
+- `artisan route:list`: 27 rutas registradas.
 - HTTP local:
   - `/login`: 200.
   - login admin: 302 esperado.
@@ -48,7 +48,7 @@
 
 Admin:
 
-- `javierperezlopez1204@gmail.com`
+- Correo definido por `.env` como `SEED_ADMIN_EMAIL`
 - Contrasena definida en `.env` como `SEED_ADMIN_PASSWORD`
 
 Empleado:

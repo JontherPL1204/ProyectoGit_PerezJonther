@@ -20,7 +20,7 @@ class LeaveCalculationServiceTest extends TestCase
         Carbon::setTestNow('2026-07-30 10:00:00');
         $this->seed();
 
-        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail()->employeeProfile;
+        $employee = $this->employeeUser()->employeeProfile;
         $vacations = LeaveType::where('code', 'VACATIONS')->firstOrFail();
         $calendar = HolidayCalendar::firstOrFail();
 
@@ -39,5 +39,10 @@ class LeaveCalculationServiceTest extends TestCase
         );
 
         $this->assertSame(4, $result['units']);
+    }
+
+    private function employeeUser(): User
+    {
+        return User::where('email', env('SEED_EMPLOYEE_EMAIL', 'empleado@n-woffu-prime.local'))->firstOrFail();
     }
 }

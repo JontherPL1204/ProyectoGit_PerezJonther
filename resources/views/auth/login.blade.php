@@ -17,7 +17,7 @@
                 @csrf
                 <label>
                     <span>Correo</span>
-                    <input type="email" name="email" value="{{ old('email', 'javierperezlopez1204@gmail.com') }}" autocomplete="email" required autofocus>
+                    <input type="email" name="email" value="{{ old('email') }}" autocomplete="email" required autofocus>
                 </label>
 
                 <label>

@@ -46,7 +46,7 @@ Para pruebas locales rapidas se puede usar PostgreSQL local (`127.0.0.1`, base `
 
 Administrador:
 
-- Correo: `javierperezlopez1204@gmail.com`
+- Correo: definido en `.env` como `SEED_ADMIN_EMAIL`
 - Contrasena local: definida en `.env` como `SEED_ADMIN_PASSWORD`
 
 Empleado:
@@ -88,10 +88,10 @@ Correo SMTP:
 MAIL_MAILER=smtp
 MAIL_HOST=smtp.gmail.com
 MAIL_PORT=587
-MAIL_USERNAME=javierperezlopez1204@gmail.com
+MAIL_USERNAME=tu-correo-autorizado@gmail.com
 MAIL_PASSWORD=
 MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS=javierperezlopez1204@gmail.com
+MAIL_FROM_ADDRESS=tu-correo-autorizado@gmail.com
 MAIL_FROM_NAME="N-Woffu Prime"
 ```
 

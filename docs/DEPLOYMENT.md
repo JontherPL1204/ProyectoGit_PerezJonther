@@ -40,10 +40,10 @@ DB_SSLMODE=require
 MAIL_MAILER=smtp
 MAIL_HOST=smtp.gmail.com
 MAIL_PORT=587
-MAIL_USERNAME=javierperezlopez1204@gmail.com
+MAIL_USERNAME=tu-correo-autorizado@gmail.com
 MAIL_PASSWORD=
 MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS=javierperezlopez1204@gmail.com
+MAIL_FROM_ADDRESS=tu-correo-autorizado@gmail.com
 MAIL_FROM_NAME="N-Woffu Prime"
 ```
 

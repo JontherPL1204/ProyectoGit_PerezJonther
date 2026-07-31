@@ -29,8 +29,8 @@ class LeaveRequestFlowTest extends TestCase
     {
         $this->seed();
 
-        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
-        $admin = User::where('email', 'javierperezlopez1204@gmail.com')->firstOrFail();
+        $employee = $this->employeeUser();
+        $admin = $this->adminUser();
 
         $this->actingAs($employee)
             ->get(route('dashboard'))
@@ -102,8 +102,8 @@ class LeaveRequestFlowTest extends TestCase
         Carbon::setTestNow('2026-07-30 10:00:00');
         $this->seed();
 
-        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
-        $admin = User::where('email', 'javierperezlopez1204@gmail.com')->firstOrFail();
+        $employee = $this->employeeUser();
+        $admin = $this->adminUser();
         $vacations = LeaveType::where('code', 'VACATIONS')->firstOrFail();
 
         $this->actingAs($employee)->post(route('leave-requests.store'), [
@@ -148,8 +148,8 @@ class LeaveRequestFlowTest extends TestCase
         Storage::fake('local');
         $this->seed();
 
-        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
-        $admin = User::where('email', 'javierperezlopez1204@gmail.com')->firstOrFail();
+        $employee = $this->employeeUser();
+        $admin = $this->adminUser();
 
         $types = LeaveType::whereIn('code', ['VACATIONS', 'MEDICAL', 'PERSONAL', 'TRAINING'])
             ->get()
@@ -294,8 +294,8 @@ class LeaveRequestFlowTest extends TestCase
         Carbon::setTestNow('2026-07-30 10:00:00');
         $this->seed();
 
-        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
-        $admin = User::where('email', 'javierperezlopez1204@gmail.com')->firstOrFail();
+        $employee = $this->employeeUser();
+        $admin = $this->adminUser();
         $vacations = LeaveType::where('code', 'VACATIONS')->firstOrFail();
         $calendar = HolidayCalendar::firstOrFail();
 
@@ -337,8 +337,8 @@ class LeaveRequestFlowTest extends TestCase
         Carbon::setTestNow('2026-07-30 10:00:00');
         $this->seed();
 
-        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
-        $admin = User::where('email', 'javierperezlopez1204@gmail.com')->firstOrFail();
+        $employee = $this->employeeUser();
+        $admin = $this->adminUser();
         $vacations = LeaveType::where('code', 'VACATIONS')->firstOrFail();
         $training = LeaveType::where('code', 'TRAINING')->firstOrFail();
 
@@ -396,8 +396,8 @@ class LeaveRequestFlowTest extends TestCase
         Carbon::setTestNow('2026-07-30 10:00:00');
         $this->seed();
 
-        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
-        $admin = User::where('email', 'javierperezlopez1204@gmail.com')->firstOrFail();
+        $employee = $this->employeeUser();
+        $admin = $this->adminUser();
         $personal = LeaveType::where('code', 'PERSONAL')->firstOrFail();
         $vacations = LeaveType::where('code', 'VACATIONS')->firstOrFail();
 
@@ -477,8 +477,8 @@ class LeaveRequestFlowTest extends TestCase
         Carbon::setTestNow('2026-07-30 10:00:00');
         $this->seed();
 
-        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
-        $admin = User::where('email', 'javierperezlopez1204@gmail.com')->firstOrFail();
+        $employee = $this->employeeUser();
+        $admin = $this->adminUser();
 
         $this->actingAs($admin)
             ->get(route('admin.users.index'))
@@ -542,7 +542,7 @@ class LeaveRequestFlowTest extends TestCase
         Carbon::setTestNow('2026-07-30 10:00:00');
         $this->seed();
 
-        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
+        $employee = $this->employeeUser();
         $types = LeaveType::whereIn('code', ['VACATIONS', 'MEDICAL', 'PERSONAL'])
             ->get()
             ->keyBy('code');
@@ -588,8 +588,8 @@ class LeaveRequestFlowTest extends TestCase
         Carbon::setTestNow('2026-07-30 10:00:00');
         $this->seed();
 
-        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
-        $admin = User::where('email', 'javierperezlopez1204@gmail.com')->firstOrFail();
+        $employee = $this->employeeUser();
+        $admin = $this->adminUser();
         $vacations = LeaveType::where('code', 'VACATIONS')->firstOrFail();
 
         $this->actingAs($employee)->post(route('leave-requests.store'), [
@@ -626,7 +626,7 @@ class LeaveRequestFlowTest extends TestCase
         Storage::fake('local');
         $this->seed();
 
-        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
+        $employee = $this->employeeUser();
         $medical = LeaveType::where('code', 'MEDICAL')->firstOrFail();
 
         $this->actingAs($employee)->post(route('leave-requests.store'), [
@@ -656,7 +656,7 @@ class LeaveRequestFlowTest extends TestCase
         Carbon::setTestNow('2026-07-30 10:00:00');
         $this->seed();
 
-        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
+        $employee = $this->employeeUser();
         $medical = LeaveType::where('code', 'MEDICAL')->firstOrFail();
 
         $this->actingAs($employee)->post(route('leave-requests.store'), [
@@ -684,8 +684,8 @@ class LeaveRequestFlowTest extends TestCase
         Mail::fake();
         $this->seed();
 
-        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
-        $admin = User::where('email', 'javierperezlopez1204@gmail.com')->firstOrFail();
+        $employee = $this->employeeUser();
+        $admin = $this->adminUser();
         $medical = LeaveType::where('code', 'MEDICAL')->firstOrFail();
 
         $this->actingAs($admin)->post(route('admin.rules.update'), [
@@ -800,8 +800,8 @@ class LeaveRequestFlowTest extends TestCase
         Carbon::setTestNow('2026-07-30 10:00:00');
         $this->seed();
 
-        $employee = User::where('email', 'empleado@n-woffu-prime.local')->firstOrFail();
-        $admin = User::where('email', 'javierperezlopez1204@gmail.com')->firstOrFail();
+        $employee = $this->employeeUser();
+        $admin = $this->adminUser();
         $medical = LeaveType::where('code', 'MEDICAL')->firstOrFail();
 
         $this->actingAs($admin)->post(route('admin.rules.update'), [
@@ -861,5 +861,15 @@ class LeaveRequestFlowTest extends TestCase
             ->get(route('leave-requests.create'))
             ->assertOk()
             ->assertDontSee('Permiso medico temporal');
+    }
+
+    private function employeeUser(): User
+    {
+        return User::where('email', env('SEED_EMPLOYEE_EMAIL', 'empleado@n-woffu-prime.local'))->firstOrFail();
+    }
+
+    private function adminUser(): User
+    {
+        return User::where('email', env('SEED_ADMIN_EMAIL', 'admin@n-woffu-prime.local'))->firstOrFail();
     }
 }
