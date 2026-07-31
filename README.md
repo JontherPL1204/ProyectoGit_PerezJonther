@@ -40,7 +40,7 @@ npm run build
 & "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\PHP.PHP.8.4_Microsoft.Winget.Source_8wekyb3d8bbwe\php.exe" -c '..\tools\php-8.4.ini' -S 127.0.0.1:8000 -t public vendor\laravel\framework\src\Illuminate\Foundation\resources\server.php
 ```
 
-Para pruebas locales rapidas se puede usar PostgreSQL local (`127.0.0.1`, base `nwoffuprime`). Para produccion en Berserk se mantiene Supabase/PostgreSQL online.
+Para pruebas locales rapidas se puede usar PostgreSQL local (`127.0.0.1`, base `nwoffuprime`). Para produccion se mantiene Supabase/PostgreSQL online.
 
 ## Usuarios de prueba
 
@@ -58,7 +58,7 @@ Cambia estas claves antes de produccion.
 
 ## Variables de entorno importantes
 
-Produccion usa Supabase/PostgreSQL online. No usar `127.0.0.1` en Berserk.
+Produccion usa Supabase/PostgreSQL online. No usar `127.0.0.1` en el hosting.
 
 ```env
 DB_CONNECTION=pgsql
@@ -116,6 +116,6 @@ Las notificaciones se guardan primero en `notification_outbox`. Para enviarlas:
 - Completar credenciales de Supabase.
 - Completar SMTP real.
 - Cambiar claves seed/locales.
-- Validar despliegue en Berserk.
+- Validar despliegue en Vercel o el hosting final.
 - Crear usuarios reales desde administracion o seed controlado.
 - Revisar politica legal/laboral de documentos medicos.

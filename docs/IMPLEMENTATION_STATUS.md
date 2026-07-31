@@ -56,12 +56,12 @@ Empleado:
 - `empleado@n-woffu-prime.local`
 - Contrasena definida en `.env` como `SEED_EMPLOYEE_PASSWORD`
 
-## Antes de subir a Berserk
+## Antes de subir a produccion
 
 - Completar `.env` real con Supabase.
 - Completar `.env` real con SMTP y clave de aplicacion.
 - Cambiar contrasenas seed.
-- Confirmar que Berserk usa PHP 8.4 o version compatible con Laravel 13.
+- Confirmar que el hosting usa PHP 8.4 o version compatible con Laravel 13.
 - Ejecutar migraciones en entorno real.
 - Probar flujo con usuarios reales.
 

@@ -52,7 +52,7 @@ Lo que Codex no puede hacer completamente solo son las decisiones de negocio, ap
 | Credenciales de Supabase | Codex no debe inventar ni conocer claves reales sin que se configuren de forma segura |
 | Cuenta de correo/SMTP | Hace falta servidor, usuario, clave y remitente autorizado |
 | Hosting final | Se necesita acceso o datos tecnicos de la plataforma donde se publicara |
-| Berserk | Hay que confirmar si soporta PHP, variables de entorno, HTTPS, SMTP y tareas programadas |
+| Hosting de produccion | Hay que confirmar si soporta PHP, variables de entorno, HTTPS, SMTP y tareas programadas |
 | Dominio | Requiere compra, configuracion DNS o acceso al proveedor |
 | Politica laboral | Los 15 dias y reglas internas deben estar aprobados por la empresa |
 | Documentos medicos | La politica de acceso y conservacion debe validarse por responsabilidad legal/privacidad |

@@ -77,7 +77,7 @@ En otras palabras:
    - El proyecto depende mucho de reglas editables desde admin.
    - Recomendacion: construir primero una configuracion simple y auditable, no un motor de reglas demasiado complejo.
 
-5. **Despliegue en Berserk**
+5. **Despliegue en hosting de produccion**
    - Falta confirmar si soporta PHP, variables de entorno, HTTPS, SMTP y tareas programadas.
    - Si no soporta PHP, habra que separar frontend y backend.
 
