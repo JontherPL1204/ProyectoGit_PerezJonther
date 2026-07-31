@@ -96,7 +96,7 @@ class DashboardController extends Controller
         }
 
         $pendingCount = 0;
-        $pendingReviewRequests = collect();
+        $pendingReviewRequests = [];
 
         if ($isAdmin) {
             $stats = $this->dataCache->requestStatusCounts($organizationId);
@@ -156,7 +156,7 @@ class DashboardController extends Controller
 
     private function dashboardCacheKey(int $organizationId, int $profileId, bool $isAdmin): string
     {
-        return 'dashboard-data:'.$organizationId.':'.$profileId.':'.($isAdmin ? 'admin' : 'user').':v1';
+        return 'dashboard-data:'.$organizationId.':'.$profileId.':'.($isAdmin ? 'admin' : 'user').':v2';
     }
 
     private function statusLabel(string $status): string
