@@ -1,8 +1,8 @@
 # Guia de despliegue
 
-## Berserk
+## Hosting de produccion
 
-El usuario confirmo que Berserk sera el hosting objetivo. Antes de subir la version final, verificar en el panel de Berserk:
+Antes de subir la version final, verificar en el panel del hosting:
 
 - version PHP compatible con Laravel 13, idealmente PHP 8.4 o superior;
 - variables de entorno;
@@ -13,10 +13,10 @@ El usuario confirmo que Berserk sera el hosting objetivo. Antes de subir la vers
 
 Decision de base de datos:
 
-- Produccion/Berserk usa Supabase como PostgreSQL online.
+- Produccion usa Supabase como PostgreSQL online.
 - HeidiSQL y pgAdmin son herramientas de administracion, no alojan la base.
 - PostgreSQL local (`127.0.0.1`, base `nwoffuprime`) queda solo para pruebas en la PC.
-- No configurar `DB_HOST=127.0.0.1` en Berserk.
+- No configurar `DB_HOST=127.0.0.1` en produccion.
 
 ## Variables requeridas
 
