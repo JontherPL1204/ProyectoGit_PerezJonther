@@ -1,0 +1,67 @@
+{
+    "version": 2,
+    "functions": {
+        "api/index.php": {
+            "runtime": "vercel-php@0.8.0",
+            "memory": 1024,
+            "maxDuration": 30
+        }
+    },
+    "routes": [
+        {
+            "src": "/build/(.*)",
+            "dest": "/public/build/$1"
+        },
+        {
+            "src": "/favicon.ico",
+            "dest": "/public/favicon.ico"
+        },
+        {
+            "src": "/robots.txt",
+            "dest": "/public/robots.txt"
+        },
+        {
+            "src": "/(.*\\.(?:css|js|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|map))",
+            "dest": "/public/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/api/index.php"
+        }
+    ],
+    "env": {
+        "APP_NAME": "N-Woffu Prime",
+        "APP_ENV": "production",
+        "APP_DEBUG": "false",
+        "APP_LOCALE": "es",
+        "APP_FALLBACK_LOCALE": "es",
+        "APP_FAKER_LOCALE": "es_ES",
+        "APP_MAINTENANCE_DRIVER": "file",
+        "BCRYPT_ROUNDS": "12",
+        "LOG_CHANNEL": "stderr",
+        "LOG_LEVEL": "error",
+        "DB_CONNECTION": "pgsql",
+        "DB_PORT": "5432",
+        "DB_DATABASE": "postgres",
+        "DB_USERNAME": "postgres",
+        "DB_SSLMODE": "require",
+        "DB_PERSISTENT": "false",
+        "MAIL_MAILER": "smtp",
+        "MAIL_HOST": "smtp.gmail.com",
+        "MAIL_PORT": "587",
+        "MAIL_ENCRYPTION": "tls",
+        "MAIL_FROM_NAME": "N-Woffu Prime",
+        "CACHE_STORE": "database",
+        "SESSION_DRIVER": "cookie",
+        "QUEUE_CONNECTION": "database",
+        "FILESYSTEM_DISK": "local",
+        "LARAVEL_STORAGE_PATH": "/tmp/n-woffu-prime-storage",
+        "VIEW_COMPILED_PATH": "/tmp/n-woffu-prime-storage/framework/views",
+        "APP_CONFIG_CACHE": "/tmp/n-woffu-prime-config.php",
+        "APP_EVENTS_CACHE": "/tmp/n-woffu-prime-events.php",
+        "APP_PACKAGES_CACHE": "/tmp/n-woffu-prime-packages.php",
+        "APP_ROUTES_CACHE": "/tmp/n-woffu-prime-routes.php",
+        "APP_SERVICES_CACHE": "/tmp/n-woffu-prime-services.php",
+        "VITE_APP_NAME": "N-Woffu Prime"
+    }
+}

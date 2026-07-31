@@ -11,6 +11,18 @@ Antes de subir la version final, verificar en el panel del hosting:
 - SMTP;
 - tareas programadas o alternativa para ejecutar `nwoffu:send-notifications`.
 
+### Vercel
+
+El proyecto incluye `vercel.json` y `api/index.php` para ejecutar Laravel como
+funcion serverless con `vercel-php`. Vercel debe tener las variables secretas
+configuradas en su panel o con `vercel env add`.
+
+Importante: Vercel solo conserva archivos en disco durante la ejecucion de la
+funcion. Los justificantes o documentos medicos deben moverse a un storage
+persistente antes de usar la app con documentos reales. Mientras no se configure
+un storage tipo S3/Supabase Storage compatible, los uploads pueden servir para
+pruebas, pero no como archivo permanente.
+
 Decision de base de datos:
 
 - Produccion usa Supabase como PostgreSQL online.
@@ -26,10 +38,10 @@ No subir credenciales reales al repositorio. Completar `.env` en el servidor.
 
 ```env
 DB_CONNECTION=pgsql
-DB_HOST=
+DB_HOST=db.tu-proyecto.supabase.co
 DB_PORT=5432
 DB_DATABASE=postgres
-DB_USERNAME=
+DB_USERNAME=postgres
 DB_PASSWORD=
 DB_SSLMODE=require
 ```
