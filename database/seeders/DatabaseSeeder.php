@@ -73,7 +73,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $admin = User::updateOrCreate(
-            ['email' => env('SEED_ADMIN_EMAIL', 'javierperezlopez1204@gmail.com')],
+            ['email' => env('SEED_ADMIN_EMAIL', 'admin@n-woffu-prime.local')],
             [
                 'organization_id' => $organization->id,
                 'name' => env('SEED_ADMIN_NAME', 'Javier Perez'),
