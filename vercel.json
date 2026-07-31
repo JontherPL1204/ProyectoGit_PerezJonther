@@ -53,6 +53,7 @@
         "MAIL_FROM_NAME": "N-Woffu Prime",
         "CACHE_STORE": "database",
         "SESSION_DRIVER": "cookie",
+        "SESSION_SECURE_COOKIE": "true",
         "QUEUE_CONNECTION": "database",
         "FILESYSTEM_DISK": "local",
         "LARAVEL_STORAGE_PATH": "/tmp/n-woffu-prime-storage",
