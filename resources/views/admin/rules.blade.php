@@ -59,11 +59,20 @@
                         @php
                             $typeKey = "leave_types.$type->id";
                             $isVacation = $type->code === 'VACATIONS';
+                            $typeStatusValue = (string) old($typeKey.'.is_active', $type->is_active ? '1' : '0');
                         @endphp
                         <fieldset class="rule-card">
                             <legend>
                                 <span>{{ $type->name }}</span>
-                                <strong class="status {{ $type->is_active ? 'status-approved' : 'status-cancelled' }}">{{ $type->is_active ? 'Activa' : 'Inactiva' }}</strong>
+                                <select
+                                    class="status-select {{ $typeStatusValue === '1' ? 'status-approved' : 'status-cancelled' }}"
+                                    name="leave_types[{{ $type->id }}][is_active]"
+                                    aria-label="Estado de {{ $type->name }}"
+                                    data-status-select
+                                >
+                                    <option value="1" @selected($typeStatusValue === '1')>Activa</option>
+                                    <option value="0" @selected($typeStatusValue === '0')>Inactiva</option>
+                                </select>
                             </legend>
 
                             <div class="rule-form-grid">
@@ -122,13 +131,57 @@
                                 </label>
 
                                 <div class="rule-switches">
-                                    <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][is_active]" value="1" @checked(old($typeKey.'.is_active', $type->is_active))><span>Regla activa</span></label>
                                     <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][visible_to_employees]" value="1" @checked(old($typeKey.'.visible_to_employees', $type->visible_to_employees))><span>Visible al empleado</span></label>
                                     <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][requires_approval]" value="1" @checked(old($typeKey.'.requires_approval', $type->requires_approval))><span>Requiere aprobacion</span></label>
                                     <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][auto_approve]" value="1" @checked(old($typeKey.'.auto_approve', $type->auto_approve))><span>Autoaprobar</span></label>
                                     <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][allow_half_day]" value="1" @checked(old($typeKey.'.allow_half_day', $type->allow_half_day))><span>Permite medio dia</span></label>
                                     <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][allow_retroactive]" value="1" @checked(old($typeKey.'.allow_retroactive', $type->allow_retroactive))><span>Permite retroactivo</span></label>
                                 </div>
+                            </div>
+                        </fieldset>
+                    @endforeach
+                </div>
+
+                <div class="rule-editor full">
+                    <div class="section-head">
+                        <div>
+                            <p class="eyebrow">Correos</p>
+                            <h2>Reglas de notificacion</h2>
+                        </div>
+                    </div>
+
+                    @foreach ($notificationRules as $rule)
+                        @php
+                            $ruleKey = "notification_rules.$rule->id";
+                            $ruleStatusValue = (string) old($ruleKey.'.is_active', $rule->is_active ? '1' : '0');
+                            $eventLabel = match ($rule->event) {
+                                'REQUEST_CREATED' => 'Nueva solicitud',
+                                'REQUEST_APPROVED' => 'Solicitud aprobada',
+                                'REQUEST_REJECTED' => 'Solicitud rechazada',
+                                'CANCELLATION_REQUESTED' => 'Cancelacion solicitada',
+                                'CANCELLATION_ACCEPTED' => 'Cancelacion aceptada',
+                                'CANCELLATION_REJECTED' => 'Cancelacion rechazada',
+                                default => $rule->event,
+                            };
+                            $recipientLabel = $rule->recipient_type === 'admin' ? 'Administradores' : 'Empleado solicitante';
+                        @endphp
+                        <fieldset class="rule-card notification-rule-card">
+                            <legend>
+                                <span>{{ $eventLabel }}</span>
+                                <select
+                                    class="status-select {{ $ruleStatusValue === '1' ? 'status-approved' : 'status-cancelled' }}"
+                                    name="notification_rules[{{ $rule->id }}][is_active]"
+                                    aria-label="Estado del correo {{ $eventLabel }}"
+                                    data-status-select
+                                >
+                                    <option value="1" @selected($ruleStatusValue === '1')>Activa</option>
+                                    <option value="0" @selected($ruleStatusValue === '0')>Inactiva</option>
+                                </select>
+                            </legend>
+
+                            <div class="rule-summary">
+                                <strong>{{ $recipientLabel }}</strong>
+                                <span>{{ $rule->subject_template }}</span>
                             </div>
                         </fieldset>
                     @endforeach
@@ -156,6 +209,12 @@
                     <div>
                         <strong>{{ $type->name }}</strong>
                         <span>{{ $type->is_active ? 'Activa' : 'Inactiva' }} &middot; {{ $type->visible_to_employees ? 'visible' : 'oculta' }} &middot; {{ $type->department?->name ?? 'todos' }} &middot; {{ $type->auto_approve ? 'auto' : $type->approval_level_count.' nivel(es)' }}</span>
+                    </div>
+                @endforeach
+                @foreach ($notificationRules as $rule)
+                    <div>
+                        <strong>{{ $rule->event }}</strong>
+                        <span>{{ $rule->is_active ? 'Activa' : 'Inactiva' }} &middot; correo a {{ $rule->recipient_type === 'admin' ? 'administradores' : 'empleado' }}</span>
                     </div>
                 @endforeach
             </div>

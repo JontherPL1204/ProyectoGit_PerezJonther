@@ -8,6 +8,7 @@ use App\Models\LeaveBalanceMovement;
 use App\Models\LeaveRequest;
 use App\Models\LeaveType;
 use App\Models\NotificationOutbox;
+use App\Models\NotificationRule;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -861,6 +862,62 @@ class LeaveRequestFlowTest extends TestCase
             ->get(route('leave-requests.create'))
             ->assertOk()
             ->assertDontSee('Permiso medico temporal');
+    }
+
+    public function test_admin_can_disable_notification_rules(): void
+    {
+        Carbon::setTestNow('2026-07-30 10:00:00');
+        $this->seed();
+
+        $employee = $this->employeeUser();
+        $admin = $this->adminUser();
+        $vacations = LeaveType::where('code', 'VACATIONS')->firstOrFail();
+        $rule = NotificationRule::where('event', 'REQUEST_CREATED')->firstOrFail();
+
+        $this->actingAs($admin)
+            ->get(route('admin.rules.edit'))
+            ->assertOk()
+            ->assertSee('Reglas de notificacion')
+            ->assertSee('Nueva solicitud')
+            ->assertSee('class="status-select', false)
+            ->assertSee('name="notification_rules['.$rule->id.'][is_active]"', false);
+
+        $this->actingAs($admin)->post(route('admin.rules.update'), [
+            'annual_vacation_days' => 15,
+            'vacation_notice_days' => 30,
+            'medical_documents_retention_policy' => 'retain',
+            'pending_requests_reserve_balance' => '1',
+            'admin_can_view_medical_attachments' => '1',
+            'medical_attachment_audit_required' => '1',
+            'approved_request_requires_cancel_flow' => '1',
+            'prorate_vacations' => '1',
+            'carry_over_unused_balance' => '1',
+            'change_comment' => 'Se apaga correo de nueva solicitud temporalmente.',
+            'notification_rules' => [
+                $rule->id => ['is_active' => '0'],
+            ],
+        ])->assertSessionHas('status');
+
+        $this->assertFalse($rule->refresh()->is_active);
+        $this->assertDatabaseHas('rule_change_events', [
+            'entity_type' => 'notification_rules',
+            'entity_id' => $rule->id,
+            'field_name' => 'is_active',
+            'new_value' => 'false',
+        ]);
+
+        $this->actingAs($employee)->post(route('leave-requests.store'), [
+            'leave_type_id' => $vacations->id,
+            'start_date' => '2026-09-07',
+            'end_date' => '2026-09-08',
+        ])->assertRedirect();
+
+        $leaveRequest = LeaveRequest::where('employee_profile_id', $employee->employeeProfile->id)->firstOrFail();
+
+        $this->assertDatabaseMissing('notification_outbox', [
+            'leave_request_id' => $leaveRequest->id,
+            'event' => 'REQUEST_CREATED',
+        ]);
     }
 
     private function employeeUser(): User
