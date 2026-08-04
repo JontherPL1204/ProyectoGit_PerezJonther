@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CompanySetting;
 use App\Models\LeaveType;
+use App\Models\NotificationRule;
 use App\Services\AuditService;
 use App\Services\OrganizationDataCache;
 use Illuminate\Http\RedirectResponse;
@@ -27,6 +28,7 @@ class AdminRuleController extends Controller
             'settings' => $this->dataCache->settings($request->user()->organization_id),
             'leaveTypes' => $this->dataCache->leaveTypes($request->user()->organization_id, true),
             'departments' => $this->dataCache->departments($request->user()->organization_id),
+            'notificationRules' => $this->dataCache->notificationRules($request->user()->organization_id),
         ]);
     }
 
@@ -66,6 +68,8 @@ class AdminRuleController extends Controller
                 'integer',
                 Rule::exists('departments', 'id')->where('organization_id', $request->user()->organization_id),
             ],
+            'notification_rules' => ['nullable', 'array'],
+            'notification_rules.*.is_active' => ['nullable', 'boolean'],
             'change_comment' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -131,6 +135,7 @@ class AdminRuleController extends Controller
             ]);
 
         $this->updateLeaveTypes($request, $settings, $data);
+        $this->updateNotificationRules($request, $settings, $data);
         $this->dataCache->forgetOrganization($settings->organization_id);
 
         return back()->with('status', 'Reglas actualizadas correctamente.');
@@ -219,6 +224,48 @@ class AdminRuleController extends Controller
             }
 
             $type->update($updates);
+        }
+    }
+
+    /**
+     * @param  array<string,mixed>  $data
+     */
+    private function updateNotificationRules(Request $request, CompanySetting $settings, array $data): void
+    {
+        $payload = $data['notification_rules'] ?? [];
+
+        if (! is_array($payload) || $payload === []) {
+            return;
+        }
+
+        $rules = NotificationRule::where('organization_id', $settings->organization_id)
+            ->get()
+            ->keyBy('id');
+
+        foreach ($payload as $id => $values) {
+            $rule = $rules->get((int) $id);
+
+            if (! $rule || ! is_array($values)) {
+                continue;
+            }
+
+            $isActive = $request->boolean("notification_rules.$id.is_active");
+
+            if ($rule->is_active != $isActive) {
+                $this->audit->ruleChange(
+                    $settings->organization_id,
+                    'notification_rules',
+                    $rule->id,
+                    'is_active',
+                    $rule->is_active,
+                    $isActive,
+                    $request->user(),
+                    $data['change_comment'] ?? null,
+                    $request,
+                );
+            }
+
+            $rule->update(['is_active' => $isActive]);
         }
     }
 

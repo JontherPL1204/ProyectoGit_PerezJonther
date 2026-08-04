@@ -438,6 +438,20 @@ button {
     font-weight: 900;
 }
 
+.status-select {
+    width: auto;
+    min-width: 118px;
+    min-height: 32px;
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    padding: 5px 34px 5px 12px;
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
 .status-pending {
     background: var(--warning-soft);
 }
@@ -824,6 +838,22 @@ dd {
     grid-column: 1 / -1;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
+}
+
+.rule-summary {
+    display: grid;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.rule-summary strong {
+    font-size: 14px;
+}
+
+.rule-summary span {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.4;
 }
 
 .report-table {

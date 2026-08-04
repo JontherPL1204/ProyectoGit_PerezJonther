@@ -64,6 +64,16 @@ const icons = {
 document.addEventListener('DOMContentLoaded', () => {
     createIcons({ icons });
 
+    document.querySelectorAll('[data-status-select]').forEach((select) => {
+        const syncStatusStyle = () => {
+            select.classList.toggle('status-approved', select.value === '1');
+            select.classList.toggle('status-cancelled', select.value !== '1');
+        };
+
+        select.addEventListener('change', syncStatusStyle);
+        syncStatusStyle();
+    });
+
     const leaveTypeSelect = document.querySelector('[data-leave-type-select]');
 
     if (!leaveTypeSelect) {

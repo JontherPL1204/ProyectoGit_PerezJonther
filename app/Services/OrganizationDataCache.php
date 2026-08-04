@@ -8,6 +8,7 @@ use App\Models\EmployeeProfile;
 use App\Models\LeaveRequest;
 use App\Models\LeaveType;
 use App\Models\NotificationOutbox;
+use App\Models\NotificationRule;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -143,6 +144,25 @@ class OrganizationDataCache
     }
 
     /**
+     * @return Collection<int,Fluent>
+     */
+    public function notificationRules(int $organizationId): Collection
+    {
+        $rows = Cache::remember(
+            $this->key($organizationId, 'notification-rules'),
+            self::STATIC_TTL_SECONDS,
+            fn () => NotificationRule::where('organization_id', $organizationId)
+                ->orderBy('event')
+                ->orderBy('recipient_type')
+                ->get()
+                ->map(fn (NotificationRule $rule): array => $rule->attributesToArray())
+                ->all(),
+        );
+
+        return $this->toFluentCollection($rows);
+    }
+
+    /**
      * @return array<string,int>
      */
     public function requestStatusCounts(int $organizationId): array
@@ -177,6 +197,7 @@ class OrganizationDataCache
             'employees',
             'users',
             'notification-events',
+            'notification-rules',
             'request-status-counts',
         ] as $name) {
             Cache::forget($this->key($organizationId, $name));
