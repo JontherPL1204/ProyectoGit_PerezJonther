@@ -839,6 +839,215 @@ dd {
     gap: 8px;
 }
 
+.admin-console-layout {
+    align-items: start;
+    display: grid;
+    gap: 18px;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+}
+
+.admin-console-main {
+    display: grid;
+    gap: 18px;
+}
+
+.admin-console-head,
+.admin-section-head {
+    align-items: center;
+    display: flex;
+    gap: 14px;
+    justify-content: space-between;
+}
+
+.admin-console-head h2,
+.admin-section-head h2,
+.admin-section-head h3 {
+    margin: 0;
+    line-height: 1.2;
+}
+
+.admin-console-head h2 {
+    font-size: 24px;
+}
+
+.admin-section-head h3 {
+    font-size: 18px;
+}
+
+.admin-stat-strip {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.admin-stat {
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    min-height: 112px;
+    padding: 14px;
+}
+
+.admin-stat.accent {
+    background: var(--accent);
+}
+
+.admin-stat span,
+.admin-stat em {
+    color: var(--muted);
+    display: block;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.admin-stat strong {
+    display: block;
+    font-size: 36px;
+    line-height: 1;
+    margin: 10px 0 8px;
+}
+
+.admin-console-section {
+    border-top: 1.5px solid var(--line);
+    display: grid;
+    gap: 14px;
+    padding-top: 18px;
+}
+
+.admin-console-aside {
+    display: grid;
+    gap: 18px;
+    position: sticky;
+    top: 28px;
+}
+
+.admin-side-panel {
+    box-shadow: none;
+}
+
+.admin-side-panel h2 {
+    margin-bottom: 12px;
+}
+
+.invite-link-box {
+    margin-bottom: 0;
+}
+
+.invite-form,
+.team-promote-panel {
+    align-items: end;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(220px, 1.25fr) minmax(160px, 0.75fr) minmax(240px, 1fr) auto;
+}
+
+.permission-card {
+    align-content: center;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    display: grid;
+    gap: 8px;
+    min-height: 74px;
+    padding: 10px;
+}
+
+.team-search-panel {
+    align-items: end;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(220px, 420px) auto;
+}
+
+.invitation-list,
+.team-list,
+.position-admin-list {
+    display: grid;
+    gap: 10px;
+}
+
+.invitation-card {
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 14px;
+}
+
+.invitation-main {
+    align-items: flex-start;
+    display: flex;
+    gap: 12px;
+    min-width: 0;
+}
+
+.invitation-main h3,
+.invitation-main p {
+    margin: 0;
+}
+
+.invitation-main p {
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.invitation-alert {
+    grid-column: 1 / -1;
+    margin-top: 0;
+}
+
+.invitation-actions {
+    align-content: center;
+    display: grid;
+    gap: 8px;
+}
+
+.invitation-actions form {
+    margin: 0;
+}
+
+.position-create-panel {
+    border-bottom: 1.5px solid var(--line);
+    display: grid;
+    gap: 10px;
+    padding-bottom: 14px;
+}
+
+.position-admin-card {
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+}
+
+.position-admin-card form {
+    margin: 0;
+}
+
+.position-admin-card .position-lock {
+    justify-self: start;
+}
+
+.position-chip-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.position-chip-panel span {
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 900;
+    padding: 7px 10px;
+}
+
 .team-row {
     align-items: start;
     grid-template-columns: minmax(220px, 0.8fr) minmax(340px, 1.25fr) minmax(280px, 0.95fr);
@@ -922,9 +1131,13 @@ dd {
 
 .team-editor-block {
     align-content: start;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
     display: grid;
     gap: 10px;
     min-width: 0;
+    padding: 12px;
 }
 
 .team-editor-head .eyebrow {
@@ -1582,6 +1795,7 @@ dd {
     }
 
     .content-grid,
+    .admin-console-layout,
     .rules-layout,
     .login-screen,
     .admin-request,
@@ -1589,6 +1803,9 @@ dd {
     .history-filter-form,
     .report-filter-form,
     .notifications-filter-form,
+    .invite-form,
+    .team-promote-panel,
+    .team-search-panel,
     .rules-add-form,
     .settings-grid,
     .team-promote-form,
@@ -1601,6 +1818,14 @@ dd {
 
     .rules-stat-strip {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-stat-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-console-aside {
+        position: static;
     }
 
     .rules-aside {
@@ -1631,6 +1856,7 @@ dd {
 
     .nav-list,
     .metric-grid,
+    .admin-stat-strip,
     .rules-stat-strip,
     .form-grid,
     .detail-grid,
@@ -1644,7 +1870,12 @@ dd {
     .form-actions,
     .admin-actions form,
     .calendar-nav,
+    .admin-console-head,
+    .admin-section-head,
+    .invitation-card,
+    .invitation-actions,
     .position-create-row,
+    .position-admin-card,
     .position-list-row,
     .position-list-row .position-row-form,
     .filter-actions,
