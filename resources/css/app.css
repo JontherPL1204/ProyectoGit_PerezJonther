@@ -1116,10 +1116,122 @@ dd {
     display: block;
 }
 
-.rule-editor {
+.rules-layout {
+    align-items: start;
+    display: grid;
+    gap: 18px;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+}
+
+.rules-workspace {
+    display: grid;
+    gap: 18px;
+}
+
+.rules-page-head,
+.rules-section-head {
+    align-items: center;
+    display: flex;
+    gap: 14px;
+    justify-content: space-between;
+}
+
+.rules-page-head h2,
+.rules-section-head h3,
+.rule-subsection-head h4 {
+    margin: 0;
+    line-height: 1.2;
+}
+
+.rules-page-head h2 {
+    font-size: 24px;
+}
+
+.rules-section-head h3 {
+    font-size: 18px;
+}
+
+.rules-stat-strip {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.rules-stat {
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    min-height: 112px;
+    padding: 14px;
+}
+
+.rules-stat.accent {
+    background: var(--accent);
+}
+
+.rules-stat span,
+.rules-stat em {
+    color: var(--muted);
+    display: block;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.rules-stat strong {
+    display: block;
+    font-size: 36px;
+    line-height: 1;
+    margin: 10px 0 8px;
+}
+
+.rules-section {
+    border-top: 1.5px solid var(--line);
+    display: grid;
+    gap: 14px;
+    padding-top: 18px;
+}
+
+.rules-add-form {
+    align-items: end;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(220px, 1.4fr) minmax(120px, 0.65fr) minmax(150px, 0.8fr) minmax(170px, 0.9fr) auto;
+}
+
+.rules-update-form {
+    display: grid;
+    gap: 18px;
+}
+
+.settings-grid {
     display: grid;
     gap: 12px;
-    margin-top: 8px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.rules-switch-board {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.rules-switch-board .check-row,
+.rule-check,
+.compact-switches .check-row {
+    min-height: 44px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    padding: 10px;
+}
+
+.rule-accordion-list,
+.notification-rule-list,
+.rules-summary-list {
+    display: grid;
+    gap: 10px;
 }
 
 .rule-card {
@@ -1128,61 +1240,170 @@ dd {
     border: 1.5px solid var(--line);
     border-radius: var(--radius);
     background: var(--paper);
+}
+
+.rule-accordion-summary {
+    align-items: center;
+    cursor: pointer;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    list-style: none;
+    min-height: 72px;
     padding: 14px;
 }
 
-.rule-card legend {
-    display: flex;
-    width: 100%;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 0 0 10px;
-    font-weight: 900;
+.rule-accordion-summary::-webkit-details-marker {
+    display: none;
 }
 
-.legend-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 8px;
+.rule-summary-main {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
 }
 
-.rule-help {
-    margin: -2px 0 12px;
+.rule-summary-main strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rule-summary-main span,
+.notification-rule-main span,
+.rules-summary-list span {
     color: var(--muted);
     font-size: 13px;
-    font-weight: 750;
+    font-weight: 800;
     line-height: 1.4;
+}
+
+.rule-summary-pill {
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    font-size: 12px;
+    font-weight: 900;
+    padding: 7px 10px;
+    white-space: nowrap;
+}
+
+.rule-chevron {
+    align-items: center;
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 34px;
+    justify-content: center;
+    width: 34px;
+}
+
+.rule-chevron svg {
+    height: 18px;
+    transition: transform 0.15s ease;
+    width: 18px;
+}
+
+.rule-accordion[open] .rule-chevron svg {
+    transform: rotate(180deg);
+}
+
+.rule-card-body {
+    border-top: 1.5px solid var(--line);
+    display: grid;
+    gap: 16px;
+    padding: 14px;
+}
+
+.rule-card-toolbar {
+    align-items: end;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+}
+
+.rule-status-field,
+.notification-status-field {
+    min-width: 132px;
+}
+
+.rule-status-field .status-select,
+.notification-status-field .status-select {
+    width: 100%;
+}
+
+.rule-subsection {
+    border-top: 1.5px solid var(--line);
+    display: grid;
+    gap: 12px;
+    padding-top: 14px;
+}
+
+.rule-subsection-head {
+    display: grid;
+    gap: 2px;
+}
+
+.rule-subsection-head .eyebrow {
+    margin-bottom: 0;
 }
 
 .rule-form-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .rule-switches {
     display: grid;
-    grid-column: 1 / -1;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-.rule-summary {
+.notification-rule-row {
+    align-items: center;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 12px;
+}
+
+.notification-rule-main {
     display: grid;
     gap: 4px;
+    min-width: 0;
+}
+
+.notification-rule-main strong {
+    display: block;
+}
+
+.rules-aside {
+    display: grid;
+    gap: 18px;
+    position: sticky;
+    top: 28px;
+}
+
+.rules-summary-panel {
+    box-shadow: none;
+}
+
+.rules-summary-panel h2 {
     margin-bottom: 12px;
 }
 
-.rule-summary strong {
-    font-size: 14px;
-}
-
-.rule-summary span {
-    color: var(--muted);
-    font-size: 13px;
-    line-height: 1.4;
+.rules-summary-list > div {
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    display: grid;
+    gap: 3px;
+    padding: 12px;
 }
 
 .report-table {
@@ -1361,18 +1582,29 @@ dd {
     }
 
     .content-grid,
+    .rules-layout,
     .login-screen,
     .admin-request,
     .admin-filter-form,
     .history-filter-form,
     .report-filter-form,
     .notifications-filter-form,
+    .rules-add-form,
+    .settings-grid,
     .team-promote-form,
     .team-filter-form,
     .team-row,
     .team-member-summary,
     .team-member-body {
         grid-template-columns: 1fr;
+    }
+
+    .rules-stat-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .rules-aside {
+        position: static;
     }
 
     .team-member-side,
@@ -1399,9 +1631,11 @@ dd {
 
     .nav-list,
     .metric-grid,
+    .rules-stat-strip,
     .form-grid,
     .detail-grid,
-    .toggle-grid {
+    .toggle-grid,
+    .rules-switch-board {
         grid-template-columns: 1fr;
     }
 
@@ -1415,11 +1649,30 @@ dd {
     .position-list-row .position-row-form,
     .filter-actions,
     .filter-tabs,
-    .rule-card legend {
+    .rules-page-head,
+    .rules-section-head,
+    .rule-card-toolbar,
+    .notification-rule-row {
         align-items: stretch;
         flex-direction: column;
         grid-template-columns: 1fr;
         justify-content: flex-start;
+    }
+
+    .rule-accordion-summary {
+        align-items: start;
+        grid-template-columns: 1fr auto;
+    }
+
+    .rule-summary-main,
+    .rule-summary-pill {
+        grid-column: 1 / -1;
+    }
+
+    .rule-chevron {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
     }
 
     .rule-form-grid,
