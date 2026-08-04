@@ -12,37 +12,79 @@
                 </div>
             </div>
 
-            <form method="POST" action="{{ route('admin.rules.update') }}" class="form-grid">
+            <form method="POST" action="{{ route('admin.rules.leave-types.store') }}" class="admin-filter-form add-rule-form">
                 @csrf
                 <label>
-                    <span>Dias de vacaciones</span>
-                    <input type="number" name="annual_vacation_days" min="0" max="365" value="{{ old('annual_vacation_days', $settings->annual_vacation_days) }}" required>
+                    <span>Nueva regla</span>
+                    <input type="text" name="name" maxlength="255" placeholder="Ej. Permiso por mudanza">
                 </label>
 
                 <label>
-                    <span>Anticipacion vacaciones</span>
-                    <input type="number" name="vacation_notice_days" min="0" max="365" value="{{ old('vacation_notice_days', $settings->vacation_notice_days) }}" required>
-                </label>
-
-                <label>
-                    <span>Conservacion medica</span>
-                    <select name="medical_documents_retention_policy">
-                        <option value="retain" @selected(old('medical_documents_retention_policy', $settings->medical_documents_retention_policy) === 'retain')>Se conserva</option>
-                        <option value="days" @selected(old('medical_documents_retention_policy', $settings->medical_documents_retention_policy) === 'days')>Por dias</option>
+                    <span>Unidad</span>
+                    <select name="unit">
+                        <option value="DAYS">Dias</option>
+                        <option value="MINUTES">Horas</option>
                     </select>
                 </label>
 
                 <label>
-                    <span>Dias conservacion</span>
+                    <span>Adjuntos</span>
+                    <select name="attachment_requirement">
+                        <option value="none">No requiere</option>
+                        <option value="optional">Opcional</option>
+                        <option value="required">Obligatorio</option>
+                    </select>
+                </label>
+
+                <label>
+                    <span>Departamento</span>
+                    <select name="department_id">
+                        <option value="">Todos</option>
+                        @foreach ($departments as $department)
+                            <option value="{{ $department->id }}">{{ $department->name }}</option>
+                        @endforeach
+                    </select>
+                </label>
+
+                <div class="filter-actions">
+                    <button class="primary-button compact" type="submit">
+                        <i data-lucide="plus-circle"></i>
+                        <span>Agregar regla</span>
+                    </button>
+                </div>
+            </form>
+
+            <form method="POST" action="{{ route('admin.rules.update') }}" class="form-grid">
+                @csrf
+                <label>
+                    <span>Dias anuales de vacaciones</span>
+                    <input type="number" name="annual_vacation_days" min="0" max="365" value="{{ old('annual_vacation_days', $settings->annual_vacation_days) }}" required>
+                </label>
+
+                <label>
+                    <span>Anticipacion para vacaciones</span>
+                    <input type="number" name="vacation_notice_days" min="0" max="365" value="{{ old('vacation_notice_days', $settings->vacation_notice_days) }}" required>
+                </label>
+
+                <label>
+                    <span>Conservacion de justificantes medicos</span>
+                    <select name="medical_documents_retention_policy">
+                        <option value="retain" @selected(old('medical_documents_retention_policy', $settings->medical_documents_retention_policy) === 'retain')>Conservar sin fecha limite</option>
+                        <option value="days" @selected(old('medical_documents_retention_policy', $settings->medical_documents_retention_policy) === 'days')>Conservar por cantidad de dias</option>
+                    </select>
+                </label>
+
+                <label>
+                    <span>Dias de conservacion</span>
                     <input type="number" name="medical_documents_retention_days" min="1" max="3650" value="{{ old('medical_documents_retention_days', $settings->medical_documents_retention_days) }}">
                 </label>
 
                 <div class="toggle-grid full">
-                    <label class="check-row"><input type="checkbox" name="pending_requests_reserve_balance" value="1" @checked(old('pending_requests_reserve_balance', $settings->pending_requests_reserve_balance))><span>Pendientes reservan saldo</span></label>
+                    <label class="check-row"><input type="checkbox" name="pending_requests_reserve_balance" value="1" @checked(old('pending_requests_reserve_balance', $settings->pending_requests_reserve_balance))><span>Reservar saldo en solicitudes pendientes</span></label>
                     <label class="check-row"><input type="checkbox" name="allow_negative_balance" value="1" @checked(old('allow_negative_balance', $settings->allow_negative_balance))><span>Permitir saldo negativo</span></label>
-                    <label class="check-row"><input type="checkbox" name="admin_can_view_medical_attachments" value="1" @checked(old('admin_can_view_medical_attachments', $settings->admin_can_view_medical_attachments))><span>Responsable ve documentos medicos</span></label>
-                    <label class="check-row"><input type="checkbox" name="medical_attachment_audit_required" value="1" @checked(old('medical_attachment_audit_required', $settings->medical_attachment_audit_required))><span>Auditar documentos medicos</span></label>
-                    <label class="check-row"><input type="checkbox" name="approved_request_requires_cancel_flow" value="1" @checked(old('approved_request_requires_cancel_flow', $settings->approved_request_requires_cancel_flow))><span>Aprobadas usan flujo de cancelacion</span></label>
+                    <label class="check-row"><input type="checkbox" name="admin_can_view_medical_attachments" value="1" @checked(old('admin_can_view_medical_attachments', $settings->admin_can_view_medical_attachments))><span>Responsable puede abrir justificantes medicos</span></label>
+                    <label class="check-row"><input type="checkbox" name="medical_attachment_audit_required" value="1" @checked(old('medical_attachment_audit_required', $settings->medical_attachment_audit_required))><span>Registrar accesos a justificantes medicos</span></label>
+                    <label class="check-row"><input type="checkbox" name="approved_request_requires_cancel_flow" value="1" @checked(old('approved_request_requires_cancel_flow', $settings->approved_request_requires_cancel_flow))><span>Cancelar aprobadas solo con revision</span></label>
                     <label class="check-row"><input type="checkbox" name="prorate_vacations" value="1" @checked(old('prorate_vacations', $settings->prorate_vacations))><span>Prorrateo activo</span></label>
                     <label class="check-row"><input type="checkbox" name="carry_over_unused_balance" value="1" @checked(old('carry_over_unused_balance', $settings->carry_over_unused_balance))><span>Traspaso activo</span></label>
                 </div>
@@ -51,7 +93,7 @@
                     <div class="section-head">
                         <div>
                             <p class="eyebrow">Tipos de ausencia</p>
-                            <h2>Reglas activas e inactivas</h2>
+                            <h2>Reglas de ausencia</h2>
                         </div>
                     </div>
 
@@ -64,16 +106,26 @@
                         <fieldset class="rule-card">
                             <legend>
                                 <span>{{ $type->name }}</span>
-                                <select
-                                    class="status-select {{ $typeStatusValue === '1' ? 'status-approved' : 'status-cancelled' }}"
-                                    name="leave_types[{{ $type->id }}][is_active]"
-                                    aria-label="Estado de {{ $type->name }}"
-                                    data-status-select
-                                >
-                                    <option value="1" @selected($typeStatusValue === '1')>Activa</option>
-                                    <option value="0" @selected($typeStatusValue === '0')>Inactiva</option>
-                                </select>
+                                <span class="legend-actions">
+                                    <select
+                                        class="status-select {{ $typeStatusValue === '1' ? 'status-approved' : 'status-cancelled' }}"
+                                        name="leave_types[{{ $type->id }}][is_active]"
+                                        aria-label="Estado de {{ $type->name }}"
+                                        data-status-select
+                                    >
+                                        <option value="1" @selected($typeStatusValue === '1')>Activa</option>
+                                        <option value="0" @selected($typeStatusValue === '0')>Inactiva</option>
+                                    </select>
+                                    @if (! $type->is_system)
+                                        <button class="danger-button compact" type="submit" form="delete-leave-type-{{ $type->id }}">
+                                            <i data-lucide="trash-2"></i>
+                                            <span>Eliminar</span>
+                                        </button>
+                                    @endif
+                                </span>
                             </legend>
+
+                            <p class="rule-help">Al desactivarla, deja de estar disponible para solicitudes nuevas y conserva su configuracion e historial.</p>
 
                             <div class="rule-form-grid">
                                 <label>
@@ -115,27 +167,12 @@
                                     <input type="number" name="leave_types[{{ $type->id }}][max_units]" min="0" max="100000" value="{{ old($typeKey.'.max_units', $isVacation ? $settings->annual_vacation_days : $type->max_units) }}">
                                 </label>
 
-                                <label>
-                                    <span>Limite mensual</span>
-                                    <input type="number" name="leave_types[{{ $type->id }}][monthly_limit_units]" min="0" max="100000" value="{{ old($typeKey.'.monthly_limit_units', $type->monthly_limit_units) }}">
-                                </label>
-
-                                <label>
-                                    <span>Limite anual</span>
-                                    <input type="number" name="leave_types[{{ $type->id }}][yearly_limit_units]" min="0" max="100000" value="{{ old($typeKey.'.yearly_limit_units', $type->yearly_limit_units) }}">
-                                </label>
-
-                                <label>
-                                    <span>Niveles aprobacion</span>
-                                    <input type="number" name="leave_types[{{ $type->id }}][approval_level_count]" min="1" max="3" value="{{ old($typeKey.'.approval_level_count', $type->approval_level_count) }}" required>
-                                </label>
-
                                 <div class="rule-switches">
                                     <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][visible_to_employees]" value="1" @checked(old($typeKey.'.visible_to_employees', $type->visible_to_employees))><span>Visible al empleado</span></label>
                                     <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][requires_approval]" value="1" @checked(old($typeKey.'.requires_approval', $type->requires_approval))><span>Requiere aprobacion</span></label>
                                     <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][auto_approve]" value="1" @checked(old($typeKey.'.auto_approve', $type->auto_approve))><span>Autoaprobar</span></label>
                                     <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][allow_half_day]" value="1" @checked(old($typeKey.'.allow_half_day', $type->allow_half_day))><span>Permite medio dia</span></label>
-                                    <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][allow_retroactive]" value="1" @checked(old($typeKey.'.allow_retroactive', $type->allow_retroactive))><span>Permite retroactivo</span></label>
+                                    <label class="check-row"><input type="checkbox" name="leave_types[{{ $type->id }}][allow_retroactive]" value="1" @checked(old($typeKey.'.allow_retroactive', $type->allow_retroactive))><span>Permite fechas pasadas</span></label>
                                 </div>
                             </div>
                         </fieldset>
@@ -154,15 +191,7 @@
                         @php
                             $ruleKey = "notification_rules.$rule->id";
                             $ruleStatusValue = (string) old($ruleKey.'.is_active', $rule->is_active ? '1' : '0');
-                            $eventLabel = match ($rule->event) {
-                                'REQUEST_CREATED' => 'Nueva solicitud',
-                                'REQUEST_APPROVED' => 'Solicitud aprobada',
-                                'REQUEST_REJECTED' => 'Solicitud rechazada',
-                                'CANCELLATION_REQUESTED' => 'Cancelacion solicitada',
-                                'CANCELLATION_ACCEPTED' => 'Cancelacion aceptada',
-                                'CANCELLATION_REJECTED' => 'Cancelacion rechazada',
-                                default => $rule->event,
-                            };
+                            $eventLabel = \App\Support\NotificationLabels::event($rule->event);
                             $recipientLabel = $rule->recipient_type === 'admin' ? 'Administradores' : 'Empleado solicitante';
                         @endphp
                         <fieldset class="rule-card notification-rule-card">
@@ -182,6 +211,7 @@
                             <div class="rule-summary">
                                 <strong>{{ $recipientLabel }}</strong>
                                 <span>{{ $rule->subject_template }}</span>
+                                <span>Al desactivarla, este correo deja de generarse para eventos nuevos.</span>
                             </div>
                         </fieldset>
                     @endforeach
@@ -199,6 +229,19 @@
                     </button>
                 </div>
             </form>
+
+            @foreach ($leaveTypes as $type)
+                @if (! $type->is_system)
+                    <form
+                        id="delete-leave-type-{{ $type->id }}"
+                        method="POST"
+                        action="{{ route('admin.rules.leave-types.destroy', $type->id) }}"
+                        data-confirm="Eliminar esta regla solo sera posible si no tiene solicitudes asociadas."
+                    >
+                        @csrf
+                    </form>
+                @endif
+            @endforeach
         </article>
 
         <article class="panel">
@@ -213,7 +256,7 @@
                 @endforeach
                 @foreach ($notificationRules as $rule)
                     <div>
-                        <strong>{{ $rule->event }}</strong>
+                        <strong>{{ \App\Support\NotificationLabels::event($rule->event) }}</strong>
                         <span>{{ $rule->is_active ? 'Activa' : 'Inactiva' }} &middot; correo a {{ $rule->recipient_type === 'admin' ? 'administradores' : 'empleado' }}</span>
                     </div>
                 @endforeach

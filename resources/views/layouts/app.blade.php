@@ -52,6 +52,10 @@
                             <i data-lucide="users"></i>
                             <span>Equipo</span>
                         </a>
+                        <a class="nav-link {{ request()->routeIs('admin.management.*') ? 'active' : '' }}" href="{{ route('admin.management.index') }}">
+                            <i data-lucide="user-plus"></i>
+                            <span>Gestion</span>
+                        </a>
                         <a class="nav-link {{ request()->routeIs('admin.rules.*') ? 'active' : '' }}" href="{{ route('admin.rules.edit') }}">
                             <i data-lucide="sliders-horizontal"></i>
                             <span>Reglas</span>
@@ -76,9 +80,14 @@
                         <p class="eyebrow">Equipo interno</p>
                         <h1>@yield('title', 'N-Woffu Prime')</h1>
                     </div>
-                    <div class="user-chip">
+                    <a
+                        class="user-chip"
+                        href="{{ route('profile.edit') }}"
+                        data-timezone-sync-url="{{ route('profile.timezone.detect') }}"
+                        data-current-timezone="{{ auth()->user()->timezoneName() }}"
+                    >
                         <span>{{ auth()->user()->name }}</span>
-                    </div>
+                    </a>
                 </header>
             @endauth
 

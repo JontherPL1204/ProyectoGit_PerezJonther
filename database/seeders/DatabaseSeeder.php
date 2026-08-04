@@ -8,6 +8,7 @@ use App\Models\EmployeeCalendarAssignment;
 use App\Models\EmployeeProfile;
 use App\Models\EmployeeScheduleAssignment;
 use App\Models\HolidayCalendar;
+use App\Models\JobPosition;
 use App\Models\LeaveAllowance;
 use App\Models\LeaveBalanceMovement;
 use App\Models\LeaveType;
@@ -80,6 +81,7 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make(env('SEED_ADMIN_PASSWORD', Str::password(24))),
                 'role' => 'admin',
                 'status' => 'active',
+                'timezone' => $organization->timezone,
                 'can_manage_company_rules' => true,
                 'can_view_medical_attachments' => true,
             ],
@@ -93,8 +95,22 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make(env('SEED_EMPLOYEE_PASSWORD', Str::password(24))),
                 'role' => 'user',
                 'status' => 'active',
+                'timezone' => $organization->timezone,
             ],
         );
+
+        foreach (JobPosition::defaultNames() as $positionName) {
+            JobPosition::updateOrCreate(
+                [
+                    'organization_id' => $organization->id,
+                    'normalized_name' => JobPosition::normalizeName($positionName),
+                ],
+                [
+                    'name' => $positionName,
+                    'is_system' => true,
+                ],
+            );
+        }
 
         foreach ([$admin, $employee] as $index => $user) {
             EmployeeProfile::updateOrCreate(
@@ -146,6 +162,7 @@ class DatabaseSeeder extends Seeder
             ['organization_id' => $organization->id, 'code' => 'VACATIONS'],
             [
                 'name' => 'Vacaciones',
+                'is_system' => true,
                 'unit' => 'DAYS',
                 'consumes_balance' => true,
                 'balance_code' => 'VACATIONS',
@@ -208,6 +225,7 @@ class DatabaseSeeder extends Seeder
                 array_merge([
                     'requires_approval' => true,
                     'balance_code' => null,
+                    'is_system' => true,
                     'notice_unit' => 'days',
                     'allow_retroactive' => false,
                     'visible_to_employees' => true,

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\NotificationOutbox;
 use App\Services\NotificationService;
 use App\Services\OrganizationDataCache;
+use App\Support\NotificationLabels;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,9 +25,9 @@ class AdminNotificationController extends Controller
 
         $statusOptions = [
             'all' => 'Todos',
-            'pending' => 'Pendientes',
+            'pending' => 'Pendientes de envio',
             'sent' => 'Enviados',
-            'failed' => 'Fallidos',
+            'failed' => 'No enviados',
         ];
         $currentStatus = array_key_exists((string) $request->query('estado'), $statusOptions)
             ? (string) $request->query('estado')
@@ -62,13 +63,14 @@ class AdminNotificationController extends Controller
         $notifications->getCollection()->transform(function ($row) {
             $row->created_at = CarbonImmutable::parse($row->created_at);
             $row->sent_at = $row->sent_at ? CarbonImmutable::parse($row->sent_at) : null;
-            $row->status_label = $this->statusLabel($row->status);
-            $row->event_label = $this->eventLabel($row->event);
+            $row->status_label = NotificationLabels::status($row->status);
+            $row->event_label = NotificationLabels::event($row->event);
 
             return $row;
         });
 
-        $events = $this->dataCache->notificationEvents($request->user()->organization_id);
+        $events = $this->dataCache->notificationEvents($request->user()->organization_id)
+            ->mapWithKeys(fn (string $event): array => [$event => NotificationLabels::event($event)]);
 
         return view('admin.notifications', compact(
             'currentEvent',
@@ -100,27 +102,5 @@ class AdminNotificationController extends Controller
         }
 
         return back()->with('status', 'No se pudo enviar ahora. Quedo en cola para reintento.');
-    }
-
-    private function statusLabel(string $status): string
-    {
-        return match ($status) {
-            'sent' => 'Enviado',
-            'failed' => 'Fallido',
-            default => 'Pendiente',
-        };
-    }
-
-    private function eventLabel(string $event): string
-    {
-        return match ($event) {
-            'REQUEST_CREATED' => 'Nueva solicitud',
-            'REQUEST_APPROVED' => 'Solicitud aprobada',
-            'REQUEST_REJECTED' => 'Solicitud rechazada',
-            'CANCELLATION_REQUESTED' => 'Cancelacion solicitada',
-            'CANCELLATION_ACCEPTED' => 'Cancelacion aceptada',
-            'CANCELLATION_REJECTED' => 'Cancelacion rechazada',
-            default => $event,
-        };
     }
 }

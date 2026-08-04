@@ -9,6 +9,7 @@ use App\Services\AuditService;
 use App\Services\OrganizationDataCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -62,7 +63,7 @@ class AdminRuleController extends Controller
             'leave_types.*.max_units' => ['nullable', 'integer', 'min:0', 'max:100000'],
             'leave_types.*.monthly_limit_units' => ['nullable', 'integer', 'min:0', 'max:100000'],
             'leave_types.*.yearly_limit_units' => ['nullable', 'integer', 'min:0', 'max:100000'],
-            'leave_types.*.approval_level_count' => ['required', 'integer', 'min:1', 'max:3'],
+            'leave_types.*.approval_level_count' => ['nullable', 'integer', 'min:1', 'max:3'],
             'leave_types.*.department_id' => [
                 'nullable',
                 'integer',
@@ -141,6 +142,93 @@ class AdminRuleController extends Controller
         return back()->with('status', 'Reglas actualizadas correctamente.');
     }
 
+    public function storeLeaveType(Request $request): RedirectResponse
+    {
+        $this->authorizeRules($request);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'unit' => ['required', 'in:DAYS,MINUTES'],
+            'attachment_requirement' => ['required', 'in:none,optional,required'],
+            'department_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('departments', 'id')->where('organization_id', $request->user()->organization_id),
+            ],
+        ], [
+            'name.required' => 'Escribe el nombre de la regla.',
+        ]);
+
+        if (LeaveType::where('organization_id', $request->user()->organization_id)
+            ->whereRaw('LOWER(name) = ?', [Str::lower(trim((string) $data['name']))])
+            ->exists()) {
+            throw ValidationException::withMessages([
+                'name' => 'Ya existe una regla con ese nombre.',
+            ]);
+        }
+
+        $unit = (string) $data['unit'];
+        $leaveType = LeaveType::create([
+            'organization_id' => $request->user()->organization_id,
+            'department_id' => $this->nullableInteger($data['department_id'] ?? null),
+            'code' => $this->uniqueLeaveTypeCode($request->user()->organization_id, (string) $data['name']),
+            'is_system' => false,
+            'name' => trim((string) $data['name']),
+            'unit' => $unit,
+            'consumes_balance' => false,
+            'balance_code' => null,
+            'requires_approval' => true,
+            'auto_approve' => false,
+            'allow_half_day' => false,
+            'attachment_requirement' => (string) $data['attachment_requirement'],
+            'is_medical' => false,
+            'notice_value' => 0,
+            'notice_unit' => 'days',
+            'min_units' => $unit === 'DAYS' ? 1 : 30,
+            'max_units' => $unit === 'DAYS' ? null : 480,
+            'monthly_limit_units' => null,
+            'yearly_limit_units' => null,
+            'approval_level_count' => 1,
+            'allow_retroactive' => false,
+            'visible_to_employees' => true,
+            'is_active' => true,
+            'position' => (int) LeaveType::where('organization_id', $request->user()->organization_id)->max('position') + 1,
+        ]);
+
+        $this->audit->ruleChange($leaveType->organization_id, 'leave_types', $leaveType->id, 'created', null, $leaveType->name, $request->user(), 'Regla agregada.', $request);
+        $this->dataCache->forgetOrganization($leaveType->organization_id);
+
+        return back()->with('status', 'Regla '.$leaveType->name.' agregada correctamente.');
+    }
+
+    public function destroyLeaveType(Request $request, LeaveType $leaveType): RedirectResponse
+    {
+        $this->authorizeRules($request);
+        abort_unless($leaveType->organization_id === $request->user()->organization_id, 404);
+
+        if ($leaveType->is_system) {
+            throw ValidationException::withMessages([
+                'leave_type' => 'Las reglas base no se eliminan. Puedes desactivarlas si no deben aplicarse a nuevas solicitudes.',
+            ]);
+        }
+
+        if ($leaveType->leaveRequests()->exists()) {
+            throw ValidationException::withMessages([
+                'leave_type' => 'Esta regla ya tiene solicitudes asociadas. Desactivala para conservar el historial sin aceptar nuevas solicitudes.',
+            ]);
+        }
+
+        $name = $leaveType->name;
+        $id = $leaveType->id;
+        $organizationId = $leaveType->organization_id;
+        $leaveType->delete();
+
+        $this->audit->ruleChange($organizationId, 'leave_types', $id, 'deleted', $name, 'eliminada', $request->user(), 'Regla eliminada.', $request);
+        $this->dataCache->forgetOrganization($organizationId);
+
+        return back()->with('status', 'Regla eliminada correctamente.');
+    }
+
     private function authorizeRules(Request $request): void
     {
         abort_unless($request->user()?->canManageCompanyRules(), 403);
@@ -172,8 +260,12 @@ class AdminRuleController extends Controller
             $maxUnits = $type->code === 'VACATIONS'
                 ? $settings->annual_vacation_days
                 : $this->nullableInteger($values['max_units'] ?? null);
-            $monthlyLimit = $this->nullableInteger($values['monthly_limit_units'] ?? null);
-            $yearlyLimit = $this->nullableInteger($values['yearly_limit_units'] ?? null);
+            $monthlyLimit = array_key_exists('monthly_limit_units', $values)
+                ? $this->nullableInteger($values['monthly_limit_units'] ?? null)
+                : $type->monthly_limit_units;
+            $yearlyLimit = array_key_exists('yearly_limit_units', $values)
+                ? $this->nullableInteger($values['yearly_limit_units'] ?? null)
+                : $type->yearly_limit_units;
 
             if ($minUnits !== null && $maxUnits !== null && $maxUnits < $minUnits) {
                 throw ValidationException::withMessages([
@@ -204,7 +296,9 @@ class AdminRuleController extends Controller
                 'max_units' => $maxUnits,
                 'monthly_limit_units' => $monthlyLimit,
                 'yearly_limit_units' => $yearlyLimit,
-                'approval_level_count' => (int) ($values['approval_level_count'] ?? 1),
+                'approval_level_count' => array_key_exists('approval_level_count', $values)
+                    ? (int) ($values['approval_level_count'] ?? 1)
+                    : $type->approval_level_count,
             ];
 
             foreach ($updates as $field => $value) {
@@ -276,5 +370,19 @@ class AdminRuleController extends Controller
         }
 
         return (int) $value;
+    }
+
+    private function uniqueLeaveTypeCode(int $organizationId, string $name): string
+    {
+        $base = Str::upper(Str::slug($name, '_')) ?: 'CUSTOM_RULE';
+        $code = $base;
+        $suffix = 2;
+
+        while (LeaveType::where('organization_id', $organizationId)->where('code', $code)->exists()) {
+            $code = $base.'_'.$suffix;
+            $suffix++;
+        }
+
+        return $code;
     }
 }

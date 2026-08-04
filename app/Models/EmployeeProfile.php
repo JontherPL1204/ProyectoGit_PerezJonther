@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class EmployeeProfile extends Model
@@ -64,5 +65,12 @@ class EmployeeProfile extends Model
     public function calendarAssignments(): HasMany
     {
         return $this->hasMany(EmployeeCalendarAssignment::class);
+    }
+
+    public function jobPositions(): BelongsToMany
+    {
+        return $this->belongsToMany(JobPosition::class)
+            ->withPivot(['assigned_by', 'assigned_at'])
+            ->withTimestamps();
     }
 }

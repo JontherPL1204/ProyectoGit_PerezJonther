@@ -80,6 +80,8 @@
                 @php
                     $isCurrentUser = (int) $member->id === (int) auth()->id();
                     $isAdmin = $member->role === 'admin';
+                    $assignedPositions = collect($member->employeeProfile?->jobPositions ?? []);
+                    $assignedPositionIds = $assignedPositions->pluck('id')->map(fn ($id) => (int) $id)->all();
                 @endphp
                 <article class="admin-request team-row">
                     <div>
@@ -87,7 +89,36 @@
                         <h3>{{ $member->name }}</h3>
                         <p>{{ $member->email }}</p>
                         <p>{{ $member->employeeProfile?->department?->name ?? 'Sin departamento' }}</p>
+                        <div class="chip-list">
+                            @forelse ($assignedPositions as $position)
+                                <span>{{ $position->name }}</span>
+                            @empty
+                                <span>Sin puesto asignado</span>
+                            @endforelse
+                        </div>
                     </div>
+
+                    <form class="user-position-form" method="POST" action="{{ route('admin.users.positions.update', $member->id) }}">
+                        @csrf
+                        <label>
+                            <span>Puestos</span>
+                            <select name="job_position_ids[]" multiple size="4">
+                                @foreach ($positions as $position)
+                                    <option value="{{ $position->id }}" @selected(in_array((int) $position->id, $assignedPositionIds, true))>{{ $position->name }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+
+                        <label>
+                            <span>Crear y asignar</span>
+                            <input type="text" name="new_position_name" maxlength="120" placeholder="Nuevo puesto">
+                        </label>
+
+                        <button class="ghost-button compact" type="submit">
+                            <i data-lucide="briefcase"></i>
+                            <span>Guardar puestos</span>
+                        </button>
+                    </form>
 
                     <form class="user-permission-form" method="POST" action="{{ route('admin.users.update', $member->id) }}">
                         @csrf

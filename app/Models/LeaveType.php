@@ -12,6 +12,7 @@ class LeaveType extends Model
         'organization_id',
         'department_id',
         'code',
+        'is_system',
         'name',
         'unit',
         'consumes_balance',
@@ -38,6 +39,7 @@ class LeaveType extends Model
     {
         return [
             'consumes_balance' => 'boolean',
+            'is_system' => 'boolean',
             'requires_approval' => 'boolean',
             'auto_approve' => 'boolean',
             'allow_half_day' => 'boolean',

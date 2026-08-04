@@ -36,22 +36,12 @@
 
                             if ($type->auto_approve || ! $type->requires_approval) {
                                 $hints[] = 'Se aprueba automaticamente si cumple las reglas.';
-                            } elseif ($type->approval_level_count > 1) {
-                                $hints[] = 'Requiere '.$type->approval_level_count.' niveles de aprobacion configurados.';
                             }
 
                             if ($type->attachment_requirement === 'required') {
                                 $hints[] = 'El justificante es obligatorio.';
                             } elseif ($type->attachment_requirement === 'optional') {
                                 $hints[] = 'Puedes adjuntar justificante si aplica.';
-                            }
-
-                            if ($type->monthly_limit_units) {
-                                $hints[] = 'Limite mensual: '.$type->monthly_limit_units.' '.($type->unit === 'DAYS' ? 'dias' : 'minutos').'.';
-                            }
-
-                            if ($type->yearly_limit_units) {
-                                $hints[] = 'Limite anual: '.$type->yearly_limit_units.' '.($type->unit === 'DAYS' ? 'dias' : 'minutos').'.';
                             }
 
                             $helpText = trim(($typeHelp[$type->code] ?? 'Este motivo requiere revision de la persona responsable.').' '.implode(' ', $hints));
@@ -84,14 +74,11 @@
                 </div>
             </div>
 
-            <label data-start-date-field>
-                <span data-start-date-label>Fecha inicio</span>
-                <input type="date" name="start_date" value="{{ old('start_date') }}" required data-start-date>
-            </label>
-
-            <label data-end-date-field>
-                <span>Fecha fin</span>
-                <input type="date" name="end_date" value="{{ old('end_date') }}" required data-end-date>
+            <label class="full" data-date-range-field>
+                <span data-date-range-label>Rango de fechas</span>
+                <input type="text" value="" placeholder="Selecciona fecha de inicio y fecha final" readonly data-date-range-display>
+                <input type="hidden" name="start_date" value="{{ old('start_date') }}" data-start-date>
+                <input type="hidden" name="end_date" value="{{ old('end_date') }}" data-end-date>
             </label>
 
             <label data-time-field hidden>

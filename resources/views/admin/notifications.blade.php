@@ -26,8 +26,8 @@
                 <span>Evento</span>
                 <select name="evento">
                     <option value="">Todos</option>
-                    @foreach ($events as $event)
-                        <option value="{{ $event }}" @selected($currentEvent === $event)>{{ $event }}</option>
+                    @foreach ($events as $event => $label)
+                        <option value="{{ $event }}" @selected($currentEvent === $event)>{{ $label }}</option>
                     @endforeach
                 </select>
             </label>
@@ -35,11 +35,11 @@
             <div class="filter-actions">
                 <button class="primary-button compact" type="submit">
                     <i data-lucide="search"></i>
-                    <span>Filtrar</span>
+                    <span>Aplicar filtros</span>
                 </button>
                 <a class="ghost-button compact" href="{{ route('admin.notifications.index') }}">
                     <i data-lucide="rotate-ccw"></i>
-                    <span>Limpiar</span>
+                    <span>Quitar filtros</span>
                 </a>
             </div>
         </form>
@@ -57,7 +57,7 @@
                     <div>
                         <span class="status status-{{ $statusClass }}">{{ $notification->status_label }}</span>
                         <h3>{{ $notification->event_label }}</h3>
-                        <p>{{ $notification->recipient_email }} &middot; {{ $notification->created_at->format('d/m/Y H:i') }}</p>
+                        <p>{{ $notification->recipient_email }} &middot; {{ auth()->user()->formatDateTime($notification->created_at) }}</p>
                         <p>{{ $notification->subject }}</p>
                         @if ($notification->leave_request_id)
                             <p>
@@ -79,13 +79,13 @@
                             @csrf
                             <button class="ghost-button compact" type="submit">
                                 <i data-lucide="mail"></i>
-                                <span>Reenviar</span>
+                                <span>Reenviar correo</span>
                             </button>
                         </form>
                         @if ($notification->leave_request_id)
                             <a class="ghost-button compact" href="{{ route('leave-requests.show', $notification->leave_request_id) }}">
                                 <i data-lucide="eye"></i>
-                                <span>Solicitud</span>
+                                <span>Ver solicitud</span>
                             </a>
                         @endif
                     </div>

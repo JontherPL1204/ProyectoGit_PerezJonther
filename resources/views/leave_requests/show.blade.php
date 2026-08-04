@@ -17,7 +17,6 @@
                 <div><dt>Empleado</dt><dd>{{ $leaveRequest->employeeProfile->user->name }}</dd></div>
                 <div><dt>Periodo</dt><dd>{{ $leaveRequest->start_date->format('d/m/Y') }} - {{ $leaveRequest->end_date->format('d/m/Y') }}</dd></div>
                 <div><dt>Duracion</dt><dd>{{ $leaveRequest->requested_units }} {{ $leaveRequest->unit === 'DAYS' ? 'dias' : 'minutos' }}</dd></div>
-                <div><dt>Version</dt><dd>{{ $leaveRequest->version }}</dd></div>
             </dl>
 
             @if ($leaveRequest->user_comment)
@@ -89,6 +88,12 @@
                             <strong>{{ $attachment->original_name }}</strong>
                             <span>{{ strtoupper(pathinfo($attachment->original_name, PATHINFO_EXTENSION)) }} &middot; {{ number_format($attachment->size_bytes / 1024, 1) }} KB &middot; {{ $attachment->justificationLabel() }}</span>
                             <div class="inline-actions">
+                                @if (in_array($attachment->mime_type, ['application/pdf', 'image/jpeg', 'image/png'], true))
+                                    <a class="ghost-button compact" href="{{ route('attachments.preview', $attachment) }}" target="_blank" rel="noopener">
+                                        <i data-lucide="eye"></i>
+                                        <span>Vista previa</span>
+                                    </a>
+                                @endif
                                 <a class="ghost-button compact" href="{{ route('attachments.download', $attachment) }}">
                                     <i data-lucide="download"></i>
                                     <span>Descargar</span>
@@ -98,7 +103,7 @@
                                         @csrf
                                         <button class="ghost-button compact" type="submit">
                                             <i data-lucide="file-check-2"></i>
-                                            <span>Revisado</span>
+                                            <span>Validar justificante</span>
                                         </button>
                                     </form>
                                 @endif
@@ -125,8 +130,8 @@
             <div class="timeline">
                 @foreach ($leaveRequest->events as $event)
                     <div>
-                        <span>{{ $event->created_at->format('d/m/Y H:i') }}</span>
-                        <strong>{{ $event->action }}</strong>
+                        <span>{{ auth()->user()->formatDateTime($event->created_at) }}</span>
+                        <strong>{{ $event->actionLabel() }}</strong>
                         <p>{{ $event->actor?->name ?? 'Sistema' }} {{ $event->comment ? '- '.$event->comment : '' }}</p>
                     </div>
                 @endforeach

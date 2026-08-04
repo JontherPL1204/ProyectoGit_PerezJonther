@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,6 +28,7 @@ class User extends Authenticatable
         'password',
         'role',
         'status',
+        'timezone',
         'can_manage_company_rules',
         'can_view_medical_attachments',
         'last_login_at',
@@ -60,6 +63,24 @@ class User extends Authenticatable
     public function canViewMedicalAttachments(): bool
     {
         return $this->isAdmin() && $this->can_view_medical_attachments;
+    }
+
+    public function timezoneName(): string
+    {
+        return $this->timezone
+            ?: $this->organization?->timezone
+            ?: config('app.timezone', 'UTC');
+    }
+
+    public function formatDateTime(CarbonInterface|string|null $value, string $format = 'd/m/Y H:i'): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        return ($value instanceof CarbonInterface ? $value : CarbonImmutable::parse($value))
+            ->timezone($this->timezoneName())
+            ->format($format);
     }
 
     /**

@@ -55,4 +55,47 @@ class AttachmentDownloadTest extends TestCase
         $response->assertHeader('content-type', 'application/pdf');
         $this->assertStringStartsWith('%PDF-1.4', $response->streamedContent());
     }
+
+    public function test_preview_streams_supported_private_attachment_inline(): void
+    {
+        $this->seed();
+
+        $admin = User::where('email', env('SEED_ADMIN_EMAIL', 'admin@n-woffu-prime.local'))->firstOrFail();
+        $employee = User::where('email', env('SEED_EMPLOYEE_EMAIL', 'empleado@n-woffu-prime.local'))->firstOrFail();
+        $leaveType = LeaveType::where('code', 'PERSONAL')->firstOrFail();
+        $leaveRequest = LeaveRequest::create([
+            'organization_id' => $employee->organization_id,
+            'employee_profile_id' => $employee->employeeProfile->id,
+            'leave_type_id' => $leaveType->id,
+            'unit' => 'DAYS',
+            'start_date' => '2026-08-10',
+            'end_date' => '2026-08-10',
+            'requested_units' => 1,
+            'status' => LeaveRequest::STATUS_PENDING,
+            'version' => 1,
+        ]);
+
+        $attachment = RequestAttachment::create([
+            'organization_id' => $leaveRequest->organization_id,
+            'leave_request_id' => $leaveRequest->id,
+            'uploaded_by' => $leaveRequest->employeeProfile->user_id,
+            'original_name' => 'justificante-demo-preview.pdf',
+            'stored_name' => 'justificante-demo-preview.pdf',
+            'storage_disk' => 'local',
+            'storage_path' => 'demo/justificantes/missing-preview.pdf',
+            'mime_type' => 'application/pdf',
+            'size_bytes' => 128,
+            'is_medical' => false,
+            'checksum' => hash('sha256', 'missing-preview'),
+        ]);
+
+        Storage::disk('local')->delete($attachment->storage_path);
+
+        $response = $this->actingAs($admin)->get(route('attachments.preview', $attachment));
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
+        $response->assertHeader('content-disposition', 'inline; filename="justificante-demo-preview.pdf"');
+        $this->assertStringStartsWith('%PDF-1.4', $response->streamedContent());
+    }
 }

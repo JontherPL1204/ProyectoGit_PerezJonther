@@ -8,6 +8,7 @@ use App\Models\EmployeeProfile;
 use App\Models\EmployeeScheduleAssignment;
 use App\Models\Holiday;
 use App\Models\HolidayCalendar;
+use App\Models\JobPosition;
 use App\Models\LeaveAllowance;
 use App\Models\LeaveBalanceMovement;
 use App\Models\LeaveRequest;
@@ -143,6 +144,7 @@ class DemoDataSeeder extends Seeder
             [
                 'department_id' => $departments['Ventas']->id,
                 'name' => 'Evento comercial',
+                'is_system' => false,
                 'unit' => 'DAYS',
                 'consumes_balance' => false,
                 'balance_code' => null,
@@ -187,18 +189,31 @@ class DemoDataSeeder extends Seeder
     ): array {
         $password = env('DEMO_USER_PASSWORD', 'Demo12345!');
         $rows = [
-            'ANA' => ['Ana Torres', 'ana.torres@n-woffu-prime.local', 'DEMO-001', 'Operaciones', 'user', true, false, false],
-            'LUIS' => ['Luis Gomez', 'luis.gomez@n-woffu-prime.local', 'DEMO-002', 'Operaciones', 'user', true, false, false],
-            'MARIA' => ['Maria Delgado', 'maria.delgado@n-woffu-prime.local', 'DEMO-003', 'Atencion al cliente', 'user', true, false, false],
-            'CARLOS' => ['Carlos Ruiz', 'carlos.ruiz@n-woffu-prime.local', 'DEMO-004', 'Tecnologia', 'user', true, false, false],
-            'SOFIA' => ['Sofia Navarro', 'sofia.navarro@n-woffu-prime.local', 'DEMO-005', 'Ventas', 'user', true, false, false],
-            'VALERIA' => ['Valeria Admin', 'valeria.admin@n-woffu-prime.local', 'DEMO-ADM-002', 'Talento Humano', 'admin', true, true, false],
-            'DIEGO' => ['Diego Inactivo', 'diego.inactivo@n-woffu-prime.local', 'DEMO-006', 'Operaciones', 'user', false, false, false],
+            'ANA' => ['Ana Torres', 'ana.torres@n-woffu-prime.local', 'DEMO-001', 'Operaciones', 'user', true, false, false, ['Project Management']],
+            'LUIS' => ['Luis Gomez', 'luis.gomez@n-woffu-prime.local', 'DEMO-002', 'Operaciones', 'user', true, false, false, ['SEO', 'Social Media']],
+            'MARIA' => ['Maria Delgado', 'maria.delgado@n-woffu-prime.local', 'DEMO-003', 'Atencion al cliente', 'user', true, false, false, ['RR. HH.']],
+            'CARLOS' => ['Carlos Ruiz', 'carlos.ruiz@n-woffu-prime.local', 'DEMO-004', 'Tecnologia', 'user', true, false, false, ['Frontend Developer', 'Backend Developer']],
+            'SOFIA' => ['Sofia Navarro', 'sofia.navarro@n-woffu-prime.local', 'DEMO-005', 'Ventas', 'user', true, false, false, ['CMO']],
+            'VALERIA' => ['Valeria Admin', 'valeria.admin@n-woffu-prime.local', 'DEMO-ADM-002', 'Talento Humano', 'admin', true, true, false, ['RR. HH.', 'Project Management']],
+            'DIEGO' => ['Diego Inactivo', 'diego.inactivo@n-woffu-prime.local', 'DEMO-006', 'Operaciones', 'user', false, false, false, []],
         ];
 
         $profiles = [];
 
-        foreach ($rows as $key => [$name, $email, $code, $department, $role, $active, $canManageRules, $canViewMedical]) {
+        foreach (JobPosition::defaultNames() as $positionName) {
+            JobPosition::updateOrCreate(
+                [
+                    'organization_id' => $organization->id,
+                    'normalized_name' => JobPosition::normalizeName($positionName),
+                ],
+                [
+                    'name' => $positionName,
+                    'is_system' => true,
+                ],
+            );
+        }
+
+        foreach ($rows as $key => [$name, $email, $code, $department, $role, $active, $canManageRules, $canViewMedical, $positions]) {
             $user = User::updateOrCreate(
                 ['email' => $email],
                 [
@@ -207,6 +222,7 @@ class DemoDataSeeder extends Seeder
                     'password' => Hash::make($password),
                     'role' => $role,
                     'status' => $active ? 'active' : 'inactive',
+                    'timezone' => $organization->timezone,
                     'can_manage_company_rules' => $canManageRules,
                     'can_view_medical_attachments' => $canViewMedical,
                     'deactivated_at' => $active ? null : now()->subDays(12),
@@ -224,6 +240,15 @@ class DemoDataSeeder extends Seeder
                     'is_active' => $active,
                 ],
             );
+
+            $positionIds = JobPosition::where('organization_id', $organization->id)
+                ->whereIn('name', $positions)
+                ->pluck('id')
+                ->all();
+            $profile->jobPositions()->syncWithPivotValues($positionIds, [
+                'assigned_by' => null,
+                'assigned_at' => now(),
+            ]);
 
             EmployeeScheduleAssignment::updateOrCreate(
                 ['employee_profile_id' => $profile->id, 'work_schedule_id' => $schedule->id, 'valid_from' => now()->startOfYear()->toDateString()],

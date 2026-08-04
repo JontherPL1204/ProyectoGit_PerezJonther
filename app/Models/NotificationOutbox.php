@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\NotificationLabels;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -38,23 +39,11 @@ class NotificationOutbox extends Model
 
     public function statusLabel(): string
     {
-        return match ($this->status) {
-            'sent' => 'Enviado',
-            'failed' => 'Fallido',
-            default => 'Pendiente',
-        };
+        return NotificationLabels::status($this->status);
     }
 
     public function eventLabel(): string
     {
-        return match ($this->event) {
-            'REQUEST_CREATED' => 'Nueva solicitud',
-            'REQUEST_APPROVED' => 'Solicitud aprobada',
-            'REQUEST_REJECTED' => 'Solicitud rechazada',
-            'CANCELLATION_REQUESTED' => 'Cancelacion solicitada',
-            'CANCELLATION_ACCEPTED' => 'Cancelacion aceptada',
-            'CANCELLATION_REJECTED' => 'Cancelacion rechazada',
-            default => $this->event,
-        };
+        return NotificationLabels::event($this->event);
     }
 }
