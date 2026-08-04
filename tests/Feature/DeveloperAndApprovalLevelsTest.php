@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class DeveloperAndApprovalLevelsTest extends TestCase
@@ -239,6 +240,48 @@ class DeveloperAndApprovalLevelsTest extends TestCase
             'leave_request_id' => $leaveRequest->id,
             'action' => 'APPROVAL_LEVEL_REJECTED',
         ]);
+    }
+
+    public function test_review_keeps_working_before_approval_steps_migration_runs(): void
+    {
+        Mail::fake();
+        $this->seed();
+
+        $admin = $this->adminUser();
+        $employee = $this->employeeUser();
+        $personal = LeaveType::where('code', 'PERSONAL')->firstOrFail();
+
+        $leaveRequest = LeaveRequest::create([
+            'organization_id' => $employee->organization_id,
+            'employee_profile_id' => $employee->employeeProfile->id,
+            'leave_type_id' => $personal->id,
+            'unit' => 'DAYS',
+            'start_date' => '2026-09-21',
+            'end_date' => '2026-09-21',
+            'requested_units' => 1,
+            'status' => LeaveRequest::STATUS_PENDING,
+        ]);
+
+        Schema::dropIfExists('approval_steps');
+
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee($employee->name)
+            ->assertSee('Aprobar');
+
+        $this->actingAs($employee)
+            ->get(route('leave-requests.show', $leaveRequest))
+            ->assertOk()
+            ->assertDontSee('Aprobaciones');
+
+        $this->actingAs($admin)
+            ->post(route('admin.requests.reject', $leaveRequest), [
+                'admin_comment' => 'No hay cobertura para esa fecha.',
+            ])
+            ->assertSessionHas('status', 'Solicitud rechazada.');
+
+        $this->assertSame(LeaveRequest::STATUS_REJECTED, $leaveRequest->refresh()->status);
     }
 
     private function createTeamUser(string $name, string $email, string $role): User

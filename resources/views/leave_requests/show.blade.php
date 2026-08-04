@@ -74,7 +74,7 @@
             </div>
         </article>
 
-        @if ($leaveRequest->approvalSteps->isNotEmpty())
+        @if ($leaveRequest->relationLoaded('approvalSteps') && $leaveRequest->approvalSteps->isNotEmpty())
             <article class="panel">
                 <p class="eyebrow">Revision</p>
                 <h2>Aprobaciones</h2>

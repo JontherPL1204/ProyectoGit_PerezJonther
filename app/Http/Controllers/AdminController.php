@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 use InvalidArgumentException;
 
@@ -68,6 +69,23 @@ class AdminController extends Controller
             'date_to' => $this->validDateFilter($request->query('hasta')),
         ];
 
+        $selectColumns = [
+            'leave_requests.id',
+            'leave_requests.organization_id',
+            'leave_requests.employee_profile_id',
+            'leave_requests.status',
+            'leave_requests.unit',
+            'leave_requests.start_date',
+            'leave_requests.end_date',
+            'leave_requests.requested_units',
+            'users.name as employee_name',
+            'leave_types.name as leave_type_name',
+        ];
+
+        $selectColumns[] = Schema::hasColumn('leave_types', 'approval_level_count')
+            ? 'leave_types.approval_level_count'
+            : DB::raw('1 as approval_level_count');
+
         $requests = DB::table('leave_requests')
             ->join('employee_profiles', 'employee_profiles.id', '=', 'leave_requests.employee_profile_id')
             ->join('users', 'users.id', '=', 'employee_profiles.user_id')
@@ -79,19 +97,7 @@ class AdminController extends Controller
             ->when($advancedFilters['leave_type_id'], fn ($query, $leaveTypeId) => $query->where('leave_requests.leave_type_id', $leaveTypeId))
             ->when($advancedFilters['date_from'], fn ($query, $dateFrom) => $query->whereDate('leave_requests.end_date', '>=', $dateFrom))
             ->when($advancedFilters['date_to'], fn ($query, $dateTo) => $query->whereDate('leave_requests.start_date', '<=', $dateTo))
-            ->select([
-                'leave_requests.id',
-                'leave_requests.organization_id',
-                'leave_requests.employee_profile_id',
-                'leave_requests.status',
-                'leave_requests.unit',
-                'leave_requests.start_date',
-                'leave_requests.end_date',
-                'leave_requests.requested_units',
-                'users.name as employee_name',
-                'leave_types.name as leave_type_name',
-                'leave_types.approval_level_count',
-            ])
+            ->select($selectColumns)
             ->orderBy('leave_requests.start_date')
             ->orderByDesc('leave_requests.created_at')
             ->simplePaginate(12)
@@ -264,6 +270,21 @@ class AdminController extends Controller
     private function attachApprovalProgress(Collection $requests, User $actor): void
     {
         if ($requests->isEmpty()) {
+            return;
+        }
+
+        if (! Schema::hasTable('approval_steps')) {
+            foreach ($requests as $leaveRequest) {
+                $currentLevel = $leaveRequest->status === LeaveRequest::STATUS_PENDING ? 1 : null;
+
+                $leaveRequest->approval_steps = collect();
+                $leaveRequest->approval_total = 1;
+                $leaveRequest->approval_current_level = $currentLevel;
+                $leaveRequest->can_resolve_current_level = $currentLevel !== null
+                    && $this->approvals->canApproveLevel($actor, $currentLevel);
+                $leaveRequest->approval_summary = $this->approvalSummary($leaveRequest, $currentLevel, 1);
+            }
+
             return;
         }
 

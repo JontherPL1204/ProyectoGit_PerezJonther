@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Schema;
 
 class LeaveRequest extends Model
 {
@@ -93,6 +94,10 @@ class LeaveRequest extends Model
 
     public function approvalProgressLabel(): ?string
     {
+        if (! Schema::hasTable('approval_steps')) {
+            return null;
+        }
+
         $steps = $this->relationLoaded('approvalSteps')
             ? $this->approvalSteps
             : $this->approvalSteps()->get();
