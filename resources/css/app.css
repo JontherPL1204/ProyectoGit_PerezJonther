@@ -281,6 +281,7 @@ button {
 
 .request-row,
 .admin-request,
+.team-member-card,
 .mini-list > div,
 .timeline > div,
 .rule-list > div {
@@ -843,6 +844,93 @@ dd {
     grid-template-columns: minmax(220px, 0.8fr) minmax(340px, 1.25fr) minmax(280px, 0.95fr);
 }
 
+.team-member-card {
+    display: block;
+}
+
+.team-member-summary {
+    align-items: center;
+    cursor: pointer;
+    display: grid;
+    gap: 14px;
+    grid-template-columns: minmax(0, 1fr) minmax(220px, auto);
+    list-style: none;
+}
+
+.team-member-summary::-webkit-details-marker {
+    display: none;
+}
+
+.team-member-identity {
+    align-items: flex-start;
+    display: flex;
+    gap: 12px;
+    min-width: 0;
+}
+
+.team-member-identity > div {
+    min-width: 0;
+}
+
+.team-member-identity h3,
+.team-editor-head h3 {
+    margin: 0 0 4px;
+}
+
+.team-member-side {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    min-width: 0;
+}
+
+.team-summary-chips {
+    justify-content: flex-end;
+    margin-top: 0;
+}
+
+.team-toggle {
+    align-items: center;
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 34px;
+    justify-content: center;
+    width: 34px;
+}
+
+.team-toggle svg {
+    height: 18px;
+    transition: transform 0.15s ease;
+    width: 18px;
+}
+
+.team-member-card[open] .team-toggle svg {
+    transform: rotate(180deg);
+}
+
+.team-member-body {
+    border-top: 1.5px solid var(--line);
+    display: grid;
+    gap: 18px;
+    grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+    margin-top: 14px;
+    padding-top: 14px;
+}
+
+.team-editor-block {
+    align-content: start;
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+}
+
+.team-editor-head .eyebrow {
+    margin-bottom: 4px;
+}
+
 .user-permission-form {
     display: grid;
     gap: 10px;
@@ -1281,8 +1369,15 @@ dd {
     .notifications-filter-form,
     .team-promote-form,
     .team-filter-form,
-    .team-row {
+    .team-row,
+    .team-member-summary,
+    .team-member-body {
         grid-template-columns: 1fr;
+    }
+
+    .team-member-side,
+    .team-summary-chips {
+        justify-content: flex-start;
     }
 }
 

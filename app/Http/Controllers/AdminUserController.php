@@ -73,7 +73,9 @@ class AdminUserController extends Controller
         ], 'Permisos asignados por correo.');
         $this->dataCache->forgetOrganization($request->user()->organization_id);
 
-        return back()->with('status', 'Permiso '.$this->roleLabel($role).' actualizado para '.$target->name.'.');
+        return back()
+            ->with('status', 'Permiso '.$this->roleLabel($role).' actualizado para '.$target->name.'.')
+            ->with('open_user_id', $target->id);
     }
 
     public function update(Request $request, User $user): RedirectResponse
@@ -113,7 +115,9 @@ class AdminUserController extends Controller
         ], 'Permisos actualizados desde Equipo.');
         $this->dataCache->forgetOrganization($request->user()->organization_id);
 
-        return back()->with('status', 'Permisos actualizados para '.$user->name.'.');
+        return back()
+            ->with('status', 'Permisos actualizados para '.$user->name.'.')
+            ->with('open_user_id', $user->id);
     }
 
     private function authorizeUserManagement(Request $request): void

@@ -259,8 +259,11 @@ class AdminManagementController extends Controller
 
         $newPositionName = trim((string) ($data['new_position_name'] ?? ''));
 
+        $newPosition = null;
+
         if ($newPositionName !== '') {
-            $positionIds->push($this->createPosition($request, $newPositionName)->id);
+            $newPosition = $this->createPosition($request, $newPositionName, 'new_position_name');
+            $positionIds->push($newPosition->id);
         }
 
         $positionIds = $positionIds->unique()->values();
@@ -280,7 +283,13 @@ class AdminManagementController extends Controller
 
         $this->dataCache->forgetOrganization($request->user()->organization_id);
 
-        return back()->with('status', 'Puestos actualizados para '.$user->name.'.');
+        $status = $newPosition
+            ? 'Puesto "'.$newPosition->name.'" '.($newPosition->wasRecentlyCreated ? 'creado y ' : '').'asignado para '.$user->name.'.'
+            : 'Puestos actualizados para '.$user->name.'.';
+
+        return back()
+            ->with('status', $status)
+            ->with('open_user_id', $user->id);
     }
 
     private function authorizeManagement(Request $request): void
@@ -298,14 +307,14 @@ class AdminManagementController extends Controller
         abort_unless($jobPosition->organization_id === $request->user()->organization_id, 404);
     }
 
-    private function createPosition(Request $request, string $name): JobPosition
+    private function createPosition(Request $request, string $name, string $errorKey = 'name'): JobPosition
     {
         $name = trim($name);
         $normalizedName = JobPosition::normalizeName($name);
 
         if ($normalizedName === '') {
             throw ValidationException::withMessages([
-                'name' => 'Escribe el nombre del puesto.',
+                $errorKey => 'Escribe el nombre del puesto.',
             ]);
         }
 

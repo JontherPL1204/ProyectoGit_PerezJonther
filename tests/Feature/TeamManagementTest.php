@@ -24,9 +24,10 @@ class TeamManagementTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.users.index'))
             ->assertOk()
+            ->assertSee('team-member-card', false)
             ->assertSee('Frontend Developer')
             ->assertSee('position-options', false)
-            ->assertSee('Guardar');
+            ->assertSee('Guardar puestos');
 
         $this->actingAs($admin)
             ->post(route('admin.management.positions.store'), ['name' => 'QA Analyst'])
@@ -40,7 +41,8 @@ class TeamManagementTest extends TestCase
                 'job_position_ids' => [$frontend->id],
                 'new_position_name' => 'DevOps Engineer',
             ])
-            ->assertSessionHas('status');
+            ->assertSessionHas('status', 'Puesto "DevOps Engineer" creado y asignado para '.$employee->name.'.')
+            ->assertSessionHas('open_user_id', $employee->id);
 
         $employee->employeeProfile->refresh();
         $assignedNames = $employee->employeeProfile->jobPositions()->pluck('name')->sort()->values()->all();
