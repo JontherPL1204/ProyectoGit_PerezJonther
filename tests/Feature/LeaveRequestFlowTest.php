@@ -62,6 +62,10 @@ class LeaveRequestFlowTest extends TestCase
             ->assertForbidden();
 
         $this->actingAs($employee)
+            ->get(route('admin.management.index'))
+            ->assertForbidden();
+
+        $this->actingAs($employee)
             ->get(route('admin.rules.edit'))
             ->assertForbidden();
 
@@ -91,6 +95,10 @@ class LeaveRequestFlowTest extends TestCase
 
         $this->actingAs($admin)
             ->get(route('admin.users.index'))
+            ->assertOk();
+
+        $this->actingAs($admin)
+            ->get(route('admin.management.index'))
             ->assertOk();
 
         $this->actingAs($admin)
@@ -461,7 +469,7 @@ class LeaveRequestFlowTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.notifications.index', ['estado' => 'failed']))
             ->assertOk()
-            ->assertSee('Fallido')
+            ->assertSee('No enviado')
             ->assertSee('SMTP temporal');
 
         Mail::fake();
@@ -855,7 +863,7 @@ class LeaveRequestFlowTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.rules.edit'))
             ->assertOk()
-            ->assertSee('Reglas activas e inactivas')
+            ->assertSee('Reglas de ausencia')
             ->assertSee('Inactiva');
 
         $this->actingAs($employee)
@@ -918,6 +926,41 @@ class LeaveRequestFlowTest extends TestCase
             'leave_request_id' => $leaveRequest->id,
             'event' => 'REQUEST_CREATED',
         ]);
+    }
+
+    public function test_admin_can_add_and_delete_custom_leave_type_rules(): void
+    {
+        $this->seed();
+
+        $admin = $this->adminUser();
+
+        $this->actingAs($admin)
+            ->post(route('admin.rules.leave-types.store'), [
+                'name' => 'Permiso por mudanza',
+                'unit' => 'DAYS',
+                'attachment_requirement' => 'optional',
+                'department_id' => '',
+            ])
+            ->assertSessionHas('status');
+
+        $leaveType = LeaveType::where('name', 'Permiso por mudanza')->firstOrFail();
+
+        $this->assertFalse($leaveType->is_system);
+        $this->assertSame('DAYS', $leaveType->unit);
+
+        $this->actingAs($admin)
+            ->get(route('admin.rules.edit'))
+            ->assertOk()
+            ->assertSee('Agregar regla')
+            ->assertSee('Permiso por mudanza')
+            ->assertDontSee('Limite mensual')
+            ->assertDontSee('Niveles aprobacion');
+
+        $this->actingAs($admin)
+            ->post(route('admin.rules.leave-types.destroy', $leaveType))
+            ->assertSessionHas('status');
+
+        $this->assertDatabaseMissing('leave_types', ['id' => $leaveType->id]);
     }
 
     private function employeeUser(): User

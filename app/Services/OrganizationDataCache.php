@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\CompanySetting;
 use App\Models\Department;
 use App\Models\EmployeeProfile;
+use App\Models\JobPosition;
 use App\Models\LeaveRequest;
 use App\Models\LeaveType;
 use App\Models\NotificationOutbox;
@@ -103,7 +104,7 @@ class OrganizationDataCache
         $rows = Cache::remember(
             $this->key($organizationId, 'users'),
             self::STATIC_TTL_SECONDS,
-            fn () => User::with(['employeeProfile.department'])
+            fn () => User::with(['employeeProfile.department', 'employeeProfile.jobPositions'])
                 ->where('organization_id', $organizationId)
                 ->orderByRaw("CASE WHEN role = 'admin' THEN 0 ELSE 1 END")
                 ->orderBy('name')
@@ -117,9 +118,37 @@ class OrganizationDataCache
                     'can_manage_company_rules' => (bool) $user->can_manage_company_rules,
                     'can_view_medical_attachments' => (bool) $user->can_view_medical_attachments,
                     'employeeProfile' => $user->employeeProfile ? [
+                        'id' => $user->employeeProfile->id,
                         'department' => $user->employeeProfile->department?->only(['id', 'name']),
+                        'jobPositions' => $user->employeeProfile->jobPositions
+                            ->sortBy('name')
+                            ->map(fn (JobPosition $position): array => $position->only(['id', 'name']))
+                            ->values()
+                            ->all(),
                     ] : null,
                 ])
+                ->all(),
+        );
+
+        return $this->toFluentCollection($rows);
+    }
+
+    /**
+     * @return Collection<int,Fluent>
+     */
+    public function jobPositions(int $organizationId): Collection
+    {
+        $rows = Cache::remember(
+            $this->key($organizationId, 'job-positions'),
+            self::STATIC_TTL_SECONDS,
+            fn () => JobPosition::withCount('employeeProfiles')
+                ->where('organization_id', $organizationId)
+                ->orderByDesc('is_system')
+                ->orderBy('name')
+                ->get()
+                ->map(fn (JobPosition $position): array => array_merge($position->attributesToArray(), [
+                    'employee_profiles_count' => $position->employee_profiles_count,
+                ]))
                 ->all(),
         );
 
@@ -196,6 +225,7 @@ class OrganizationDataCache
             'departments',
             'employees',
             'users',
+            'job-positions',
             'notification-events',
             'notification-rules',
             'request-status-counts',
@@ -230,7 +260,17 @@ class OrganizationDataCache
     private function toFluent(array $row): Fluent
     {
         return new Fluent(collect($row)
-            ->map(fn ($value) => is_array($value) ? $this->toFluent($value) : $value)
+            ->map(function ($value) {
+                if (! is_array($value)) {
+                    return $value;
+                }
+
+                if (array_is_list($value)) {
+                    return collect($value)->map(fn ($item) => is_array($item) ? $this->toFluent($item) : $item);
+                }
+
+                return $this->toFluent($value);
+            })
             ->all());
     }
 }

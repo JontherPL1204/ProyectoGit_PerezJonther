@@ -49,7 +49,7 @@ class RequestAttachment extends Model
     {
         return match ($this->justification_status) {
             'pending' => 'Pendiente de justificar',
-            'reviewed' => 'Justificante revisado',
+            'reviewed' => 'Justificante validado',
             default => 'Justificante recibido',
         };
     }

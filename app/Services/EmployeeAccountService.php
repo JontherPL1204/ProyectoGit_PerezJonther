@@ -8,6 +8,7 @@ use App\Models\EmployeeCalendarAssignment;
 use App\Models\EmployeeProfile;
 use App\Models\EmployeeScheduleAssignment;
 use App\Models\HolidayCalendar;
+use App\Models\JobPosition;
 use App\Models\LeaveAllowance;
 use App\Models\LeaveBalanceMovement;
 use App\Models\LeaveType;
@@ -38,11 +39,39 @@ class EmployeeAccountService
                 'password' => Hash::make($data['password']),
                 'role' => $isFirstUser ? 'admin' : 'user',
                 'status' => 'active',
+                'timezone' => $organization->timezone,
                 'can_manage_company_rules' => $isFirstUser,
                 'can_view_medical_attachments' => $isFirstUser,
             ]);
 
             $this->provisionEmployeeProfile($user, $organization);
+
+            return $user->fresh(['employeeProfile']);
+        });
+    }
+
+    /**
+     * @param  array{name:string,email:string,password:string}  $data
+     * @param  array{role:string,can_manage_company_rules:bool,can_view_medical_attachments:bool}  $permissions
+     */
+    public function registerInvited(Organization $organization, array $data, array $permissions, ?User $createdBy = null): User
+    {
+        return DB::transaction(function () use ($organization, $data, $permissions, $createdBy): User {
+            $isAdmin = $permissions['role'] === 'admin';
+
+            $user = User::create([
+                'organization_id' => $organization->id,
+                'name' => $data['name'],
+                'email' => Str::lower($data['email']),
+                'password' => Hash::make($data['password']),
+                'role' => $isAdmin ? 'admin' : 'user',
+                'status' => 'active',
+                'timezone' => $organization->timezone,
+                'can_manage_company_rules' => $isAdmin && $permissions['can_manage_company_rules'],
+                'can_view_medical_attachments' => $isAdmin && $permissions['can_view_medical_attachments'],
+            ]);
+
+            $this->provisionEmployeeProfile($user, $organization, $createdBy ?? $user);
 
             return $user->fresh(['employeeProfile']);
         });
@@ -79,10 +108,12 @@ class EmployeeAccountService
             ],
         );
 
+        $this->ensureDefaultJobPositions($organization);
+
         return $organization;
     }
 
-    private function provisionEmployeeProfile(User $user, Organization $organization): EmployeeProfile
+    private function provisionEmployeeProfile(User $user, Organization $organization, ?User $createdBy = null): EmployeeProfile
     {
         $department = Department::firstOrCreate([
             'organization_id' => $organization->id,
@@ -125,9 +156,25 @@ class EmployeeAccountService
             'valid_until' => null,
         ]);
 
-        $this->assignVacationBalance($profile, $organization, $user);
+        $this->assignVacationBalance($profile, $organization, $createdBy ?? $user);
 
         return $profile;
+    }
+
+    private function ensureDefaultJobPositions(Organization $organization): void
+    {
+        foreach (JobPosition::defaultNames() as $position) {
+            JobPosition::firstOrCreate(
+                [
+                    'organization_id' => $organization->id,
+                    'normalized_name' => JobPosition::normalizeName($position),
+                ],
+                [
+                    'name' => $position,
+                    'is_system' => true,
+                ],
+            );
+        }
     }
 
     private function defaultSchedule(Organization $organization): WorkSchedule

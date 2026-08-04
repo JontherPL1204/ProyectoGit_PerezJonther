@@ -27,6 +27,7 @@ class AuthRegistrationTest extends TestCase
         $this->assertAuthenticatedAs($user);
         $this->assertSame('user', $user->role);
         $this->assertSame('active', $user->status);
+        $this->assertSame('America/Guayaquil', $user->timezone);
         $this->assertFalse($user->can_manage_company_rules);
         $this->assertFalse($user->can_view_medical_attachments);
         $this->assertDatabaseHas('employee_profiles', [
@@ -57,6 +58,11 @@ class AuthRegistrationTest extends TestCase
         $this->assertTrue($user->can_manage_company_rules);
         $this->assertTrue($user->can_view_medical_attachments);
         $this->assertDatabaseHas('organizations', ['slug' => 'n-woffu-prime']);
+        $this->assertDatabaseHas('job_positions', [
+            'organization_id' => $user->organization_id,
+            'name' => 'Frontend Developer',
+            'is_system' => true,
+        ]);
         $this->assertDatabaseHas('company_settings', [
             'organization_id' => $user->organization_id,
             'annual_vacation_days' => 15,

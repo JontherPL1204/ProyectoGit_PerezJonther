@@ -34,7 +34,9 @@ class AdminUserController extends Controller
                 ->values();
         }
 
-        return view('admin.users', compact('search', 'users'));
+        $positions = $this->dataCache->jobPositions($request->user()->organization_id);
+
+        return view('admin.users', compact('positions', 'search', 'users'));
     }
 
     public function promoteByEmail(Request $request): RedirectResponse

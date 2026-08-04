@@ -526,6 +526,13 @@ button {
     margin-bottom: 34px;
 }
 
+.login-copy {
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 750;
+    line-height: 1.5;
+}
+
 .auth-switch {
     display: flex;
     flex-wrap: wrap;
@@ -627,8 +634,38 @@ textarea {
     color: var(--ink);
 }
 
+select[multiple] {
+    min-height: 118px;
+    padding-block: 8px;
+}
+
 textarea {
     resize: vertical;
+}
+
+.flatpickr-calendar {
+    border: 2px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 6px 0 var(--line);
+    font-family: var(--font-sans);
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange,
+.flatpickr-day.selected:hover,
+.flatpickr-day.startRange:hover,
+.flatpickr-day.endRange:hover {
+    border-color: var(--line);
+    background: var(--accent);
+    color: var(--ink);
+}
+
+.flatpickr-day.inRange {
+    border-color: var(--accent-soft);
+    background: var(--accent-soft);
+    color: var(--ink);
+    box-shadow: -5px 0 0 var(--accent-soft), 5px 0 0 var(--accent-soft);
 }
 
 .check-row {
@@ -772,13 +809,49 @@ dd {
 }
 
 .team-row {
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 560px);
+    grid-template-columns: minmax(220px, 0.9fr) minmax(260px, 0.9fr) minmax(300px, 1.1fr);
 }
 
 .user-permission-form {
     display: grid;
     gap: 10px;
     align-content: center;
+}
+
+.user-position-form,
+.stacked-form,
+.position-row-form {
+    display: grid;
+    gap: 10px;
+}
+
+.chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.chip-list span {
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    padding: 5px 9px;
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 850;
+}
+
+.copy-box {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: end;
+    margin-bottom: 12px;
+}
+
+.position-list {
+    margin-top: 14px;
 }
 
 .permission-switches {
@@ -825,6 +898,21 @@ dd {
     gap: 10px;
     padding: 0 0 10px;
     font-weight: 900;
+}
+
+.legend-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.rule-help {
+    margin: -2px 0 12px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 750;
+    line-height: 1.4;
 }
 
 .rule-form-grid {
@@ -1086,6 +1174,7 @@ dd {
     .rule-form-grid,
     .rule-switches,
     .permission-switches,
+    .copy-box,
     .report-table-head,
     .report-table-row {
         grid-template-columns: 1fr;

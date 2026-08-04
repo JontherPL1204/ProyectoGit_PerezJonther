@@ -37,4 +37,21 @@ class RequestEvent extends Model
     {
         return $this->belongsTo(User::class, 'actor_user_id');
     }
+
+    public function actionLabel(): string
+    {
+        return match ($this->action) {
+            'REQUEST_CREATED' => 'Solicitud creada',
+            'REQUEST_APPROVED' => 'Solicitud aprobada',
+            'REQUEST_REJECTED' => 'Solicitud rechazada',
+            'REQUEST_CANCELLED' => 'Solicitud cancelada',
+            'CANCELLATION_REQUESTED' => 'Cancelacion solicitada',
+            'CANCELLATION_ACCEPTED' => 'Cancelacion aceptada',
+            'CANCELLATION_REJECTED' => 'Cancelacion rechazada',
+            'ATTACHMENT_VIEWED' => 'Adjunto descargado',
+            'ATTACHMENT_PREVIEWED' => 'Adjunto previsualizado',
+            'ATTACHMENT_REVIEWED' => 'Justificante validado',
+            default => 'Actividad registrada',
+        };
+    }
 }
