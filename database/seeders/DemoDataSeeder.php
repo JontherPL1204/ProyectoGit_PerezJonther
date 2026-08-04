@@ -642,14 +642,27 @@ class DemoDataSeeder extends Seeder
             'leave_request_id' => $request->id,
             'event' => $event,
             'recipient_email' => $email,
-            'subject' => '[N-Woffu Prime] Demo '.$request->statusLabel(),
-            'body' => 'Correo demo para validar notificaciones, reintentos y estados dentro de N-Woffu Prime.',
+            'subject' => '[N-Woffu Prime] Demo solicitud #'.$request->id.' - '.$request->statusLabel(),
+            'body' => $this->demoNotificationBody($request, $event),
             'status' => $status,
             'attempts' => $status === 'failed' ? 3 : ($status === 'sent' ? 1 : 0),
             'available_at' => $status === 'pending' ? now() : null,
             'sent_at' => $status === 'sent' ? now()->subHours(rand(1, 12)) : null,
             'last_error' => $status === 'failed' ? 'SMTP demo: autenticacion pendiente o clave de aplicacion no configurada.' : null,
         ]);
+    }
+
+    private function demoNotificationBody(LeaveRequest $request, string $event): string
+    {
+        return match ($event) {
+            'REQUEST_CREATED' => $request->employeeProfile->user->name.' envio una solicitud de '.$request->leaveType->name.'. Revisa reglas, cobertura del equipo y solapamientos antes de resolver.',
+            'REQUEST_APPROVED' => 'La solicitud de '.$request->leaveType->name.' fue aprobada. El detalle ya esta disponible para el empleado dentro de N-Woffu Prime.',
+            'REQUEST_REJECTED' => 'La solicitud de '.$request->leaveType->name.' fue rechazada. El empleado puede revisar el comentario de revision dentro de la aplicacion.',
+            'CANCELLATION_REQUESTED' => $request->employeeProfile->user->name.' solicito cancelar una ausencia aprobada. Revisa si corresponde devolver saldo.',
+            'CANCELLATION_ACCEPTED' => 'La cancelacion fue aceptada y la solicitud quedo actualizada en el historial.',
+            'CANCELLATION_REJECTED' => 'La cancelacion fue rechazada y la ausencia mantiene su aprobacion.',
+            default => 'Hay una actualizacion de solicitud disponible en N-Woffu Prime.',
+        };
     }
 
     private function nextMonday(int $minimumDaysAhead): CarbonImmutable

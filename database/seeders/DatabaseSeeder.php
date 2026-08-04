@@ -246,19 +246,43 @@ class DatabaseSeeder extends Seeder
         }
 
         foreach ([
-            'REQUEST_CREATED' => ['admin', 'Nueva solicitud pendiente'],
-            'REQUEST_APPROVED' => ['user', 'Solicitud aprobada'],
-            'REQUEST_REJECTED' => ['user', 'Solicitud rechazada'],
-            'CANCELLATION_REQUESTED' => ['admin', 'Cancelacion solicitada'],
-            'CANCELLATION_ACCEPTED' => ['user', 'Cancelacion aceptada'],
-            'CANCELLATION_REJECTED' => ['user', 'Cancelacion rechazada'],
-        ] as $event => [$recipient, $subject]) {
+            'REQUEST_CREATED' => [
+                'admin',
+                '[N-Woffu Prime] Nueva solicitud #{{request_id}} pendiente',
+                '{{employee}} envio una solicitud de {{type}} para el periodo {{start_date}} - {{end_date}}. Revisa disponibilidad, reglas aplicables y posibles solapamientos antes de resolver.',
+            ],
+            'REQUEST_APPROVED' => [
+                'user',
+                '[N-Woffu Prime] Solicitud #{{request_id}} aprobada',
+                'Tu solicitud de {{type}} fue aprobada para el periodo {{start_date}} - {{end_date}}. Ya puedes consultar el detalle y el impacto en tu saldo dentro de la aplicacion.',
+            ],
+            'REQUEST_REJECTED' => [
+                'user',
+                '[N-Woffu Prime] Solicitud #{{request_id}} rechazada',
+                'Tu solicitud de {{type}} fue rechazada. Revisa el comentario de revision y, si corresponde, crea una nueva solicitud ajustada a las reglas de la empresa.',
+            ],
+            'CANCELLATION_REQUESTED' => [
+                'admin',
+                '[N-Woffu Prime] Cancelacion solicitada #{{request_id}}',
+                '{{employee}} solicito cancelar una ausencia de {{type}} ya aprobada. Revisa el caso antes de confirmar si el saldo debe devolverse.',
+            ],
+            'CANCELLATION_ACCEPTED' => [
+                'user',
+                '[N-Woffu Prime] Cancelacion #{{request_id}} aceptada',
+                'La cancelacion de tu solicitud de {{type}} fue aceptada. El detalle actualizado ya esta disponible en la aplicacion.',
+            ],
+            'CANCELLATION_REJECTED' => [
+                'user',
+                '[N-Woffu Prime] Cancelacion #{{request_id}} rechazada',
+                'La cancelacion de tu solicitud de {{type}} fue rechazada. La ausencia mantiene su estado aprobado y puedes revisar el motivo dentro de la aplicacion.',
+            ],
+        ] as $event => [$recipient, $subject, $body]) {
             NotificationRule::updateOrCreate(
                 ['organization_id' => $organization->id, 'event' => $event, 'recipient_type' => $recipient],
                 [
                     'is_active' => true,
-                    'subject_template' => '[N-Woffu Prime] '.$subject,
-                    'body_template' => 'Revisa el detalle dentro de N-Woffu Prime. Por seguridad, los documentos medicos no se envian por correo.',
+                    'subject_template' => $subject,
+                    'body_template' => $body,
                 ],
             );
         }
