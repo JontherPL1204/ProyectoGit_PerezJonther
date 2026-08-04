@@ -126,6 +126,7 @@
                             </legend>
 
                             <p class="rule-help">Al desactivarla, deja de estar disponible para solicitudes nuevas y conserva su configuracion e historial.</p>
+                            <p class="rule-help">Si eliges 2 o 3 aprobaciones, la solicitud queda pendiente hasta completar todos los niveles. Los niveles superiores requieren permiso para gestionar reglas y equipo.</p>
 
                             <div class="rule-form-grid">
                                 <label>
@@ -165,6 +166,15 @@
                                 <label>
                                     <span>Maximo</span>
                                     <input type="number" name="leave_types[{{ $type->id }}][max_units]" min="0" max="100000" value="{{ old($typeKey.'.max_units', $isVacation ? $settings->annual_vacation_days : $type->max_units) }}">
+                                </label>
+
+                                <label>
+                                    <span>Aprobaciones</span>
+                                    <select name="leave_types[{{ $type->id }}][approval_level_count]">
+                                        @for ($level = 1; $level <= 3; $level++)
+                                            <option value="{{ $level }}" @selected((int) old($typeKey.'.approval_level_count', $type->approval_level_count) === $level)>{{ $level }} nivel{{ $level === 1 ? '' : 'es' }}</option>
+                                        @endfor
+                                    </select>
                                 </label>
 
                                 <div class="rule-switches">

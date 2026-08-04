@@ -74,6 +74,11 @@ class LeaveRequest extends Model
         return $this->hasMany(RequestAttachment::class);
     }
 
+    public function approvalSteps(): HasMany
+    {
+        return $this->hasMany(ApprovalStep::class)->orderBy('level');
+    }
+
     public function statusLabel(): string
     {
         return match ($this->status) {
@@ -84,5 +89,24 @@ class LeaveRequest extends Model
             self::STATUS_PENDING_CANCELLATION => 'Cancelacion pendiente',
             default => $this->status,
         };
+    }
+
+    public function approvalProgressLabel(): ?string
+    {
+        $steps = $this->relationLoaded('approvalSteps')
+            ? $this->approvalSteps
+            : $this->approvalSteps()->get();
+
+        if ($steps->isEmpty()) {
+            return null;
+        }
+
+        $pending = $steps->firstWhere('status', ApprovalStep::STATUS_PENDING);
+
+        if ($pending) {
+            return 'Revision '.$pending->level.' de '.$steps->count();
+        }
+
+        return 'Revision completa';
     }
 }

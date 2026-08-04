@@ -954,7 +954,7 @@ class LeaveRequestFlowTest extends TestCase
             ->assertSee('Agregar regla')
             ->assertSee('Permiso por mudanza')
             ->assertDontSee('Limite mensual')
-            ->assertDontSee('Niveles aprobacion');
+            ->assertSee('Aprobaciones');
 
         $this->actingAs($admin)
             ->post(route('admin.rules.leave-types.destroy', $leaveType))

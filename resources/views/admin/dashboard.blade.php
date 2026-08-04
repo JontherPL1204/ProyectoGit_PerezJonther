@@ -78,6 +78,20 @@
                         <span class="status status-{{ strtolower($leaveRequest->status) }}">{{ $leaveRequest->status_label }}</span>
                         <h3>{{ $leaveRequest->employee_name }}</h3>
                         <p>{{ $leaveRequest->leave_type_name }} &middot; {{ $leaveRequest->start_date->format('d/m/Y') }} - {{ $leaveRequest->end_date->format('d/m/Y') }} &middot; {{ $leaveRequest->requested_units }} {{ $leaveRequest->unit === 'DAYS' ? 'dias' : 'min' }}</p>
+                        @if (($leaveRequest->approval_total ?? 1) > 1)
+                            <div class="approval-progress">
+                                <strong>{{ $leaveRequest->approval_summary }}</strong>
+                                @foreach ($leaveRequest->approval_steps as $step)
+                                    <span>
+                                        Nivel {{ $step->level }}:
+                                        {{ $step->status === \App\Models\ApprovalStep::STATUS_APPROVED ? 'aprobado' : ($step->status === \App\Models\ApprovalStep::STATUS_REJECTED ? 'rechazado' : 'pendiente') }}
+                                        @if ($step->decided_by_name)
+                                            por {{ $step->decided_by_name }}
+                                        @endif
+                                    </span>
+                                @endforeach
+                            </div>
+                        @endif
                         @if ($leaveRequest->overlap_warnings->isNotEmpty())
                             <div class="overlap-alert">
                                 <strong>Coincide con otras ausencias</strong>
@@ -89,24 +103,37 @@
                     </div>
 
                     @if ($leaveRequest->status === \App\Models\LeaveRequest::STATUS_PENDING)
-                        <div class="admin-actions">
-                            <form method="POST" action="{{ route('admin.requests.approve', $leaveRequest->id) }}">
-                                @csrf
-                                <input type="text" name="admin_comment" placeholder="Comentario opcional">
-                                <button class="primary-button compact" type="submit">
-                                    <i data-lucide="check"></i>
-                                    <span>Aprobar</span>
-                                </button>
-                            </form>
-                            <form method="POST" action="{{ route('admin.requests.reject', $leaveRequest->id) }}">
-                                @csrf
-                                <input type="text" name="admin_comment" placeholder="Motivo obligatorio" required>
-                                <button class="danger-button compact" type="submit">
-                                    <i data-lucide="x"></i>
-                                    <span>Rechazar</span>
-                                </button>
-                            </form>
-                        </div>
+                        @if ($leaveRequest->can_resolve_current_level)
+                            <div class="admin-actions">
+                                <form method="POST" action="{{ route('admin.requests.approve', $leaveRequest->id) }}">
+                                    @csrf
+                                    <input type="text" name="admin_comment" placeholder="Comentario opcional">
+                                    <button class="primary-button compact" type="submit">
+                                        <i data-lucide="check"></i>
+                                        <span>Aprobar</span>
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('admin.requests.reject', $leaveRequest->id) }}">
+                                    @csrf
+                                    <input type="text" name="admin_comment" placeholder="Motivo obligatorio" required>
+                                    <button class="danger-button compact" type="submit">
+                                        <i data-lucide="x"></i>
+                                        <span>Rechazar</span>
+                                    </button>
+                                </form>
+                            </div>
+                        @else
+                            <div class="admin-actions readonly">
+                                <div class="readonly-note">
+                                    <strong>Esperando nivel superior</strong>
+                                    <span>Este paso requiere permiso para gestionar reglas y equipo.</span>
+                                </div>
+                                <a class="ghost-button compact" href="{{ route('leave-requests.show', $leaveRequest->id) }}">
+                                    <i data-lucide="eye"></i>
+                                    <span>Ver detalle</span>
+                                </a>
+                            </div>
+                        @endif
                     @elseif ($leaveRequest->status === \App\Models\LeaveRequest::STATUS_PENDING_CANCELLATION)
                         <div class="admin-actions">
                             <form method="POST" action="{{ route('admin.requests.accept-cancellation', $leaveRequest->id) }}">

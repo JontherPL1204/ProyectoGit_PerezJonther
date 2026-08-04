@@ -124,6 +124,7 @@ class LeaveRequestController extends Controller
                 'employeeProfile.user',
                 'leaveType',
                 'calculationDays',
+                'approvalSteps.decidedBy',
                 'events.actor',
                 'attachments',
             ]),

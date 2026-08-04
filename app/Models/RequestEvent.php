@@ -48,6 +48,8 @@ class RequestEvent extends Model
             'CANCELLATION_REQUESTED' => 'Cancelacion solicitada',
             'CANCELLATION_ACCEPTED' => 'Cancelacion aceptada',
             'CANCELLATION_REJECTED' => 'Cancelacion rechazada',
+            'APPROVAL_LEVEL_APPROVED' => 'Nivel de aprobacion aprobado',
+            'APPROVAL_LEVEL_REJECTED' => 'Nivel de aprobacion rechazado',
             'ATTACHMENT_VIEWED' => 'Adjunto descargado',
             'ATTACHMENT_PREVIEWED' => 'Adjunto previsualizado',
             'ATTACHMENT_REVIEWED' => 'Justificante validado',

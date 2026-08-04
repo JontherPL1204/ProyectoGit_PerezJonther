@@ -44,6 +44,10 @@
                                 $hints[] = 'Puedes adjuntar justificante si aplica.';
                             }
 
+                            if ($type->requires_approval && ! $type->auto_approve && (int) $type->approval_level_count > 1) {
+                                $hints[] = 'Necesita '.$type->approval_level_count.' aprobaciones antes de quedar aprobada.';
+                            }
+
                             $helpText = trim(($typeHelp[$type->code] ?? 'Este motivo requiere revision de la persona responsable.').' '.implode(' ', $hints));
                         @endphp
                         <option

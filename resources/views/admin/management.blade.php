@@ -25,7 +25,7 @@
                 </div>
             @endif
 
-            <form class="admin-filter-form" method="POST" action="{{ route('admin.management.invitations.store') }}">
+            <form class="admin-filter-form" method="POST" action="{{ route('admin.management.invitations.store') }}" data-role-permissions>
                 @csrf
                 <label>
                     <span>Correo</span>
@@ -34,19 +34,20 @@
 
                 <label>
                     <span>Permiso inicial</span>
-                    <select name="initial_role">
+                    <select name="initial_role" data-role-select>
                         <option value="user" @selected(old('initial_role', 'user') === 'user')>Empleado</option>
                         <option value="admin" @selected(old('initial_role') === 'admin')>Administrador</option>
+                        <option value="developer" @selected(old('initial_role') === 'developer')>Desarrollador</option>
                     </select>
                 </label>
 
                 <label class="check-row">
-                    <input type="checkbox" name="can_manage_company_rules" value="1" @checked(old('can_manage_company_rules'))>
+                    <input type="checkbox" name="can_manage_company_rules" value="1" @checked(old('can_manage_company_rules')) data-admin-only-permission>
                     <span>Gestiona reglas y equipo</span>
                 </label>
 
                 <label class="check-row">
-                    <input type="checkbox" name="can_view_medical_attachments" value="1" @checked(old('can_view_medical_attachments'))>
+                    <input type="checkbox" name="can_view_medical_attachments" value="1" @checked(old('can_view_medical_attachments')) data-admin-only-permission>
                     <span>Puede ver adjuntos medicos</span>
                 </label>
 
@@ -94,7 +95,13 @@
                             <span class="status status-{{ $statusClass }}">{{ $label }}</span>
                             <h3>{{ $invitation->email }}</h3>
                             <p>
-                                {{ $invitation->initial_role === 'admin' ? 'Administrador' : 'Empleado' }}
+                                @if ($invitation->initial_role === \App\Models\User::ROLE_ADMIN)
+                                    Administrador
+                                @elseif ($invitation->initial_role === \App\Models\User::ROLE_DEVELOPER)
+                                    Desarrollador
+                                @else
+                                    Empleado
+                                @endif
                                 &middot;
                                 vence {{ auth()->user()->formatDateTime($invitation->expires_at) }}
                             </p>
@@ -163,15 +170,21 @@
 
             <div class="mini-list position-list">
                 @foreach ($positions as $position)
-                    <div>
+                    <div class="position-list-row">
                         @if ($position->is_system)
-                            <strong>{{ $position->name }}</strong>
-                            <span>Inicial &middot; {{ $position->employee_profiles_count }} integrante(s)</span>
+                            <div class="position-row-summary">
+                                <strong>{{ $position->name }}</strong>
+                                <span>Inicial &middot; {{ $position->employee_profiles_count }} integrante(s)</span>
+                            </div>
+                            <span class="position-lock">
+                                <i data-lucide="lock"></i>
+                                Base
+                            </span>
                         @else
                             <form class="position-row-form" method="POST" action="{{ route('admin.management.positions.update', $position->id) }}">
                                 @csrf
                                 <label>
-                                    <span>Puesto personalizado</span>
+                                    <span>Puesto personalizado &middot; {{ $position->employee_profiles_count }} integrante(s)</span>
                                     <input type="text" name="name" value="{{ $position->name }}" maxlength="120" required>
                                 </label>
                                 <button class="ghost-button compact" type="submit">

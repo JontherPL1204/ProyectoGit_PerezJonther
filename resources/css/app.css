@@ -393,7 +393,7 @@ button {
 }
 
 .team-promote-form {
-    grid-template-columns: minmax(220px, 1fr) minmax(170px, 0.6fr) minmax(190px, 0.8fr) auto;
+    grid-template-columns: minmax(220px, 1fr) minmax(160px, 0.7fr) minmax(170px, 0.6fr) minmax(190px, 0.8fr) auto;
 }
 
 .team-filter-form {
@@ -422,6 +422,32 @@ button {
 }
 
 .overlap-alert span {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.approval-progress,
+.readonly-note {
+    display: grid;
+    gap: 4px;
+    margin-top: 10px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--info-soft);
+    padding: 10px;
+}
+
+.approval-progress strong,
+.approval-progress span,
+.readonly-note strong,
+.readonly-note span {
+    display: block;
+    margin: 0;
+}
+
+.approval-progress span,
+.readonly-note span {
     color: var(--muted);
     font-size: 13px;
     font-weight: 800;
@@ -797,6 +823,10 @@ dd {
     gap: 16px;
 }
 
+.notification-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
 .admin-actions {
     display: grid;
     gap: 10px;
@@ -809,7 +839,8 @@ dd {
 }
 
 .team-row {
-    grid-template-columns: minmax(220px, 0.9fr) minmax(260px, 0.9fr) minmax(300px, 1.1fr);
+    align-items: start;
+    grid-template-columns: minmax(220px, 0.8fr) minmax(340px, 1.25fr) minmax(280px, 0.95fr);
 }
 
 .user-permission-form {
@@ -854,6 +885,124 @@ dd {
     margin-top: 14px;
 }
 
+.position-picker {
+    border: 0;
+    margin: 0;
+    min-width: 0;
+    padding: 0;
+}
+
+.position-picker legend,
+.position-create-field > label,
+.position-row-form label span {
+    color: var(--muted);
+    display: block;
+    font-size: 12px;
+    font-weight: 900;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.position-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.position-option {
+    cursor: pointer;
+    display: inline-flex;
+    min-width: 0;
+}
+
+.position-option input {
+    height: 1px;
+    opacity: 0;
+    position: absolute;
+    width: 1px;
+}
+
+.position-option span {
+    align-items: center;
+    background: var(--surface);
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink);
+    display: inline-flex;
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 1.2;
+    min-height: 34px;
+    padding: 7px 11px;
+    transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.position-option input:checked + span {
+    background: var(--accent);
+    border-color: var(--ink);
+    box-shadow: 0 3px 0 var(--ink);
+}
+
+.position-option input:focus-visible + span {
+    outline: 3px solid rgba(184, 255, 77, 0.5);
+    outline-offset: 2px;
+}
+
+.position-option:hover span {
+    transform: translateY(-1px);
+}
+
+.position-create-field {
+    min-width: 0;
+}
+
+.position-create-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+}
+
+.empty-inline {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 750;
+    margin: 0;
+}
+
+.position-list-row {
+    align-items: center;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.position-list-row .position-row-form {
+    align-items: end;
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.position-row-summary {
+    min-width: 0;
+}
+
+.position-lock {
+    align-items: center;
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    color: var(--muted);
+    display: inline-flex;
+    font-size: 12px;
+    font-weight: 900;
+    gap: 6px;
+    min-height: 32px;
+    padding: 6px 10px;
+}
+
+.position-lock svg {
+    height: 14px;
+    width: 14px;
+}
+
 .permission-switches {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -868,6 +1017,10 @@ dd {
 
 .rule-list {
     margin: 14px 0 0;
+}
+
+.support-subhead {
+    margin-top: 18px;
 }
 
 .rule-list dt,
@@ -1162,6 +1315,9 @@ dd {
     .form-actions,
     .admin-actions form,
     .calendar-nav,
+    .position-create-row,
+    .position-list-row,
+    .position-list-row .position-row-form,
     .filter-actions,
     .filter-tabs,
     .rule-card legend {

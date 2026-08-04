@@ -91,3 +91,9 @@ php artisan nwoffu:send-notifications
 - claves de usuarios seed cambiadas
 - `MAIL_PASSWORD` con clave de aplicacion
 - backups de base de datos y storage
+- ejecutar `php artisan migrate --force` contra Supabase para aplicar la migracion
+  `2026_08_04_000003_lock_down_supabase_public_api.php`;
+- si no se pueden ejecutar migraciones desde el servidor, pegar en Supabase SQL
+  Editor el archivo `database/sql/2026_08_04_lock_down_supabase_public_api.sql`;
+- despues de aplicar el cierre, volver a correr Supabase Security Advisor y confirmar
+  que no queden tablas `public` con RLS apagado ni columnas sensibles expuestas.

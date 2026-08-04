@@ -44,7 +44,7 @@ class AdminManagementController extends Controller
 
         $data = $request->validate([
             'email' => ['required', 'email', 'max:255'],
-            'initial_role' => ['required', 'in:user,admin'],
+            'initial_role' => ['required', 'in:user,admin,developer'],
             'can_manage_company_rules' => ['nullable', 'boolean'],
             'can_view_medical_attachments' => ['nullable', 'boolean'],
         ], [
@@ -70,14 +70,15 @@ class AdminManagementController extends Controller
         }
 
         $token = TeamInvitation::newPlainToken();
-        $isAdmin = $data['initial_role'] === 'admin';
+        $role = (string) $data['initial_role'];
+        $isAdmin = $role === User::ROLE_ADMIN;
 
         $invitation = TeamInvitation::create([
             'organization_id' => $request->user()->organization_id,
             'email' => $email,
             'token_hash' => TeamInvitation::tokenHash($token),
             'status' => TeamInvitation::STATUS_PENDING,
-            'initial_role' => $isAdmin ? 'admin' : 'user',
+            'initial_role' => $role,
             'can_manage_company_rules' => $isAdmin && $request->boolean('can_manage_company_rules'),
             'can_view_medical_attachments' => $isAdmin && $request->boolean('can_view_medical_attachments'),
             'created_by' => $request->user()->id,
@@ -234,7 +235,14 @@ class AdminManagementController extends Controller
         $this->authorizeManagement($request);
         abort_unless($user->organization_id === $request->user()->organization_id, 404);
 
-        $profile = $user->employeeProfile()->with('jobPositions')->firstOrFail();
+        $profile = $user->employeeProfile()->with('jobPositions')->first();
+
+        if (! $profile) {
+            throw ValidationException::withMessages([
+                'position' => 'Este usuario aun no tiene perfil de empleado para asignar puestos.',
+            ]);
+        }
+
         $data = $request->validate([
             'job_position_ids' => ['nullable', 'array'],
             'job_position_ids.*' => [
@@ -249,9 +257,13 @@ class AdminManagementController extends Controller
             ->unique()
             ->values();
 
-        if (filled($data['new_position_name'] ?? null)) {
-            $positionIds->push($this->createPosition($request, (string) $data['new_position_name'])->id);
+        $newPositionName = trim((string) ($data['new_position_name'] ?? ''));
+
+        if ($newPositionName !== '') {
+            $positionIds->push($this->createPosition($request, $newPositionName)->id);
         }
+
+        $positionIds = $positionIds->unique()->values();
 
         $previous = $profile->jobPositions->pluck('name')->sort()->values()->implode(', ');
 

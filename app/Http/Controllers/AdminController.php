@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ApprovalStep;
 use App\Models\LeaveRequest;
+use App\Models\User;
 use App\Services\ApprovalService;
 use App\Services\NotificationService;
 use App\Services\OrganizationDataCache;
@@ -88,6 +90,7 @@ class AdminController extends Controller
                 'leave_requests.requested_units',
                 'users.name as employee_name',
                 'leave_types.name as leave_type_name',
+                'leave_types.approval_level_count',
             ])
             ->orderBy('leave_requests.start_date')
             ->orderByDesc('leave_requests.created_at')
@@ -95,6 +98,7 @@ class AdminController extends Controller
             ->withQueryString();
 
         $requests->getCollection()->transform(fn ($row) => $this->formatRequestRow($row));
+        $this->attachApprovalProgress($requests->getCollection(), $request->user());
         $this->attachOverlapWarnings($requests->getCollection());
 
         $stats = $this->dataCache->requestStatusCounts($request->user()->organization_id);
@@ -121,13 +125,19 @@ class AdminController extends Controller
 
         try {
             $updated = $this->approvals->approve($leaveRequest, $request->user(), $data['admin_comment'] ?? null, $request);
-            $this->notifications->requestResolved($updated, 'REQUEST_APPROVED');
+
+            if ($updated->status === LeaveRequest::STATUS_APPROVED) {
+                $this->notifications->requestResolved($updated, 'REQUEST_APPROVED');
+            }
+
             $this->dataCache->forgetRequestData($request->user()->organization_id);
         } catch (InvalidArgumentException $exception) {
             return back()->withErrors(['request' => $exception->getMessage()]);
         }
 
-        return back()->with('status', 'Solicitud aprobada.');
+        return back()->with('status', $updated->status === LeaveRequest::STATUS_APPROVED
+            ? 'Solicitud aprobada.'
+            : 'Nivel aprobado. La solicitud sigue pendiente del siguiente nivel.');
     }
 
     public function reject(Request $request, LeaveRequest $leaveRequest): RedirectResponse
@@ -249,6 +259,62 @@ class AdminController extends Controller
                 ->take(3)
                 ->values();
         }
+    }
+
+    private function attachApprovalProgress(Collection $requests, User $actor): void
+    {
+        if ($requests->isEmpty()) {
+            return;
+        }
+
+        $steps = DB::table('approval_steps')
+            ->leftJoin('users', 'users.id', '=', 'approval_steps.decided_by')
+            ->whereIn('approval_steps.leave_request_id', $requests->pluck('id')->all())
+            ->select([
+                'approval_steps.leave_request_id',
+                'approval_steps.level',
+                'approval_steps.status',
+                'approval_steps.comment',
+                'approval_steps.decided_at',
+                'users.name as decided_by_name',
+            ])
+            ->orderBy('approval_steps.level')
+            ->get()
+            ->groupBy('leave_request_id');
+
+        foreach ($requests as $leaveRequest) {
+            $requestSteps = $steps->get($leaveRequest->id, collect());
+            $configuredTotal = max(1, min(3, (int) ($leaveRequest->approval_level_count ?: 1)));
+            $storedTotal = (int) ($requestSteps->max('level') ?: 0);
+            $total = max($configuredTotal, $storedTotal, 1);
+            $pendingStep = $requestSteps->firstWhere('status', ApprovalStep::STATUS_PENDING);
+            $currentLevel = $pendingStep
+                ? (int) $pendingStep->level
+                : ($leaveRequest->status === LeaveRequest::STATUS_PENDING ? 1 : null);
+
+            $leaveRequest->approval_steps = $requestSteps;
+            $leaveRequest->approval_total = $total;
+            $leaveRequest->approval_current_level = $currentLevel;
+            $leaveRequest->can_resolve_current_level = $currentLevel !== null
+                && $leaveRequest->status === LeaveRequest::STATUS_PENDING
+                && $this->approvals->canApproveLevel($actor, $currentLevel);
+            $leaveRequest->approval_summary = $this->approvalSummary($leaveRequest, $currentLevel, $total);
+        }
+    }
+
+    private function approvalSummary(object $leaveRequest, ?int $currentLevel, int $total): string
+    {
+        if ($leaveRequest->status !== LeaveRequest::STATUS_PENDING) {
+            return $total > 1 ? 'Revision completa' : 'Revision simple';
+        }
+
+        if ($total <= 1) {
+            return 'Revision simple';
+        }
+
+        return $currentLevel
+            ? 'Revision '.$currentLevel.' de '.$total
+            : 'Aprobaciones completas; falta cierre';
     }
 
     private function formatRequestRow(object $row, bool $withStatus = true): object

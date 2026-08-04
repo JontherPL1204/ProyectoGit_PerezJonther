@@ -25,7 +25,8 @@ class TeamManagementTest extends TestCase
             ->get(route('admin.users.index'))
             ->assertOk()
             ->assertSee('Frontend Developer')
-            ->assertSee('Guardar puestos');
+            ->assertSee('position-options', false)
+            ->assertSee('Guardar');
 
         $this->actingAs($admin)
             ->post(route('admin.management.positions.store'), ['name' => 'QA Analyst'])
@@ -45,14 +46,24 @@ class TeamManagementTest extends TestCase
         $assignedNames = $employee->employeeProfile->jobPositions()->pluck('name')->sort()->values()->all();
         $this->assertSame(['DevOps Engineer', 'Frontend Developer'], $assignedNames);
 
+        $devOps = JobPosition::where('name', 'DevOps Engineer')->firstOrFail();
+
+        $this->actingAs($admin)
+            ->post(route('admin.users.positions.update', $employee), [
+                'job_position_ids' => [$frontend->id, $devOps->id],
+                'new_position_name' => 'frontend developer',
+            ])
+            ->assertSessionHas('status');
+
+        $this->assertSame(2, $employee->employeeProfile->jobPositions()->count());
+        $this->assertSame(1, JobPosition::where('normalized_name', 'frontend developer')->count());
+
         $this->actingAs($admin)
             ->post(route('admin.management.positions.update', $qa), ['name' => 'QA Specialist'])
             ->assertSessionHas('status');
 
         $qa->refresh();
         $this->assertSame('QA Specialist', $qa->name);
-
-        $devOps = JobPosition::where('name', 'DevOps Engineer')->firstOrFail();
 
         $this->actingAs($admin)
             ->post(route('admin.management.positions.destroy', $devOps))
