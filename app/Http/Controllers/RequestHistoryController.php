@@ -59,6 +59,7 @@ class RequestHistoryController extends Controller
             })
             ->select([
                 'leave_requests.id',
+                'leave_requests.employee_profile_id',
                 'leave_requests.status',
                 'leave_requests.unit',
                 'leave_requests.start_date',

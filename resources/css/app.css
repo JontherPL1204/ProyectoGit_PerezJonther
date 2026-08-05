@@ -298,6 +298,10 @@ button {
     gap: 12px;
 }
 
+.request-row > div:first-child {
+    min-width: 0;
+}
+
 .request-row strong,
 .admin-request h3,
 .mini-list strong,
@@ -349,6 +353,32 @@ button {
     flex-wrap: wrap;
     justify-content: flex-end;
     gap: 8px;
+}
+
+.request-row-side {
+    align-items: flex-end;
+    display: grid;
+    gap: 8px;
+    justify-items: end;
+}
+
+.request-row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.request-row-actions form {
+    margin: 0;
+}
+
+.request-row-actions .ghost-button span,
+.request-row-actions .primary-button span,
+.request-row-actions .danger-button span {
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
 }
 
 .filter-tabs {
@@ -2148,6 +2178,8 @@ dd {
 
     .request-row,
     .row-meta,
+    .request-row-side,
+    .request-row-actions,
     .form-actions,
     .admin-actions form,
     .calendar-nav,
@@ -2169,6 +2201,12 @@ dd {
         flex-direction: column;
         grid-template-columns: 1fr;
         justify-content: flex-start;
+    }
+
+    .request-row-actions form,
+    .request-row-actions .ghost-button,
+    .request-row-actions .danger-button {
+        width: 100%;
     }
 
     .rule-accordion-summary {

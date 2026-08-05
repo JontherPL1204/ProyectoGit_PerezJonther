@@ -77,7 +77,12 @@
 
         <div class="request-list">
             @forelse ($requests as $leaveRequest)
-                <a class="request-row" href="{{ route('leave-requests.show', $leaveRequest->id) }}">
+                @php
+                    $isOwner = (int) $leaveRequest->employee_profile_id === (int) auth()->user()->employeeProfile?->id;
+                    $canCancelPending = $isOwner && $leaveRequest->status === \App\Models\LeaveRequest::STATUS_PENDING;
+                    $canRequestCancellation = $isOwner && $leaveRequest->status === \App\Models\LeaveRequest::STATUS_APPROVED;
+                @endphp
+                <article class="request-row">
                     <div>
                         <strong>{{ $leaveRequest->leave_type_name }}</strong>
                         <span>
@@ -89,11 +94,39 @@
                             <span>{{ $leaveRequest->user_comment ?: $leaveRequest->admin_comment }}</span>
                         @endif
                     </div>
-                    <div class="row-meta">
-                        <span class="status status-{{ strtolower($leaveRequest->status) }}">{{ $leaveRequest->status_label }}</span>
-                        <span>{{ $leaveRequest->requested_units }} {{ $leaveRequest->unit === 'DAYS' ? 'dias' : 'min' }}</span>
+                    <div class="request-row-side">
+                        <div class="row-meta">
+                            <span class="status status-{{ strtolower($leaveRequest->status) }}">{{ $leaveRequest->status_label }}</span>
+                            <span>{{ $leaveRequest->requested_units }} {{ $leaveRequest->unit === 'DAYS' ? 'dias' : 'min' }}</span>
+                        </div>
+                        <div class="request-row-actions">
+                            <a class="ghost-button compact" href="{{ route('leave-requests.show', $leaveRequest->id) }}">
+                                <i data-lucide="eye"></i>
+                                <span>Ver detalle</span>
+                            </a>
+
+                            @if ($canCancelPending)
+                                <form method="POST" action="{{ route('leave-requests.cancel', $leaveRequest->id) }}" data-confirm="Cancelar esta solicitud pendiente.">
+                                    @csrf
+                                    <button class="danger-button compact" type="submit">
+                                        <i data-lucide="x-circle"></i>
+                                        <span>Cancelar</span>
+                                    </button>
+                                </form>
+                            @endif
+
+                            @if ($canRequestCancellation)
+                                <form method="POST" action="{{ route('leave-requests.request-cancellation', $leaveRequest->id) }}" data-confirm="Enviar esta solicitud de cancelacion al administrador.">
+                                    @csrf
+                                    <button class="ghost-button compact" type="submit">
+                                        <i data-lucide="undo-2"></i>
+                                        <span>Solicitar cancelacion</span>
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
                     </div>
-                </a>
+                </article>
             @empty
                 <div class="empty-state">
                     <i data-lucide="search"></i>

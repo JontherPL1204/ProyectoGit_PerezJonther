@@ -24,9 +24,10 @@ class DashboardController extends Controller
     {
         $user = $request->user();
         $profileId = $this->currentEmployeeProfileId($request);
+        $requestDataVersion = $this->dataCache->requestDataVersion($user->organization_id);
 
         $data = Cache::remember(
-            $this->dashboardCacheKey($user->organization_id, $profileId, $user->isAdmin()),
+            $this->dashboardCacheKey($user->organization_id, $profileId, $user->isAdmin(), $requestDataVersion),
             60,
             fn (): array => $this->dashboardData($user->organization_id, $profileId, $user->isAdmin()),
         );
@@ -154,9 +155,9 @@ class DashboardController extends Controller
         return $row;
     }
 
-    private function dashboardCacheKey(int $organizationId, int $profileId, bool $isAdmin): string
+    private function dashboardCacheKey(int $organizationId, int $profileId, bool $isAdmin, int $requestDataVersion): string
     {
-        return 'dashboard-data:'.$organizationId.':'.$profileId.':'.($isAdmin ? 'admin' : 'user').':v2';
+        return 'dashboard-data:'.$organizationId.':'.$profileId.':'.($isAdmin ? 'admin' : 'user').':v3:'.$requestDataVersion;
     }
 
     private function statusLabel(string $status): string
