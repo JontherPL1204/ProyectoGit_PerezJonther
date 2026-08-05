@@ -887,6 +887,8 @@ class LeaveRequestFlowTest extends TestCase
             ->assertOk()
             ->assertSee('Reglas de notificacion')
             ->assertSee('Nueva solicitud')
+            ->assertSee('Avisa al administrador que hay una nueva solicitud pendiente de revisar.')
+            ->assertDontSee('{{request_id}}', false)
             ->assertSee('class="status-select', false)
             ->assertSee('name="notification_rules['.$rule->id.'][is_active]"', false);
 
@@ -954,7 +956,7 @@ class LeaveRequestFlowTest extends TestCase
             ->assertSee('Agregar regla')
             ->assertSee('Permiso por mudanza')
             ->assertDontSee('Limite mensual')
-            ->assertDontSee('Niveles aprobacion');
+            ->assertSee('Aprobaciones');
 
         $this->actingAs($admin)
             ->post(route('admin.rules.leave-types.destroy', $leaveType))

@@ -61,6 +61,12 @@
                             <span>Reglas</span>
                         </a>
                     @endif
+                    @if (auth()->user()->canAccessDeveloperSupport())
+                        <a class="nav-link {{ request()->routeIs('developer.support') ? 'active' : '' }}" href="{{ route('developer.support') }}">
+                            <i data-lucide="wrench"></i>
+                            <span>Sistema</span>
+                        </a>
+                    @endif
                 </nav>
 
                 <form method="POST" action="{{ route('logout') }}" class="sidebar-footer">

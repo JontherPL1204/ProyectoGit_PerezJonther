@@ -18,6 +18,12 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    public const ROLE_USER = 'user';
+
+    public const ROLE_ADMIN = 'admin';
+
+    public const ROLE_DEVELOPER = 'developer';
+
     /**
      * @var list<string>
      */
@@ -47,7 +53,12 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function isDeveloper(): bool
+    {
+        return $this->role === self::ROLE_DEVELOPER;
     }
 
     public function isActive(): bool
@@ -60,9 +71,23 @@ class User extends Authenticatable
         return $this->isAdmin() && $this->can_manage_company_rules;
     }
 
+    public function canAccessDeveloperSupport(): bool
+    {
+        return $this->isDeveloper() || $this->canManageCompanyRules();
+    }
+
     public function canViewMedicalAttachments(): bool
     {
         return $this->isAdmin() && $this->can_view_medical_attachments;
+    }
+
+    public function roleLabel(): string
+    {
+        return match ($this->role) {
+            self::ROLE_ADMIN => 'Administrador',
+            self::ROLE_DEVELOPER => 'Desarrollador',
+            default => 'Empleado',
+        };
     }
 
     public function timezoneName(): string

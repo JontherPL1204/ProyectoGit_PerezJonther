@@ -106,7 +106,7 @@ class OrganizationDataCache
             self::STATIC_TTL_SECONDS,
             fn () => User::with(['employeeProfile.department', 'employeeProfile.jobPositions'])
                 ->where('organization_id', $organizationId)
-                ->orderByRaw("CASE WHEN role = 'admin' THEN 0 ELSE 1 END")
+                ->orderByRaw("CASE WHEN role = 'admin' THEN 0 WHEN role = 'developer' THEN 1 ELSE 2 END")
                 ->orderBy('name')
                 ->get()
                 ->map(fn (User $user): array => [

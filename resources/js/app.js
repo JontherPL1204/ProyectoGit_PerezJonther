@@ -5,6 +5,7 @@ import {
     Briefcase,
     CalendarDays,
     CalendarPlus,
+    ChevronDown,
     Check,
     CheckCircle2,
     Copy,
@@ -25,6 +26,7 @@ import {
     Undo2,
     UserPlus,
     Users,
+    Wrench,
     X,
     XCircle,
     Eye,
@@ -44,6 +46,7 @@ const icons = {
     Briefcase,
     CalendarDays,
     CalendarPlus,
+    ChevronDown,
     Check,
     CheckCircle2,
     Copy,
@@ -64,6 +67,7 @@ const icons = {
     Undo2,
     UserPlus,
     Users,
+    Wrench,
     X,
     XCircle,
     Eye,
@@ -133,6 +137,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         select.addEventListener('change', syncStatusStyle);
         syncStatusStyle();
+    });
+
+    document.querySelectorAll('[data-role-permissions]').forEach((form) => {
+        const roleSelect = form.querySelector('[data-role-select]');
+        const adminOnlyInputs = form.querySelectorAll('[data-admin-only-permission]');
+
+        const syncRolePermissions = () => {
+            const isAdmin = roleSelect?.value === 'admin';
+
+            adminOnlyInputs.forEach((input) => {
+                const isLocked = input.dataset.locked === '1';
+                input.disabled = isLocked || !isAdmin;
+
+                if (!isAdmin) {
+                    input.checked = false;
+                }
+            });
+        };
+
+        roleSelect?.addEventListener('change', syncRolePermissions);
+        syncRolePermissions();
     });
 
     const leaveTypeSelect = document.querySelector('[data-leave-type-select]');

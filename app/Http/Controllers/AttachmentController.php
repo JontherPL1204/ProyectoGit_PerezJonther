@@ -10,13 +10,13 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Throwable;
 
 class AttachmentController extends Controller
 {
     public function __construct(private readonly AuditService $audit) {}
 
-    public function download(Request $request, RequestAttachment $requestAttachment): StreamedResponse
+    public function download(Request $request, RequestAttachment $requestAttachment): Response
     {
         $leaveRequest = $this->authorizeAttachmentAccess($request, $requestAttachment);
 
@@ -31,26 +31,21 @@ class AttachmentController extends Controller
             $request,
         );
 
-        $disk = Storage::disk($requestAttachment->storage_disk);
+        $content = $this->attachmentContent($requestAttachment, $leaveRequest);
 
-        if ($disk->exists($requestAttachment->storage_path)) {
-            return $disk->download($requestAttachment->storage_path, $requestAttachment->original_name);
+        if ($content === null) {
+            abort(Response::HTTP_NOT_FOUND, 'El adjunto ya no esta disponible en el servidor.');
         }
 
-        if ($this->isDemoAttachment($requestAttachment)) {
-            return response()->streamDownload(
-                function () use ($requestAttachment, $leaveRequest): void {
-                    echo $this->demoPdfContent($requestAttachment, $leaveRequest);
-                },
-                $requestAttachment->original_name,
-                ['Content-Type' => 'application/pdf'],
-            );
-        }
-
-        abort(Response::HTTP_NOT_FOUND, 'El adjunto ya no esta disponible en el servidor.');
+        return response($content, Response::HTTP_OK, [
+            'Content-Type' => $this->responseMimeType($requestAttachment),
+            'Content-Disposition' => 'attachment; filename="'.$this->safeFileName($requestAttachment).'"',
+            'Content-Length' => (string) strlen($content),
+            'Cache-Control' => 'private, max-age=0, no-store',
+        ]);
     }
 
-    public function preview(Request $request, RequestAttachment $requestAttachment): StreamedResponse
+    public function preview(Request $request, RequestAttachment $requestAttachment): Response
     {
         $leaveRequest = $this->authorizeAttachmentAccess($request, $requestAttachment);
 
@@ -67,37 +62,18 @@ class AttachmentController extends Controller
             $request,
         );
 
-        $disk = Storage::disk($requestAttachment->storage_disk);
-        $fileName = str_replace('"', '', Str::ascii($requestAttachment->original_name));
+        $content = $this->attachmentContent($requestAttachment, $leaveRequest);
 
-        if ($disk->exists($requestAttachment->storage_path)) {
-            return response()->stream(function () use ($disk, $requestAttachment): void {
-                $stream = $disk->readStream($requestAttachment->storage_path);
-
-                if ($stream === false) {
-                    return;
-                }
-
-                fpassthru($stream);
-                fclose($stream);
-            }, Response::HTTP_OK, [
-                'Content-Type' => $requestAttachment->mime_type,
-                'Content-Disposition' => 'inline; filename="'.$fileName.'"',
-                'Cache-Control' => 'private, max-age=0, no-store',
-            ]);
+        if ($content === null) {
+            abort(Response::HTTP_NOT_FOUND, 'El adjunto ya no esta disponible en el servidor.');
         }
 
-        if ($this->isDemoAttachment($requestAttachment)) {
-            return response()->stream(function () use ($requestAttachment, $leaveRequest): void {
-                echo $this->demoPdfContent($requestAttachment, $leaveRequest);
-            }, Response::HTTP_OK, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="'.$fileName.'"',
-                'Cache-Control' => 'private, max-age=0, no-store',
-            ]);
-        }
-
-        abort(Response::HTTP_NOT_FOUND, 'El adjunto ya no esta disponible en el servidor.');
+        return response($content, Response::HTTP_OK, [
+            'Content-Type' => $this->responseMimeType($requestAttachment),
+            'Content-Disposition' => 'inline; filename="'.$this->safeFileName($requestAttachment).'"',
+            'Content-Length' => (string) strlen($content),
+            'Cache-Control' => 'private, max-age=0, no-store',
+        ]);
     }
 
     public function markReviewed(Request $request, RequestAttachment $requestAttachment): RedirectResponse
@@ -145,6 +121,45 @@ class AttachmentController extends Controller
             'image/jpeg',
             'image/png',
         ], true);
+    }
+
+    private function attachmentContent(RequestAttachment $requestAttachment, LeaveRequest $leaveRequest): ?string
+    {
+        try {
+            $disk = Storage::disk($requestAttachment->storage_disk);
+
+            if ($disk->exists($requestAttachment->storage_path)) {
+                $content = $disk->get($requestAttachment->storage_path);
+
+                return is_string($content) ? $content : null;
+            }
+        } catch (Throwable) {
+            if (! $this->isDemoAttachment($requestAttachment)) {
+                return null;
+            }
+        }
+
+        if ($this->isDemoAttachment($requestAttachment)) {
+            return $this->demoPdfContent($requestAttachment, $leaveRequest);
+        }
+
+        return null;
+    }
+
+    private function responseMimeType(RequestAttachment $requestAttachment): string
+    {
+        if ($this->isDemoAttachment($requestAttachment)) {
+            return 'application/pdf';
+        }
+
+        return $requestAttachment->mime_type ?: 'application/octet-stream';
+    }
+
+    private function safeFileName(RequestAttachment $requestAttachment): string
+    {
+        $fileName = str_replace('"', '', Str::ascii($requestAttachment->original_name));
+
+        return trim($fileName) !== '' ? $fileName : 'adjunto-'.$requestAttachment->id;
     }
 
     private function authorizeAttachmentAccess(Request $request, RequestAttachment $requestAttachment): LeaveRequest

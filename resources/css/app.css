@@ -281,6 +281,7 @@ button {
 
 .request-row,
 .admin-request,
+.team-member-card,
 .mini-list > div,
 .timeline > div,
 .rule-list > div {
@@ -393,7 +394,7 @@ button {
 }
 
 .team-promote-form {
-    grid-template-columns: minmax(220px, 1fr) minmax(170px, 0.6fr) minmax(190px, 0.8fr) auto;
+    grid-template-columns: minmax(220px, 1fr) minmax(160px, 0.7fr) minmax(170px, 0.6fr) minmax(190px, 0.8fr) auto;
 }
 
 .team-filter-form {
@@ -422,6 +423,32 @@ button {
 }
 
 .overlap-alert span {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.approval-progress,
+.readonly-note {
+    display: grid;
+    gap: 4px;
+    margin-top: 10px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--info-soft);
+    padding: 10px;
+}
+
+.approval-progress strong,
+.approval-progress span,
+.readonly-note strong,
+.readonly-note span {
+    display: block;
+    margin: 0;
+}
+
+.approval-progress span,
+.readonly-note span {
     color: var(--muted);
     font-size: 13px;
     font-weight: 800;
@@ -797,6 +824,10 @@ dd {
     gap: 16px;
 }
 
+.notification-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
 .admin-actions {
     display: grid;
     gap: 10px;
@@ -808,8 +839,464 @@ dd {
     gap: 8px;
 }
 
+.admin-console-layout {
+    align-items: start;
+    display: grid;
+    gap: 18px;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+}
+
+.admin-console-main {
+    display: grid;
+    gap: 18px;
+}
+
+.admin-console-head,
+.admin-section-head {
+    align-items: center;
+    display: flex;
+    gap: 14px;
+    justify-content: space-between;
+}
+
+.admin-console-head h2,
+.admin-section-head h2,
+.admin-section-head h3 {
+    margin: 0;
+    line-height: 1.2;
+}
+
+.admin-console-head h2 {
+    font-size: 24px;
+}
+
+.admin-section-head h3 {
+    font-size: 18px;
+}
+
+.admin-stat-strip {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+}
+
+.admin-stat {
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    min-height: 112px;
+    min-width: 0;
+    padding: 14px;
+}
+
+.admin-stat.accent {
+    background: var(--accent);
+}
+
+.admin-stat span,
+.admin-stat em {
+    color: var(--muted);
+    display: block;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.admin-stat strong {
+    display: block;
+    font-size: 36px;
+    line-height: 1;
+    margin: 10px 0 8px;
+}
+
+.admin-console-section {
+    border-top: 1.5px solid var(--line);
+    display: grid;
+    gap: 14px;
+    padding-top: 18px;
+}
+
+.admin-console-aside {
+    display: grid;
+    gap: 18px;
+    position: sticky;
+    top: 28px;
+}
+
+.admin-side-panel {
+    box-shadow: none;
+}
+
+.admin-side-panel h2 {
+    margin-bottom: 12px;
+}
+
+.invite-link-box {
+    margin-bottom: 0;
+}
+
+.invite-form,
+.team-promote-panel {
+    align-items: end;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+}
+
+.invite-form > label,
+.team-promote-panel > label {
+    display: grid;
+    gap: 8px;
+}
+
+.invite-form input,
+.invite-form select,
+.team-promote-panel input,
+.team-promote-panel select {
+    min-height: 60px;
+}
+
+.invite-form > .primary-button,
+.team-promote-panel > .primary-button {
+    align-self: end;
+    min-height: 60px;
+    min-width: 0;
+    padding-inline: 16px;
+    white-space: nowrap;
+}
+
+.invite-form > .primary-button span,
+.team-promote-panel > .primary-button span {
+    white-space: nowrap;
+}
+
+.permission-card {
+    align-content: center;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    display: grid;
+    gap: 8px;
+    min-height: 74px;
+    padding: 10px;
+}
+
+.permission-dropdown {
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    min-width: 0;
+}
+
+.permission-dropdown-summary {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    list-style: none;
+    min-height: 60px;
+    padding: 10px 12px;
+}
+
+.permission-dropdown-summary::-webkit-details-marker {
+    display: none;
+}
+
+.permission-dropdown-summary span {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+}
+
+.permission-dropdown-summary small {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.permission-dropdown-summary strong {
+    font-size: 14px;
+}
+
+.permission-dropdown-summary svg {
+    height: 18px;
+    transition: transform 0.15s ease;
+    width: 18px;
+}
+
+.permission-dropdown[open] .permission-dropdown-summary svg {
+    transform: rotate(180deg);
+}
+
+.permission-dropdown-body {
+    border-top: 1.5px solid var(--line);
+    display: grid;
+    gap: 8px;
+    padding: 10px;
+}
+
+.permission-dropdown-body .check-row {
+    min-height: 34px;
+}
+
+.permission-dropdown input:disabled + span {
+    color: var(--muted);
+}
+
+.team-search-panel {
+    align-items: end;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(220px, 420px) auto;
+}
+
+.invitation-list,
+.team-list,
+.position-admin-list {
+    display: grid;
+    gap: 10px;
+}
+
+.invitation-card {
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 14px;
+}
+
+.invitation-main {
+    align-items: flex-start;
+    display: flex;
+    gap: 12px;
+    min-width: 0;
+}
+
+.invitation-main h3,
+.invitation-main p {
+    margin: 0;
+}
+
+.invitation-main p {
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.invitation-alert {
+    grid-column: 1 / -1;
+    margin-top: 0;
+}
+
+.invitation-actions {
+    align-content: center;
+    display: grid;
+    gap: 8px;
+}
+
+.invitation-actions form {
+    margin: 0;
+}
+
+.position-create-panel {
+    display: grid;
+    gap: 10px;
+}
+
+.position-create-panel .primary-button,
+.position-admin-dropdown {
+    width: 100%;
+}
+
+.position-create-panel + .position-admin-dropdown {
+    margin-top: 18px;
+}
+
+.position-admin-dropdown {
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    min-width: 0;
+}
+
+.position-admin-summary {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    list-style: none;
+    min-height: 58px;
+    padding: 10px 12px;
+}
+
+.position-admin-summary::-webkit-details-marker {
+    display: none;
+}
+
+.position-admin-summary span {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.position-admin-summary small {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.position-admin-summary strong {
+    font-size: 15px;
+}
+
+.position-admin-summary svg {
+    height: 18px;
+    transition: transform 0.15s ease;
+    width: 18px;
+}
+
+.position-admin-dropdown[open] .position-admin-summary svg {
+    transform: rotate(180deg);
+}
+
+.position-admin-list-menu {
+    border-top: 1.5px solid var(--line);
+    max-height: 420px;
+    overflow: auto;
+    padding: 10px;
+}
+
+.position-admin-card {
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+}
+
+.position-admin-card form {
+    margin: 0;
+}
+
+.position-admin-card .position-lock {
+    justify-self: start;
+}
+
+.position-chip-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.position-chip-panel span {
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 900;
+    padding: 7px 10px;
+}
+
 .team-row {
-    grid-template-columns: minmax(220px, 0.9fr) minmax(260px, 0.9fr) minmax(300px, 1.1fr);
+    align-items: start;
+    grid-template-columns: minmax(220px, 0.8fr) minmax(340px, 1.25fr) minmax(280px, 0.95fr);
+}
+
+.team-member-card {
+    display: block;
+}
+
+.team-member-summary {
+    align-items: center;
+    cursor: pointer;
+    display: grid;
+    gap: 14px;
+    grid-template-columns: minmax(0, 1fr) minmax(220px, auto);
+    list-style: none;
+}
+
+.team-member-summary::-webkit-details-marker {
+    display: none;
+}
+
+.team-member-identity {
+    align-items: flex-start;
+    display: flex;
+    gap: 12px;
+    min-width: 0;
+}
+
+.team-member-identity > div {
+    min-width: 0;
+}
+
+.team-member-identity h3,
+.team-editor-head h3 {
+    margin: 0 0 4px;
+}
+
+.team-member-side {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    min-width: 0;
+}
+
+.team-summary-chips {
+    justify-content: flex-end;
+    margin-top: 0;
+}
+
+.team-toggle {
+    align-items: center;
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 34px;
+    justify-content: center;
+    width: 34px;
+}
+
+.team-toggle svg {
+    height: 18px;
+    transition: transform 0.15s ease;
+    width: 18px;
+}
+
+.team-member-card[open] .team-toggle svg {
+    transform: rotate(180deg);
+}
+
+.team-member-body {
+    border-top: 1.5px solid var(--line);
+    display: grid;
+    gap: 18px;
+    grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+    margin-top: 14px;
+    padding-top: 14px;
+}
+
+.team-editor-block {
+    align-content: start;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+    padding: 12px;
+}
+
+.team-editor-head .eyebrow {
+    margin-bottom: 4px;
 }
 
 .user-permission-form {
@@ -854,6 +1341,212 @@ dd {
     margin-top: 14px;
 }
 
+.position-picker {
+    border: 0;
+    margin: 0;
+    min-width: 0;
+    padding: 0;
+}
+
+.position-dropdown {
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    min-width: 0;
+}
+
+.position-dropdown-summary {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    list-style: none;
+    min-height: 48px;
+    padding: 10px 12px;
+}
+
+.position-dropdown-summary::-webkit-details-marker {
+    display: none;
+}
+
+.position-dropdown-summary span {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+}
+
+.position-dropdown-summary small {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.position-dropdown-summary strong {
+    font-size: 14px;
+}
+
+.position-dropdown-summary svg {
+    height: 18px;
+    transition: transform 0.15s ease;
+    width: 18px;
+}
+
+.position-dropdown[open] .position-dropdown-summary svg {
+    transform: rotate(180deg);
+}
+
+.position-dropdown .position-picker {
+    border-top: 1.5px solid var(--line);
+    padding: 12px;
+}
+
+.position-picker legend,
+.position-create-field > label,
+.position-row-form label span {
+    color: var(--muted);
+    display: block;
+    font-size: 12px;
+    font-weight: 900;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.position-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.position-options-menu {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    max-height: 260px;
+    overflow: auto;
+    padding: 2px 2px 6px;
+}
+
+.position-option {
+    cursor: pointer;
+    display: inline-flex;
+    min-width: 0;
+}
+
+.position-option input {
+    height: 1px;
+    opacity: 0;
+    position: absolute;
+    width: 1px;
+}
+
+.position-option span {
+    align-items: center;
+    background: var(--surface);
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink);
+    display: inline-flex;
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 1.2;
+    min-height: 34px;
+    padding: 7px 11px;
+    transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.position-options-menu .position-option,
+.position-options-menu .position-option span {
+    width: 100%;
+}
+
+.position-options-menu .position-option span {
+    border-radius: var(--radius);
+    justify-content: flex-start;
+    min-height: 38px;
+}
+
+.position-option input:checked + span {
+    background: var(--accent);
+    border-color: var(--ink);
+    box-shadow: 0 3px 0 var(--ink);
+}
+
+.position-option input:focus-visible + span {
+    outline: 3px solid rgba(184, 255, 77, 0.5);
+    outline-offset: 2px;
+}
+
+.position-option:hover span {
+    transform: translateY(-1px);
+}
+
+.position-create-field {
+    min-width: 0;
+}
+
+.position-create-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+}
+
+.empty-inline {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 750;
+    margin: 0;
+}
+
+.position-list-row {
+    align-items: center;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.position-list-row .position-row-form {
+    align-items: end;
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.position-row-summary {
+    min-width: 0;
+}
+
+.position-row-summary strong {
+    display: block;
+    font-size: 16px;
+    line-height: 1.2;
+}
+
+.position-row-summary span {
+    color: var(--muted);
+    display: block;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.35;
+    margin-top: 5px;
+}
+
+.position-lock {
+    align-items: center;
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    color: var(--muted);
+    display: inline-flex;
+    font-size: 12px;
+    font-weight: 900;
+    gap: 6px;
+    min-height: 32px;
+    padding: 6px 10px;
+}
+
+.position-lock svg {
+    height: 14px;
+    width: 14px;
+}
+
 .permission-switches {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -870,15 +1563,131 @@ dd {
     margin: 14px 0 0;
 }
 
+.support-subhead {
+    margin-top: 18px;
+}
+
 .rule-list dt,
 .rule-list dd {
     display: block;
 }
 
-.rule-editor {
+.rules-layout {
+    align-items: start;
+    display: grid;
+    gap: 18px;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+}
+
+.rules-workspace {
+    display: grid;
+    gap: 18px;
+}
+
+.rules-page-head,
+.rules-section-head {
+    align-items: center;
+    display: flex;
+    gap: 14px;
+    justify-content: space-between;
+}
+
+.rules-page-head h2,
+.rules-section-head h3,
+.rule-subsection-head h4 {
+    margin: 0;
+    line-height: 1.2;
+}
+
+.rules-page-head h2 {
+    font-size: 24px;
+}
+
+.rules-section-head h3 {
+    font-size: 18px;
+}
+
+.rules-stat-strip {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.rules-stat {
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    min-height: 112px;
+    padding: 14px;
+}
+
+.rules-stat.accent {
+    background: var(--accent);
+}
+
+.rules-stat span,
+.rules-stat em {
+    color: var(--muted);
+    display: block;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.rules-stat strong {
+    display: block;
+    font-size: 36px;
+    line-height: 1;
+    margin: 10px 0 8px;
+}
+
+.rules-section {
+    border-top: 1.5px solid var(--line);
+    display: grid;
+    gap: 14px;
+    padding-top: 18px;
+}
+
+.rules-add-form {
+    align-items: end;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(220px, 1.4fr) minmax(120px, 0.65fr) minmax(150px, 0.8fr) minmax(170px, 0.9fr) auto;
+}
+
+.rules-update-form {
+    display: grid;
+    gap: 18px;
+}
+
+.settings-grid {
     display: grid;
     gap: 12px;
-    margin-top: 8px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.rules-switch-board {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.rules-switch-board .check-row,
+.rule-check,
+.compact-switches .check-row {
+    min-height: 44px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    padding: 10px;
+}
+
+.rule-accordion-list,
+.notification-rule-list,
+.rules-summary-list {
+    display: grid;
+    gap: 10px;
 }
 
 .rule-card {
@@ -887,61 +1696,170 @@ dd {
     border: 1.5px solid var(--line);
     border-radius: var(--radius);
     background: var(--paper);
+}
+
+.rule-accordion-summary {
+    align-items: center;
+    cursor: pointer;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    list-style: none;
+    min-height: 72px;
     padding: 14px;
 }
 
-.rule-card legend {
-    display: flex;
-    width: 100%;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 0 0 10px;
-    font-weight: 900;
+.rule-accordion-summary::-webkit-details-marker {
+    display: none;
 }
 
-.legend-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 8px;
+.rule-summary-main {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
 }
 
-.rule-help {
-    margin: -2px 0 12px;
+.rule-summary-main strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rule-summary-main span,
+.notification-rule-main span,
+.rules-summary-list span {
     color: var(--muted);
     font-size: 13px;
-    font-weight: 750;
+    font-weight: 800;
     line-height: 1.4;
+}
+
+.rule-summary-pill {
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    font-size: 12px;
+    font-weight: 900;
+    padding: 7px 10px;
+    white-space: nowrap;
+}
+
+.rule-chevron {
+    align-items: center;
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 34px;
+    justify-content: center;
+    width: 34px;
+}
+
+.rule-chevron svg {
+    height: 18px;
+    transition: transform 0.15s ease;
+    width: 18px;
+}
+
+.rule-accordion[open] .rule-chevron svg {
+    transform: rotate(180deg);
+}
+
+.rule-card-body {
+    border-top: 1.5px solid var(--line);
+    display: grid;
+    gap: 16px;
+    padding: 14px;
+}
+
+.rule-card-toolbar {
+    align-items: end;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+}
+
+.rule-status-field,
+.notification-status-field {
+    min-width: 132px;
+}
+
+.rule-status-field .status-select,
+.notification-status-field .status-select {
+    width: 100%;
+}
+
+.rule-subsection {
+    border-top: 1.5px solid var(--line);
+    display: grid;
+    gap: 12px;
+    padding-top: 14px;
+}
+
+.rule-subsection-head {
+    display: grid;
+    gap: 2px;
+}
+
+.rule-subsection-head .eyebrow {
+    margin-bottom: 0;
 }
 
 .rule-form-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .rule-switches {
     display: grid;
-    grid-column: 1 / -1;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-.rule-summary {
+.notification-rule-row {
+    align-items: center;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 12px;
+}
+
+.notification-rule-main {
     display: grid;
     gap: 4px;
+    min-width: 0;
+}
+
+.notification-rule-main strong {
+    display: block;
+}
+
+.rules-aside {
+    display: grid;
+    gap: 18px;
+    position: sticky;
+    top: 28px;
+}
+
+.rules-summary-panel {
+    box-shadow: none;
+}
+
+.rules-summary-panel h2 {
     margin-bottom: 12px;
 }
 
-.rule-summary strong {
-    font-size: 14px;
-}
-
-.rule-summary span {
-    color: var(--muted);
-    font-size: 13px;
-    line-height: 1.4;
+.rules-summary-list > div {
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    display: grid;
+    gap: 3px;
+    padding: 12px;
 }
 
 .report-table {
@@ -1094,6 +2012,16 @@ dd {
     background: var(--info-soft);
 }
 
+@media (max-width: 1320px) {
+    .admin-console-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-console-aside {
+        position: static;
+    }
+}
+
 @media (max-width: 1023px) {
     .app-shell {
         grid-template-columns: 1fr;
@@ -1120,16 +2048,46 @@ dd {
     }
 
     .content-grid,
+    .admin-console-layout,
+    .rules-layout,
     .login-screen,
     .admin-request,
     .admin-filter-form,
     .history-filter-form,
     .report-filter-form,
     .notifications-filter-form,
+    .invite-form,
+    .team-promote-panel,
+    .team-search-panel,
+    .rules-add-form,
+    .settings-grid,
     .team-promote-form,
     .team-filter-form,
-    .team-row {
+    .team-row,
+    .team-member-summary,
+    .team-member-body {
         grid-template-columns: 1fr;
+    }
+
+    .rules-stat-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-stat-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-console-aside {
+        position: static;
+    }
+
+    .rules-aside {
+        position: static;
+    }
+
+    .team-member-side,
+    .team-summary-chips {
+        justify-content: flex-start;
     }
 }
 
@@ -1151,9 +2109,12 @@ dd {
 
     .nav-list,
     .metric-grid,
+    .admin-stat-strip,
+    .rules-stat-strip,
     .form-grid,
     .detail-grid,
-    .toggle-grid {
+    .toggle-grid,
+    .rules-switch-board {
         grid-template-columns: 1fr;
     }
 
@@ -1162,13 +2123,40 @@ dd {
     .form-actions,
     .admin-actions form,
     .calendar-nav,
+    .admin-console-head,
+    .admin-section-head,
+    .invitation-card,
+    .invitation-actions,
+    .position-create-row,
+    .position-admin-card,
+    .position-list-row,
+    .position-list-row .position-row-form,
     .filter-actions,
     .filter-tabs,
-    .rule-card legend {
+    .rules-page-head,
+    .rules-section-head,
+    .rule-card-toolbar,
+    .notification-rule-row {
         align-items: stretch;
         flex-direction: column;
         grid-template-columns: 1fr;
         justify-content: flex-start;
+    }
+
+    .rule-accordion-summary {
+        align-items: start;
+        grid-template-columns: 1fr auto;
+    }
+
+    .rule-summary-main,
+    .rule-summary-pill {
+        grid-column: 1 / -1;
+    }
+
+    .rule-chevron {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
     }
 
     .rule-form-grid,

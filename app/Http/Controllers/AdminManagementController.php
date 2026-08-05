@@ -44,7 +44,7 @@ class AdminManagementController extends Controller
 
         $data = $request->validate([
             'email' => ['required', 'email', 'max:255'],
-            'initial_role' => ['required', 'in:user,admin'],
+            'initial_role' => ['required', 'in:user,admin,developer'],
             'can_manage_company_rules' => ['nullable', 'boolean'],
             'can_view_medical_attachments' => ['nullable', 'boolean'],
         ], [
@@ -70,14 +70,15 @@ class AdminManagementController extends Controller
         }
 
         $token = TeamInvitation::newPlainToken();
-        $isAdmin = $data['initial_role'] === 'admin';
+        $role = (string) $data['initial_role'];
+        $isAdmin = $role === User::ROLE_ADMIN;
 
         $invitation = TeamInvitation::create([
             'organization_id' => $request->user()->organization_id,
             'email' => $email,
             'token_hash' => TeamInvitation::tokenHash($token),
             'status' => TeamInvitation::STATUS_PENDING,
-            'initial_role' => $isAdmin ? 'admin' : 'user',
+            'initial_role' => $role,
             'can_manage_company_rules' => $isAdmin && $request->boolean('can_manage_company_rules'),
             'can_view_medical_attachments' => $isAdmin && $request->boolean('can_view_medical_attachments'),
             'created_by' => $request->user()->id,
@@ -234,7 +235,14 @@ class AdminManagementController extends Controller
         $this->authorizeManagement($request);
         abort_unless($user->organization_id === $request->user()->organization_id, 404);
 
-        $profile = $user->employeeProfile()->with('jobPositions')->firstOrFail();
+        $profile = $user->employeeProfile()->with('jobPositions')->first();
+
+        if (! $profile) {
+            throw ValidationException::withMessages([
+                'position' => 'Este usuario aun no tiene perfil de empleado para asignar puestos.',
+            ]);
+        }
+
         $data = $request->validate([
             'job_position_ids' => ['nullable', 'array'],
             'job_position_ids.*' => [
@@ -249,9 +257,16 @@ class AdminManagementController extends Controller
             ->unique()
             ->values();
 
-        if (filled($data['new_position_name'] ?? null)) {
-            $positionIds->push($this->createPosition($request, (string) $data['new_position_name'])->id);
+        $newPositionName = trim((string) ($data['new_position_name'] ?? ''));
+
+        $newPosition = null;
+
+        if ($newPositionName !== '') {
+            $newPosition = $this->createPosition($request, $newPositionName, 'new_position_name');
+            $positionIds->push($newPosition->id);
         }
+
+        $positionIds = $positionIds->unique()->values();
 
         $previous = $profile->jobPositions->pluck('name')->sort()->values()->implode(', ');
 
@@ -268,7 +283,13 @@ class AdminManagementController extends Controller
 
         $this->dataCache->forgetOrganization($request->user()->organization_id);
 
-        return back()->with('status', 'Puestos actualizados para '.$user->name.'.');
+        $status = $newPosition
+            ? 'Puesto "'.$newPosition->name.'" '.($newPosition->wasRecentlyCreated ? 'creado y ' : '').'asignado para '.$user->name.'.'
+            : 'Puestos actualizados para '.$user->name.'.';
+
+        return back()
+            ->with('status', $status)
+            ->with('open_user_id', $user->id);
     }
 
     private function authorizeManagement(Request $request): void
@@ -286,14 +307,14 @@ class AdminManagementController extends Controller
         abort_unless($jobPosition->organization_id === $request->user()->organization_id, 404);
     }
 
-    private function createPosition(Request $request, string $name): JobPosition
+    private function createPosition(Request $request, string $name, string $errorKey = 'name'): JobPosition
     {
         $name = trim($name);
         $normalizedName = JobPosition::normalizeName($name);
 
         if ($normalizedName === '') {
             throw ValidationException::withMessages([
-                'name' => 'Escribe el nombre del puesto.',
+                $errorKey => 'Escribe el nombre del puesto.',
             ]);
         }
 

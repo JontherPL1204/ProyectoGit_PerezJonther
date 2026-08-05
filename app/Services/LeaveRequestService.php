@@ -18,6 +18,7 @@ class LeaveRequestService
         private readonly LeaveCalculationService $calculator,
         private readonly LeaveBalanceService $balances,
         private readonly AuditService $audit,
+        private readonly ApprovalService $approvals,
     ) {}
 
     /**
@@ -103,6 +104,10 @@ class LeaveRequestService
                 ['requested_units' => $calculation['units']],
                 $httpRequest,
             );
+
+            if ($leaveType->requires_approval && ! $leaveType->auto_approve) {
+                $this->approvals->initializeSteps($leaveRequest, $leaveType);
+            }
 
             return $leaveRequest;
         });

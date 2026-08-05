@@ -11,6 +11,7 @@ use App\Services\NotificationService;
 use App\Services\OrganizationDataCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use InvalidArgumentException;
@@ -119,14 +120,20 @@ class LeaveRequestController extends Controller
     {
         $this->authorizeView($request, $leaveRequest);
 
+        $relations = [
+            'employeeProfile.user',
+            'leaveType',
+            'calculationDays',
+            'events.actor',
+            'attachments',
+        ];
+
+        if (Schema::hasTable('approval_steps')) {
+            $relations[] = 'approvalSteps.decidedBy';
+        }
+
         return view('leave_requests.show', [
-            'leaveRequest' => $leaveRequest->load([
-                'employeeProfile.user',
-                'leaveType',
-                'calculationDays',
-                'events.actor',
-                'attachments',
-            ]),
+            'leaveRequest' => $leaveRequest->load($relations),
         ]);
     }
 

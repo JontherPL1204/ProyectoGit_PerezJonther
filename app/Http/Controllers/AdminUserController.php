@@ -45,6 +45,7 @@ class AdminUserController extends Controller
 
         $data = $request->validate([
             'email' => ['required', 'email', 'max:255'],
+            'role' => ['nullable', 'in:user,admin,developer'],
             'can_manage_company_rules' => ['nullable', 'boolean'],
             'can_view_medical_attachments' => ['nullable', 'boolean'],
         ], [
@@ -62,14 +63,19 @@ class AdminUserController extends Controller
             ]);
         }
 
+        $role = $data['role'] ?? User::ROLE_ADMIN;
+        $isAdmin = $role === User::ROLE_ADMIN;
+
         $this->applyPermissionUpdates($request, $target, [
-            'role' => 'admin',
-            'can_manage_company_rules' => $request->boolean('can_manage_company_rules'),
-            'can_view_medical_attachments' => $request->boolean('can_view_medical_attachments'),
+            'role' => $role,
+            'can_manage_company_rules' => $isAdmin && $request->boolean('can_manage_company_rules'),
+            'can_view_medical_attachments' => $isAdmin && $request->boolean('can_view_medical_attachments'),
         ], 'Permisos asignados por correo.');
         $this->dataCache->forgetOrganization($request->user()->organization_id);
 
-        return back()->with('status', 'Permisos de administrador actualizados para '.$target->name.'.');
+        return back()
+            ->with('status', 'Permiso '.$this->roleLabel($role).' actualizado para '.$target->name.'.')
+            ->with('open_user_id', $target->id);
     }
 
     public function update(Request $request, User $user): RedirectResponse
@@ -78,12 +84,15 @@ class AdminUserController extends Controller
         abort_unless($user->organization_id === $request->user()->organization_id, 404);
 
         $request->validate([
+            'role' => ['nullable', 'in:user,admin,developer'],
             'is_admin' => ['nullable', 'boolean'],
             'can_manage_company_rules' => ['nullable', 'boolean'],
             'can_view_medical_attachments' => ['nullable', 'boolean'],
         ]);
 
-        $isAdmin = $request->boolean('is_admin');
+        $role = $request->input('role');
+        $role = is_string($role) ? $role : ($request->boolean('is_admin') ? User::ROLE_ADMIN : User::ROLE_USER);
+        $isAdmin = $role === User::ROLE_ADMIN;
         $canManageRules = $isAdmin && $request->boolean('can_manage_company_rules');
         $canViewMedical = $isAdmin && $request->boolean('can_view_medical_attachments');
 
@@ -100,18 +109,29 @@ class AdminUserController extends Controller
         }
 
         $this->applyPermissionUpdates($request, $user, [
-            'role' => $isAdmin ? 'admin' : 'user',
+            'role' => $role,
             'can_manage_company_rules' => $canManageRules,
             'can_view_medical_attachments' => $canViewMedical,
         ], 'Permisos actualizados desde Equipo.');
         $this->dataCache->forgetOrganization($request->user()->organization_id);
 
-        return back()->with('status', 'Permisos actualizados para '.$user->name.'.');
+        return back()
+            ->with('status', 'Permisos actualizados para '.$user->name.'.')
+            ->with('open_user_id', $user->id);
     }
 
     private function authorizeUserManagement(Request $request): void
     {
         abort_unless($request->user()?->canManageCompanyRules(), 403);
+    }
+
+    private function roleLabel(string $role): string
+    {
+        return match ($role) {
+            User::ROLE_ADMIN => 'administrador',
+            User::ROLE_DEVELOPER => 'desarrollador',
+            default => 'empleado',
+        };
     }
 
     /**

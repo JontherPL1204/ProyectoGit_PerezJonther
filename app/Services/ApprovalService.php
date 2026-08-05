@@ -2,13 +2,16 @@
 
 namespace App\Services;
 
+use App\Models\ApprovalStep;
 use App\Models\CompanySetting;
 use App\Models\LeaveBalanceMovement;
 use App\Models\LeaveRequest;
+use App\Models\LeaveType;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
 
 class ApprovalService
@@ -25,23 +28,70 @@ class ApprovalService
         }
 
         return DB::transaction(function () use ($leaveRequest, $actor, $comment, $httpRequest): LeaveRequest {
-            $locked = LeaveRequest::whereKey($leaveRequest->id)->lockForUpdate()->firstOrFail();
+            $locked = LeaveRequest::with('leaveType')->whereKey($leaveRequest->id)->lockForUpdate()->firstOrFail();
             $previous = $locked->status;
 
             if ($previous !== LeaveRequest::STATUS_PENDING) {
                 throw new InvalidArgumentException('La solicitud ya fue resuelta.');
             }
 
+            $currentStep = null;
+
+            if ($this->approvalStepsAvailable()) {
+                $this->ensureApprovalSteps($locked);
+                $currentStep = $locked->approvalSteps()
+                    ->where('status', ApprovalStep::STATUS_PENDING)
+                    ->orderBy('level')
+                    ->lockForUpdate()
+                    ->first();
+            } elseif ($this->workflowApplies($locked)) {
+                $this->assertCanApproveLevel($actor, 1);
+            }
+
+            if ($currentStep) {
+                $this->assertCanApproveLevel($actor, (int) $currentStep->level);
+
+                $currentStep->update([
+                    'status' => ApprovalStep::STATUS_APPROVED,
+                    'decided_by' => $actor->id,
+                    'comment' => $comment,
+                    'decided_at' => now(),
+                ]);
+
+                $this->audit->requestEvent(
+                    $locked,
+                    'APPROVAL_LEVEL_APPROVED',
+                    $actor,
+                    $previous,
+                    $previous,
+                    $comment,
+                    [
+                        'level' => $currentStep->level,
+                        'total_levels' => $this->approvalStepCount($locked),
+                    ],
+                    $httpRequest,
+                );
+
+                if ($locked->approvalSteps()->where('status', ApprovalStep::STATUS_PENDING)->exists()) {
+                    $locked->update([
+                        'admin_comment' => filled($comment) ? $comment : $locked->admin_comment,
+                        'version' => $locked->version + 1,
+                    ]);
+
+                    return $this->freshRequest($locked);
+                }
+            }
+
             $locked->update([
                 'status' => LeaveRequest::STATUS_APPROVED,
-                'admin_comment' => $comment,
+                'admin_comment' => filled($comment) ? $comment : $locked->admin_comment,
                 'version' => $locked->version + 1,
             ]);
 
             $this->consumeBalanceIfNeeded($locked, $actor);
             $this->audit->requestEvent($locked, 'REQUEST_APPROVED', $actor, $previous, $locked->status, $comment, [], $httpRequest);
 
-            return $locked->fresh(['employeeProfile.user', 'leaveType']);
+            return $this->freshRequest($locked);
         });
     }
 
@@ -56,11 +106,51 @@ class ApprovalService
         }
 
         return DB::transaction(function () use ($leaveRequest, $actor, $comment, $httpRequest): LeaveRequest {
-            $locked = LeaveRequest::whereKey($leaveRequest->id)->lockForUpdate()->firstOrFail();
+            $locked = LeaveRequest::with('leaveType')->whereKey($leaveRequest->id)->lockForUpdate()->firstOrFail();
             $previous = $locked->status;
 
             if ($previous !== LeaveRequest::STATUS_PENDING) {
                 throw new InvalidArgumentException('La solicitud ya fue resuelta.');
+            }
+
+            $currentStep = null;
+
+            if ($this->approvalStepsAvailable()) {
+                $this->ensureApprovalSteps($locked);
+                $currentStep = $locked->approvalSteps()
+                    ->where('status', ApprovalStep::STATUS_PENDING)
+                    ->orderBy('level')
+                    ->lockForUpdate()
+                    ->first();
+            } elseif ($this->workflowApplies($locked)) {
+                $this->assertCanApproveLevel($actor, 1);
+            }
+
+            if ($currentStep) {
+                $this->assertCanApproveLevel($actor, (int) $currentStep->level);
+
+                $currentStep->update([
+                    'status' => ApprovalStep::STATUS_REJECTED,
+                    'decided_by' => $actor->id,
+                    'comment' => $comment,
+                    'decided_at' => now(),
+                ]);
+
+                $this->audit->requestEvent(
+                    $locked,
+                    'APPROVAL_LEVEL_REJECTED',
+                    $actor,
+                    $previous,
+                    LeaveRequest::STATUS_REJECTED,
+                    $comment,
+                    [
+                        'level' => $currentStep->level,
+                        'total_levels' => $this->approvalStepCount($locked),
+                    ],
+                    $httpRequest,
+                );
+            } elseif ($this->workflowApplies($locked)) {
+                $this->assertCanApproveLevel($actor, 1);
             }
 
             $locked->update([
@@ -71,8 +161,120 @@ class ApprovalService
 
             $this->audit->requestEvent($locked, 'REQUEST_REJECTED', $actor, $previous, $locked->status, $comment, [], $httpRequest);
 
-            return $locked->fresh(['employeeProfile.user', 'leaveType']);
+            return $this->freshRequest($locked);
         });
+    }
+
+    public function initializeSteps(LeaveRequest $leaveRequest, LeaveType|int|null $source = null): void
+    {
+        if (! $this->approvalStepsAvailable()) {
+            return;
+        }
+
+        $levelCount = $source instanceof LeaveType
+            ? $source->approval_level_count
+            : $source;
+
+        $levels = $this->normalizedLevelCount($levelCount ?? $leaveRequest->leaveType?->approval_level_count ?? 1);
+
+        for ($level = 1; $level <= $levels; $level++) {
+            ApprovalStep::firstOrCreate(
+                [
+                    'leave_request_id' => $leaveRequest->id,
+                    'level' => $level,
+                ],
+                [
+                    'organization_id' => $leaveRequest->organization_id,
+                    'status' => ApprovalStep::STATUS_PENDING,
+                ],
+            );
+        }
+    }
+
+    public function canApproveLevel(User $actor, int $level): bool
+    {
+        if (! $actor->isAdmin()) {
+            return false;
+        }
+
+        if ($level <= 1) {
+            return true;
+        }
+
+        return $actor->canManageCompanyRules();
+    }
+
+    private function assertCanApproveLevel(User $actor, int $level): void
+    {
+        if ($this->canApproveLevel($actor, $level)) {
+            return;
+        }
+
+        throw new InvalidArgumentException($level <= 1
+            ? 'Solo una persona responsable puede resolver esta solicitud.'
+            : 'Este nivel requiere permiso para gestionar reglas y equipo.');
+    }
+
+    private function ensureApprovalSteps(LeaveRequest $leaveRequest): void
+    {
+        if (! $this->approvalStepsAvailable()) {
+            return;
+        }
+
+        if (! $this->workflowApplies($leaveRequest)) {
+            return;
+        }
+
+        if ($leaveRequest->approvalSteps()->exists()) {
+            return;
+        }
+
+        $this->initializeSteps($leaveRequest, $leaveRequest->leaveType);
+    }
+
+    private function workflowApplies(LeaveRequest $leaveRequest): bool
+    {
+        $leaveType = $leaveRequest->leaveType;
+
+        return $leaveType
+            && $leaveType->requires_approval
+            && ! $leaveType->auto_approve;
+    }
+
+    private function approvalStepCount(LeaveRequest $leaveRequest): int
+    {
+        if (! $this->approvalStepsAvailable()) {
+            return $this->normalizedLevelCount($leaveRequest->leaveType?->approval_level_count ?? 1);
+        }
+
+        $count = $leaveRequest->approvalSteps()->count();
+
+        if ($count > 0) {
+            return $count;
+        }
+
+        return $this->normalizedLevelCount($leaveRequest->leaveType?->approval_level_count ?? 1);
+    }
+
+    private function normalizedLevelCount(int|string|null $levelCount): int
+    {
+        return max(1, min(3, (int) ($levelCount ?: 1)));
+    }
+
+    private function approvalStepsAvailable(): bool
+    {
+        return Schema::hasTable('approval_steps');
+    }
+
+    private function freshRequest(LeaveRequest $leaveRequest): LeaveRequest
+    {
+        $relations = ['employeeProfile.user', 'leaveType'];
+
+        if ($this->approvalStepsAvailable()) {
+            $relations[] = 'approvalSteps.decidedBy';
+        }
+
+        return $leaveRequest->fresh($relations);
     }
 
     public function resolveCancellation(LeaveRequest $leaveRequest, User $actor, bool $accept, ?string $comment = null, ?Request $httpRequest = null): LeaveRequest

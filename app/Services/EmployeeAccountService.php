@@ -37,7 +37,7 @@ class EmployeeAccountService
                 'name' => $data['name'],
                 'email' => Str::lower($data['email']),
                 'password' => Hash::make($data['password']),
-                'role' => $isFirstUser ? 'admin' : 'user',
+                'role' => $isFirstUser ? User::ROLE_ADMIN : User::ROLE_USER,
                 'status' => 'active',
                 'timezone' => $organization->timezone,
                 'can_manage_company_rules' => $isFirstUser,
@@ -57,14 +57,17 @@ class EmployeeAccountService
     public function registerInvited(Organization $organization, array $data, array $permissions, ?User $createdBy = null): User
     {
         return DB::transaction(function () use ($organization, $data, $permissions, $createdBy): User {
-            $isAdmin = $permissions['role'] === 'admin';
+            $role = in_array($permissions['role'], [User::ROLE_USER, User::ROLE_ADMIN, User::ROLE_DEVELOPER], true)
+                ? $permissions['role']
+                : User::ROLE_USER;
+            $isAdmin = $role === User::ROLE_ADMIN;
 
             $user = User::create([
                 'organization_id' => $organization->id,
                 'name' => $data['name'],
                 'email' => Str::lower($data['email']),
                 'password' => Hash::make($data['password']),
-                'role' => $isAdmin ? 'admin' : 'user',
+                'role' => $role,
                 'status' => 'active',
                 'timezone' => $organization->timezone,
                 'can_manage_company_rules' => $isAdmin && $permissions['can_manage_company_rules'],

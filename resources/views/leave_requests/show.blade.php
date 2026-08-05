@@ -74,6 +74,30 @@
             </div>
         </article>
 
+        @if ($leaveRequest->relationLoaded('approvalSteps') && $leaveRequest->approvalSteps->isNotEmpty())
+            <article class="panel">
+                <p class="eyebrow">Revision</p>
+                <h2>Aprobaciones</h2>
+                <div class="mini-list approval-steps">
+                    @foreach ($leaveRequest->approvalSteps as $step)
+                        <div>
+                            <strong>Nivel {{ $step->level }} - {{ $step->statusLabel() }}</strong>
+                            <span>
+                                @if ($step->decidedBy)
+                                    {{ $step->decidedBy->name }} &middot; {{ auth()->user()->formatDateTime($step->decided_at) }}
+                                @else
+                                    Pendiente de revision
+                                @endif
+                            </span>
+                            @if ($step->comment)
+                                <span>{{ $step->comment }}</span>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </article>
+        @endif
+
         <article class="panel">
             <p class="eyebrow">Adjuntos</p>
             <h2>Archivos privados</h2>

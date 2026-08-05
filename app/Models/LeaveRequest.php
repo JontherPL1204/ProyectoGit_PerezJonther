@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Schema;
 
 class LeaveRequest extends Model
 {
@@ -74,6 +75,11 @@ class LeaveRequest extends Model
         return $this->hasMany(RequestAttachment::class);
     }
 
+    public function approvalSteps(): HasMany
+    {
+        return $this->hasMany(ApprovalStep::class)->orderBy('level');
+    }
+
     public function statusLabel(): string
     {
         return match ($this->status) {
@@ -84,5 +90,28 @@ class LeaveRequest extends Model
             self::STATUS_PENDING_CANCELLATION => 'Cancelacion pendiente',
             default => $this->status,
         };
+    }
+
+    public function approvalProgressLabel(): ?string
+    {
+        if (! Schema::hasTable('approval_steps')) {
+            return null;
+        }
+
+        $steps = $this->relationLoaded('approvalSteps')
+            ? $this->approvalSteps
+            : $this->approvalSteps()->get();
+
+        if ($steps->isEmpty()) {
+            return null;
+        }
+
+        $pending = $steps->firstWhere('status', ApprovalStep::STATUS_PENDING);
+
+        if ($pending) {
+            return 'Revision '.$pending->level.' de '.$steps->count();
+        }
+
+        return 'Revision completa';
     }
 }

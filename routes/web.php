@@ -10,6 +10,7 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DeveloperSupportController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\ProfileController;
@@ -41,6 +42,7 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/calendario', AbsenceCalendarController::class)->name('calendar');
     Route::get('/historial', RequestHistoryController::class)->name('history');
+    Route::get('/soporte', DeveloperSupportController::class)->name('developer.support');
 
     Route::get('/solicitudes/nueva', [LeaveRequestController::class, 'create'])->name('leave-requests.create');
     Route::post('/solicitudes', [LeaveRequestController::class, 'store'])->name('leave-requests.store');
