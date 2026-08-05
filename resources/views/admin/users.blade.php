@@ -3,13 +3,6 @@
 @section('title', 'Equipo')
 
 @section('content')
-    @php
-        $visibleUsers = collect($users);
-        $adminCount = $visibleUsers->where('role', \App\Models\User::ROLE_ADMIN)->count();
-        $developerCount = $visibleUsers->where('role', \App\Models\User::ROLE_DEVELOPER)->count();
-        $inactiveCount = $visibleUsers->where('status', '!=', 'active')->count();
-    @endphp
-
     <section class="admin-console-layout">
         <article class="panel wide admin-console-main">
             <div class="admin-console-head">
@@ -22,23 +15,23 @@
             <div class="admin-stat-strip" aria-label="Resumen de equipo">
                 <div class="admin-stat accent">
                     <span>Personas</span>
-                    <strong>{{ $visibleUsers->count() }}</strong>
+                    <strong>{{ $teamCounts['visible'] }}</strong>
                     <em>visibles</em>
                 </div>
                 <div class="admin-stat">
                     <span>Admins</span>
-                    <strong>{{ $adminCount }}</strong>
+                    <strong>{{ $teamCounts['admins'] }}</strong>
                     <em>con acceso elevado</em>
                 </div>
                 <div class="admin-stat">
                     <span>Desarrollo</span>
-                    <strong>{{ $developerCount }}</strong>
+                    <strong>{{ $teamCounts['developers'] }}</strong>
                     <em>soporte tecnico</em>
                 </div>
                 <div class="admin-stat">
-                    <span>Inactivos</span>
-                    <strong>{{ $inactiveCount }}</strong>
-                    <em>cuentas pausadas</em>
+                    <span>Ocultos</span>
+                    <strong>{{ $teamCounts['inactive'] }}</strong>
+                    <em>con historial guardado</em>
                 </div>
             </div>
 
@@ -250,6 +243,27 @@
                                             <span>Guardar permisos</span>
                                         </button>
                                     </form>
+                                </section>
+
+                                <section class="team-editor-block team-danger-block">
+                                    <div class="team-editor-head">
+                                        <p class="eyebrow">Visibilidad</p>
+                                        <h3>Ocultar trabajador</h3>
+                                    </div>
+
+                                    <p>Deja de aparecer en el equipo y en los filtros activos. Su historial, solicitudes y documentos se conservan.</p>
+
+                                    @if ($isCurrentUser)
+                                        <span class="status status-cancelled">No disponible para tu propia cuenta</span>
+                                    @else
+                                        <form method="POST" action="{{ route('admin.users.deactivate', $member->id) }}" data-confirm="Ocultar a {{ $member->name }} del equipo visible? Sus solicitudes, documentos e historial se conservaran.">
+                                            @csrf
+                                            <button class="danger-button compact" type="submit">
+                                                <i data-lucide="user-x"></i>
+                                                <span>Ocultar trabajador</span>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </section>
                             </div>
                         </details>

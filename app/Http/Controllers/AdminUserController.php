@@ -7,6 +7,7 @@ use App\Services\AuditService;
 use App\Services\OrganizationDataCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -24,7 +25,17 @@ class AdminUserController extends Controller
 
         $search = trim((string) $request->query('q', ''));
 
-        $users = $this->dataCache->users($request->user()->organization_id);
+        $allUsers = $this->dataCache->users($request->user()->organization_id);
+        $visibleUsers = $allUsers
+            ->filter(fn ($user) => $user->status === User::STATUS_ACTIVE && $user->deactivated_at === null)
+            ->values();
+        $teamCounts = [
+            'visible' => $visibleUsers->count(),
+            'admins' => $visibleUsers->where('role', User::ROLE_ADMIN)->count(),
+            'developers' => $visibleUsers->where('role', User::ROLE_DEVELOPER)->count(),
+            'inactive' => $allUsers->count() - $visibleUsers->count(),
+        ];
+        $users = $visibleUsers;
 
         if ($search !== '') {
             $needle = Str::lower($search);
@@ -36,7 +47,7 @@ class AdminUserController extends Controller
 
         $positions = $this->dataCache->jobPositions($request->user()->organization_id);
 
-        return view('admin.users', compact('positions', 'search', 'users'));
+        return view('admin.users', compact('positions', 'search', 'teamCounts', 'users'));
     }
 
     public function promoteByEmail(Request $request): RedirectResponse
@@ -120,6 +131,84 @@ class AdminUserController extends Controller
             ->with('open_user_id', $user->id);
     }
 
+    public function deactivate(Request $request, User $user): RedirectResponse
+    {
+        $this->authorizeUserManagement($request);
+        abort_unless($user->organization_id === $request->user()->organization_id, 404);
+
+        if ($user->is($request->user())) {
+            throw ValidationException::withMessages([
+                'user' => 'No puedes ocultar tu propia cuenta.',
+            ]);
+        }
+
+        if ($user->canManageCompanyRules() && $this->activeRuleManagerCount($user->organization_id) <= 1) {
+            throw ValidationException::withMessages([
+                'user' => 'No puedes ocultar la ultima cuenta que puede gestionar reglas y equipo.',
+            ]);
+        }
+
+        if (! $user->isActive()) {
+            return back()->with('status', $user->name.' ya estaba oculto del equipo.');
+        }
+
+        $deactivatedAt = now();
+
+        DB::transaction(function () use ($deactivatedAt, $request, $user): void {
+            $this->audit->ruleChange(
+                $user->organization_id,
+                'users',
+                $user->id,
+                'status',
+                $user->status,
+                User::STATUS_INACTIVE,
+                $request->user(),
+                'Trabajador ocultado desde Equipo.',
+                $request,
+            );
+
+            $this->audit->ruleChange(
+                $user->organization_id,
+                'users',
+                $user->id,
+                'deactivated_at',
+                $user->deactivated_at,
+                $deactivatedAt,
+                $request->user(),
+                'Trabajador ocultado desde Equipo.',
+                $request,
+            );
+
+            $user->forceFill([
+                'status' => User::STATUS_INACTIVE,
+                'deactivated_at' => $deactivatedAt,
+                'remember_token' => null,
+            ])->save();
+
+            $profile = $user->employeeProfile()->first();
+
+            if ($profile) {
+                $this->audit->ruleChange(
+                    $user->organization_id,
+                    'employee_profiles',
+                    $profile->id,
+                    'is_active',
+                    $profile->is_active,
+                    false,
+                    $request->user(),
+                    'Trabajador ocultado desde Equipo.',
+                    $request,
+                );
+
+                $profile->forceFill(['is_active' => false])->save();
+            }
+        });
+
+        $this->dataCache->forgetOrganization($request->user()->organization_id);
+
+        return back()->with('status', $user->name.' fue ocultado del equipo. Sus datos historicos se conservan.');
+    }
+
     private function authorizeUserManagement(Request $request): void
     {
         abort_unless($request->user()?->canManageCompanyRules(), 403);
@@ -132,6 +221,16 @@ class AdminUserController extends Controller
             User::ROLE_DEVELOPER => 'desarrollador',
             default => 'empleado',
         };
+    }
+
+    private function activeRuleManagerCount(int $organizationId): int
+    {
+        return User::where('organization_id', $organizationId)
+            ->where('role', User::ROLE_ADMIN)
+            ->where('can_manage_company_rules', true)
+            ->where('status', User::STATUS_ACTIVE)
+            ->whereNull('deactivated_at')
+            ->count();
     }
 
     /**

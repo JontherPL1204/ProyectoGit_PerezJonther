@@ -82,6 +82,10 @@ class OrganizationDataCache
             self::STATIC_TTL_SECONDS,
             fn () => EmployeeProfile::with('user')
                 ->where('organization_id', $organizationId)
+                ->where('is_active', true)
+                ->whereHas('user', fn ($query) => $query
+                    ->where('status', User::STATUS_ACTIVE)
+                    ->whereNull('deactivated_at'))
                 ->get()
                 ->sortBy(fn (EmployeeProfile $profile) => $profile->user?->name ?? '')
                 ->map(fn (EmployeeProfile $profile): array => [
@@ -115,10 +119,12 @@ class OrganizationDataCache
                     'email' => $user->email,
                     'role' => $user->role,
                     'status' => $user->status,
+                    'deactivated_at' => $user->deactivated_at,
                     'can_manage_company_rules' => (bool) $user->can_manage_company_rules,
                     'can_view_medical_attachments' => (bool) $user->can_view_medical_attachments,
                     'employeeProfile' => $user->employeeProfile ? [
                         'id' => $user->employeeProfile->id,
+                        'is_active' => (bool) $user->employeeProfile->is_active,
                         'department' => $user->employeeProfile->department?->only(['id', 'name']),
                         'jobPositions' => $user->employeeProfile->jobPositions
                             ->sortBy('name')
@@ -141,7 +147,13 @@ class OrganizationDataCache
         $rows = Cache::remember(
             $this->key($organizationId, 'job-positions'),
             self::STATIC_TTL_SECONDS,
-            fn () => JobPosition::withCount('employeeProfiles')
+            fn () => JobPosition::withCount([
+                'employeeProfiles' => fn ($query) => $query
+                    ->where('is_active', true)
+                    ->whereHas('user', fn ($userQuery) => $userQuery
+                        ->where('status', User::STATUS_ACTIVE)
+                        ->whereNull('deactivated_at')),
+            ])
                 ->where('organization_id', $organizationId)
                 ->orderByDesc('is_system')
                 ->orderBy('name')

@@ -160,6 +160,53 @@ class TeamManagementTest extends TestCase
             ->assertSee('Esta invitacion caduco.');
     }
 
+    public function test_manager_can_hide_worker_without_deleting_their_data(): void
+    {
+        $this->seed();
+
+        $admin = $this->adminUser();
+        $employee = $this->employeeUser();
+        $profileId = $employee->employeeProfile()->value('id');
+
+        $this->actingAs($admin)
+            ->post(route('admin.users.deactivate', $employee))
+            ->assertSessionHas('status', $employee->name.' fue ocultado del equipo. Sus datos historicos se conservan.');
+
+        $employee->refresh();
+
+        $this->assertSame(User::STATUS_INACTIVE, $employee->status);
+        $this->assertNotNull($employee->deactivated_at);
+        $this->assertDatabaseHas('users', [
+            'id' => $employee->id,
+            'email' => $employee->email,
+            'status' => User::STATUS_INACTIVE,
+        ]);
+        $this->assertDatabaseHas('employee_profiles', [
+            'id' => $profileId,
+            'user_id' => $employee->id,
+            'is_active' => false,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertSee('con historial guardado')
+            ->assertDontSee($employee->email);
+    }
+
+    public function test_manager_cannot_hide_their_own_account(): void
+    {
+        $this->seed();
+
+        $admin = $this->adminUser();
+
+        $this->actingAs($admin)
+            ->post(route('admin.users.deactivate', $admin))
+            ->assertSessionHasErrors('user');
+
+        $this->assertSame(User::STATUS_ACTIVE, $admin->refresh()->status);
+    }
+
     public function test_user_can_update_timezone_and_dates_are_presented_locally(): void
     {
         $this->seed();

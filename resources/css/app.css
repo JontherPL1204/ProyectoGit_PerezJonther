@@ -1331,7 +1331,7 @@ dd {
     border-top: 1.5px solid var(--line);
     display: grid;
     gap: 18px;
-    grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(260px, 0.8fr);
     margin-top: 14px;
     padding-top: 14px;
 }
@@ -1349,6 +1349,18 @@ dd {
 
 .team-editor-head .eyebrow {
     margin-bottom: 4px;
+}
+
+.team-danger-block {
+    background: #fff7f5;
+}
+
+.team-danger-block p {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 750;
+    line-height: 1.45;
+    margin: 0;
 }
 
 .user-permission-form {
