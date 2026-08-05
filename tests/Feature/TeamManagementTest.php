@@ -26,8 +26,15 @@ class TeamManagementTest extends TestCase
             ->assertOk()
             ->assertSee('team-member-card', false)
             ->assertSee('Frontend Developer')
+            ->assertSee('position-dropdown', false)
             ->assertSee('position-options', false)
-            ->assertSee('Guardar puestos');
+            ->assertSee('Guardar puestos')
+            ->assertDontSee('Crear y asignar puesto');
+
+        $this->actingAs($admin)
+            ->get(route('admin.management.index'))
+            ->assertOk()
+            ->assertSee('Crear puesto');
 
         $this->actingAs($admin)
             ->post(route('admin.management.positions.store'), ['name' => 'QA Analyst'])

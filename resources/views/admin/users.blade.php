@@ -166,32 +166,36 @@
                                         @csrf
                                         <input type="hidden" name="open_user_id" value="{{ $member->id }}">
 
-                                        <fieldset class="position-picker">
-                                            <legend>Puestos existentes</legend>
-                                            <div class="position-options">
-                                                @foreach ($positions as $position)
-                                                    <label class="position-option">
-                                                        <input type="checkbox" name="job_position_ids[]" value="{{ $position->id }}" @checked(in_array((int) $position->id, $assignedPositionIds, true))>
-                                                        <span>{{ $position->name }}</span>
-                                                    </label>
-                                                @endforeach
-                                            </div>
+                                        <details class="position-dropdown">
+                                            <summary class="position-dropdown-summary">
+                                                <span>
+                                                    <small>Puestos existentes</small>
+                                                    <strong>{{ $assignedPositions->count() }} asignado(s)</strong>
+                                                </span>
+                                                <i data-lucide="chevron-down"></i>
+                                            </summary>
 
-                                            @if ($positions->isEmpty())
-                                                <p class="empty-inline">No hay puestos creados todavia.</p>
-                                            @endif
-                                        </fieldset>
+                                            <fieldset class="position-picker">
+                                                <legend>Seleccionar puestos</legend>
+                                                <div class="position-options position-options-menu">
+                                                    @foreach ($positions as $position)
+                                                        <label class="position-option">
+                                                            <input type="checkbox" name="job_position_ids[]" value="{{ $position->id }}" @checked(in_array((int) $position->id, $assignedPositionIds, true))>
+                                                            <span>{{ $position->name }}</span>
+                                                        </label>
+                                                    @endforeach
+                                                </div>
 
-                                        <div class="position-create-field">
-                                            <label for="new-position-{{ $member->id }}">Crear y asignar puesto</label>
-                                            <div class="position-create-row">
-                                                <input id="new-position-{{ $member->id }}" type="text" name="new_position_name" maxlength="120" placeholder="Ej. QA Analyst">
-                                                <button class="ghost-button compact" type="submit">
-                                                    <i data-lucide="briefcase"></i>
-                                                    <span>Guardar puestos</span>
-                                                </button>
-                                            </div>
-                                        </div>
+                                                @if ($positions->isEmpty())
+                                                    <p class="empty-inline">No hay puestos creados todavia. Crea puestos desde Gestion.</p>
+                                                @endif
+                                            </fieldset>
+                                        </details>
+
+                                        <button class="ghost-button compact" type="submit">
+                                            <i data-lucide="briefcase"></i>
+                                            <span>Guardar puestos</span>
+                                        </button>
                                     </form>
                                 </section>
 
