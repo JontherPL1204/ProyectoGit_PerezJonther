@@ -1914,54 +1914,146 @@ dd {
     padding: 12px;
 }
 
-.vacation-balance-list {
-    display: grid;
-    gap: 10px;
-}
-
-.vacation-balance-row {
-    align-items: center;
-    border: 1.5px solid var(--line);
-    border-radius: var(--radius);
-    background: var(--paper);
+.report-page {
     display: grid;
     gap: 14px;
-    grid-template-columns: minmax(180px, 0.85fr) minmax(240px, 1.5fr) minmax(110px, auto);
+    max-width: 1360px;
+}
+
+.report-page .panel {
+    padding: 16px;
+}
+
+.report-page .section-head {
+    margin-bottom: 12px;
+}
+
+.report-control-panel .admin-filter-form {
+    margin-bottom: 0;
+}
+
+.report-metric-grid {
+    gap: 12px;
+    margin-bottom: 0;
+}
+
+.report-metric-grid .metric-card {
+    min-height: 104px;
     padding: 14px;
 }
 
-.vacation-balance-person,
-.vacation-balance-total {
-    display: grid;
-    gap: 4px;
+.report-metric-grid .metric-card strong {
+    font-size: 32px;
+    margin: 6px 0;
 }
 
-.vacation-balance-person strong,
-.vacation-balance-total strong {
-    display: block;
-    line-height: 1.1;
+.report-metric-grid .metric-card span {
+    font-size: 12px;
 }
 
-.vacation-balance-person span,
-.vacation-balance-total span,
-.vacation-balance-legend span {
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 800;
-}
-
-.vacation-balance-chart {
-    display: grid;
-    gap: 8px;
+.report-vacation-panel {
     min-width: 0;
 }
 
-.vacation-balance-bar {
+.vacation-balance-key {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    justify-content: flex-end;
+}
+
+.vacation-balance-key span {
+    align-items: center;
+    color: var(--muted);
+    display: inline-flex;
+    font-size: 12px;
+    font-weight: 900;
+    gap: 6px;
+    text-transform: uppercase;
+}
+
+.vacation-balance-key b {
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    display: inline-block;
+    height: 12px;
+    width: 12px;
+}
+
+.key-used,
+.vacation-balance-used {
+    background: var(--ink);
+}
+
+.key-remaining,
+.vacation-balance-remaining {
+    background: var(--accent);
+}
+
+.vacation-balance-compact {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+
+.vacation-balance-card {
     background: var(--surface);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    min-width: 0;
+    overflow: hidden;
+}
+
+.vacation-balance-summary {
+    align-content: center;
+    cursor: pointer;
+    display: grid;
+    gap: 10px 8px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    list-style: none;
+    min-height: 100px;
+    padding: 12px;
+}
+
+.vacation-balance-summary::-webkit-details-marker {
+    display: none;
+}
+
+.vacation-balance-name {
+    display: block;
+    font-size: 16px;
+    font-weight: 900;
+    line-height: 1.2;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.vacation-balance-summary svg {
+    height: 18px;
+    transition: transform 0.15s ease;
+    width: 18px;
+}
+
+.vacation-balance-card[open] .vacation-balance-summary svg {
+    transform: rotate(180deg);
+}
+
+.vacation-balance-mini-chart {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    grid-column: 1 / -1;
+    min-width: 0;
+}
+
+.vacation-balance-mini-bar {
+    background: var(--paper);
     border: 1.5px solid var(--line);
     border-radius: 999px;
     display: flex;
-    height: 20px;
+    flex: 1 1 auto;
+    height: 16px;
+    min-width: 54px;
     overflow: hidden;
 }
 
@@ -1971,28 +2063,58 @@ dd {
     min-width: 0;
 }
 
-.vacation-balance-used {
-    background: var(--ink);
+.vacation-balance-pill {
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    background: var(--paper);
+    color: var(--ink);
+    flex: 0 0 auto;
+    font-size: 12px;
+    font-weight: 900;
+    padding: 4px 8px;
+    white-space: nowrap;
 }
 
-.vacation-balance-remaining {
-    background: var(--accent);
+.vacation-balance-detail {
+    border-top: 1.5px solid var(--line);
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 10px;
 }
 
-.vacation-balance-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 14px;
-    justify-content: space-between;
+.vacation-balance-detail div {
+    background: var(--paper);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    min-width: 0;
+    padding: 8px;
 }
 
-.vacation-balance-total {
-    justify-items: end;
-    text-align: right;
+.vacation-balance-detail span {
+    color: var(--muted);
+    display: block;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
 }
 
-.vacation-balance-total strong {
-    font-size: 30px;
+.vacation-balance-detail strong {
+    display: block;
+    font-size: 15px;
+    line-height: 1.15;
+    margin-top: 5px;
+    overflow-wrap: anywhere;
+}
+
+.report-secondary-grid {
+    align-items: start;
+    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 245px), 1fr));
+}
+
+.report-secondary-grid .panel {
+    box-shadow: 0 4px 0 var(--line);
 }
 
 .report-collapsible {
@@ -2241,6 +2363,10 @@ dd {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .content-grid.report-secondary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .content-grid,
     .admin-console-layout,
     .rules-layout,
@@ -2301,6 +2427,27 @@ dd {
         font-size: 26px;
     }
 
+    .report-page {
+        gap: 12px;
+    }
+
+    .report-page .panel {
+        padding: 14px;
+    }
+
+    .report-metric-grid .metric-card {
+        min-height: 94px;
+    }
+
+    .report-vacation-panel .section-head {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .vacation-balance-key {
+        justify-content: flex-start;
+    }
+
     .nav-list,
     .metric-grid,
     .admin-stat-strip,
@@ -2356,6 +2503,10 @@ dd {
     .report-collapsible-summary svg {
         grid-column: 2;
         grid-row: 1;
+    }
+
+    .vacation-balance-detail {
+        grid-template-columns: 1fr;
     }
 
     .request-row-actions form,
