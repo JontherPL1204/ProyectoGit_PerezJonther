@@ -78,6 +78,7 @@ class AdminController extends Controller
             'leave_requests.start_date',
             'leave_requests.end_date',
             'leave_requests.requested_units',
+            'leave_requests.created_at',
             'users.name as employee_name',
             'leave_types.name as leave_type_name',
         ];
@@ -98,8 +99,8 @@ class AdminController extends Controller
             ->when($advancedFilters['date_from'], fn ($query, $dateFrom) => $query->whereDate('leave_requests.end_date', '>=', $dateFrom))
             ->when($advancedFilters['date_to'], fn ($query, $dateTo) => $query->whereDate('leave_requests.start_date', '<=', $dateTo))
             ->select($selectColumns)
-            ->orderBy('leave_requests.start_date')
-            ->orderByDesc('leave_requests.created_at')
+            ->orderBy('leave_requests.created_at')
+            ->orderBy('leave_requests.id')
             ->simplePaginate(12)
             ->withQueryString();
 
@@ -342,6 +343,10 @@ class AdminController extends Controller
     {
         $row->start_date = CarbonImmutable::parse($row->start_date);
         $row->end_date = CarbonImmutable::parse($row->end_date);
+
+        if (property_exists($row, 'created_at') && $row->created_at) {
+            $row->created_at = CarbonImmutable::parse($row->created_at);
+        }
 
         if ($withStatus) {
             $row->status_label = $this->statusLabel($row->status);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LeaveRequest;
+use App\Services\OrganizationDataCache;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -11,6 +12,8 @@ use Illuminate\View\View;
 
 class AdminReportController extends Controller
 {
+    public function __construct(private readonly OrganizationDataCache $dataCache) {}
+
     public function __invoke(Request $request): View
     {
         abort_unless($request->user()?->isAdmin(), 403);
@@ -28,9 +31,10 @@ class AdminReportController extends Controller
 
         $monthStart = CarbonImmutable::create($year, $month, 1)->startOfMonth();
         $monthEnd = $monthStart->endOfMonth();
+        $requestDataVersion = $this->dataCache->requestDataVersion($request->user()->organization_id);
 
         $report = Cache::remember(
-            'admin-report:'.$request->user()->organization_id.':'.$year.':'.$month.':v1',
+            'admin-report:'.$request->user()->organization_id.':'.$year.':'.$month.':v2:'.$requestDataVersion,
             60,
             fn (): array => $this->reportData($request, $monthStart, $monthEnd, $year),
         );
@@ -38,6 +42,7 @@ class AdminReportController extends Controller
         $monthlyStats = $report['monthlyStats'];
         $yearlyStats = $report['yearlyStats'];
         $byType = collect($report['byType']);
+        $vacationBalances = collect($report['vacationBalances']);
         $pendingJustifications = collect($report['pendingJustifications'])
             ->map(function (array $row) {
                 $row['start_date'] = CarbonImmutable::parse($row['start_date']);
@@ -58,6 +63,7 @@ class AdminReportController extends Controller
             'monthStart',
             'pendingJustifications',
             'recentAttachments',
+            'vacationBalances',
             'year',
             'yearlyStats',
         ));
@@ -125,6 +131,11 @@ class AdminReportController extends Controller
                 CarbonImmutable::create($year, 12, 31)->startOfDay(),
             ),
             'byType' => $this->byTypeForPeriod($request, $monthStart, $monthEnd)->all(),
+            'vacationBalances' => $this->vacationBalancesForYear(
+                $request,
+                CarbonImmutable::create($year, 1, 1)->startOfDay(),
+                CarbonImmutable::create($year, 12, 31)->startOfDay(),
+            )->all(),
             'pendingJustifications' => $pendingJustifications,
             'recentAttachments' => $recentAttachments,
         ];
@@ -184,6 +195,48 @@ class AdminReportController extends Controller
                 'rejected' => (int) $row->rejected,
                 'units' => (int) $row->units,
             ]);
+    }
+
+    private function vacationBalancesForYear(Request $request, CarbonImmutable $yearStart, CarbonImmutable $yearEnd)
+    {
+        return DB::table('employee_profiles')
+            ->join('users', 'users.id', '=', 'employee_profiles.user_id')
+            ->leftJoin('leave_allowances', function ($join) use ($yearStart, $yearEnd): void {
+                $join->on('leave_allowances.employee_profile_id', '=', 'employee_profiles.id')
+                    ->where('leave_allowances.balance_code', 'VACATIONS')
+                    ->where('leave_allowances.period_start', '<=', $yearEnd->toDateString())
+                    ->where('leave_allowances.period_end', '>=', $yearStart->toDateString());
+            })
+            ->leftJoin('leave_balance_movements', 'leave_balance_movements.leave_allowance_id', '=', 'leave_allowances.id')
+            ->where('employee_profiles.organization_id', $request->user()->organization_id)
+            ->where('users.status', 'active')
+            ->groupBy('employee_profiles.id', 'users.name')
+            ->orderBy('users.name')
+            ->select([
+                'employee_profiles.id',
+                'users.name',
+            ])
+            ->selectRaw('COALESCE(MAX(leave_allowances.assigned_units), 0) as assigned_units')
+            ->selectRaw('COALESCE(SUM(leave_balance_movements.amount), 0) as remaining_units')
+            ->get()
+            ->map(function ($row): array {
+                $assigned = (int) $row->assigned_units;
+                $remaining = (int) $row->remaining_units;
+                $used = max(0, $assigned - $remaining);
+                $usedPercent = $assigned > 0
+                    ? min(100, max(0, (int) round(($used / $assigned) * 100)))
+                    : 0;
+
+                return [
+                    'id' => (int) $row->id,
+                    'name' => $row->name,
+                    'assigned' => $assigned,
+                    'remaining' => $remaining,
+                    'used' => $used,
+                    'used_percent' => $usedPercent,
+                    'remaining_percent' => $assigned > 0 ? max(0, 100 - $usedPercent) : 0,
+                ];
+            });
     }
 
     private function justificationLabel(string $status): string
