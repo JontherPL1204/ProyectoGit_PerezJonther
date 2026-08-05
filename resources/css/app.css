@@ -843,7 +843,7 @@ dd {
     align-items: start;
     display: grid;
     gap: 18px;
-    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
 }
 
 .admin-console-main {
@@ -877,7 +877,7 @@ dd {
 .admin-stat-strip {
     display: grid;
     gap: 10px;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
 }
 
 .admin-stat {
@@ -885,6 +885,7 @@ dd {
     border-radius: var(--radius);
     background: var(--surface);
     min-height: 112px;
+    min-width: 0;
     padding: 14px;
 }
 
@@ -940,7 +941,7 @@ dd {
     align-items: end;
     display: grid;
     gap: 12px;
-    grid-template-columns: minmax(240px, 1.2fr) minmax(180px, 0.85fr) minmax(260px, 1fr) minmax(180px, auto);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
 }
 
 .invite-form > label,
@@ -960,7 +961,7 @@ dd {
 .team-promote-panel > .primary-button {
     align-self: end;
     min-height: 60px;
-    min-width: 180px;
+    min-width: 0;
     padding-inline: 16px;
     white-space: nowrap;
 }
@@ -1931,6 +1932,16 @@ dd {
 
 .calendar-item.holiday {
     background: var(--info-soft);
+}
+
+@media (max-width: 1320px) {
+    .admin-console-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-console-aside {
+        position: static;
+    }
 }
 
 @media (max-width: 1023px) {
