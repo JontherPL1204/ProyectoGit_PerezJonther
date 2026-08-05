@@ -20,7 +20,8 @@
         ];
     @endphp
 
-    <section class="panel">
+    <div class="report-page">
+    <section class="panel report-control-panel">
         <div class="section-head">
             <div>
                 <p class="eyebrow">Resumen</p>
@@ -52,7 +53,7 @@
         </form>
     </section>
 
-    <section class="metric-grid">
+    <section class="metric-grid report-metric-grid">
         <article class="metric-card accent">
             <p>Vacaciones usadas</p>
             <strong>{{ $monthlyStats['vacation_used'] }}</strong>
@@ -75,38 +76,48 @@
         </article>
     </section>
 
-    <section class="panel">
+    <section class="panel report-vacation-panel">
         <div class="section-head">
             <div>
                 <p class="eyebrow">Equipo</p>
                 <h2>Vacaciones por integrante</h2>
             </div>
+            <div class="vacation-balance-key" aria-label="Leyenda de vacaciones">
+                <span><b class="key-used"></b>Usados</span>
+                <span><b class="key-remaining"></b>Disponibles</span>
+            </div>
         </div>
 
-        <div class="vacation-balance-list">
+        <div class="vacation-balance-compact">
             @forelse ($vacationBalances as $row)
-                <article class="vacation-balance-row">
-                    <div class="vacation-balance-person">
-                        <strong>{{ $row['name'] }}</strong>
-                        <span>{{ $row['assigned'] }} dias asignados</span>
-                    </div>
+                <details class="vacation-balance-card">
+                    <summary class="vacation-balance-summary">
+                        <span class="vacation-balance-name">{{ $row['name'] }}</span>
+                        <span class="vacation-balance-mini-chart" aria-label="{{ $row['used'] }} dias usados y {{ $row['remaining'] }} dias disponibles">
+                            <span class="vacation-balance-mini-bar">
+                                <span class="vacation-balance-used" style="width: {{ $row['used_percent'] }}%"></span>
+                                <span class="vacation-balance-remaining" style="width: {{ $row['remaining_percent'] }}%"></span>
+                            </span>
+                            <span class="vacation-balance-pill">{{ $row['remaining'] }} libres</span>
+                        </span>
+                        <i data-lucide="chevron-down"></i>
+                    </summary>
 
-                    <div class="vacation-balance-chart" aria-label="{{ $row['used'] }} dias usados y {{ $row['remaining'] }} dias disponibles">
-                        <div class="vacation-balance-bar">
-                            <span class="vacation-balance-used" style="width: {{ $row['used_percent'] }}%"></span>
-                            <span class="vacation-balance-remaining" style="width: {{ $row['remaining_percent'] }}%"></span>
+                    <div class="vacation-balance-detail">
+                        <div>
+                            <span>Asignados</span>
+                            <strong>{{ $row['assigned'] }} dias asignados</strong>
                         </div>
-                        <div class="vacation-balance-legend">
-                            <span>{{ $row['used'] }} usados</span>
-                            <span>{{ $row['remaining'] }} disponibles</span>
+                        <div>
+                            <span>Usados</span>
+                            <strong>{{ $row['used'] }} dias usados</strong>
+                        </div>
+                        <div>
+                            <span>Disponibles</span>
+                            <strong>{{ $row['remaining'] }} dias disponibles</strong>
                         </div>
                     </div>
-
-                    <div class="vacation-balance-total">
-                        <strong>{{ $row['remaining'] }}</strong>
-                        <span>dias quedan</span>
-                    </div>
-                </article>
+                </details>
             @empty
                 <div class="empty-state">
                     <i data-lucide="bar-chart-3"></i>
@@ -116,7 +127,7 @@
         </div>
     </section>
 
-    <section class="content-grid">
+    <section class="content-grid report-secondary-grid">
         <article class="panel wide">
             <details class="report-collapsible">
                 <summary class="report-collapsible-summary">
@@ -204,4 +215,5 @@
             </div>
         </article>
     </section>
+    </div>
 @endsection
