@@ -71,7 +71,7 @@
             </div>
         </form>
 
-        <div class="admin-list">
+        <div class="admin-list admin-review-list">
             @forelse ($requests as $leaveRequest)
                 <article class="admin-request">
                     <div>

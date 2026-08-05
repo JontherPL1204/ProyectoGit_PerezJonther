@@ -393,6 +393,7 @@ class LeaveRequestFlowTest extends TestCase
                 'hasta' => '2026-09-30',
             ]))
             ->assertOk()
+            ->assertSee('admin-review-list', false)
             ->assertSee('Empleado Demo')
             ->assertSee('Vacaciones')
             ->assertSee('Coincide con otras ausencias')
