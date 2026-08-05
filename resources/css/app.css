@@ -822,6 +822,28 @@ dd {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(300px, 560px);
     gap: 16px;
+    min-width: 0;
+}
+
+.admin-review-list {
+    align-items: start;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.admin-review-list .admin-request {
+    align-content: start;
+    grid-template-columns: 1fr;
+    min-height: 100%;
+}
+
+.admin-review-list .admin-actions {
+    border-top: 1.5px solid var(--line);
+    padding-top: 12px;
+}
+
+.admin-review-list .admin-actions form {
+    grid-template-columns: minmax(0, 1fr) minmax(112px, auto);
 }
 
 .notification-row {
@@ -2019,6 +2041,12 @@ dd {
 
     .admin-console-aside {
         position: static;
+    }
+}
+
+@media (max-width: 1180px) {
+    .admin-review-list {
+        grid-template-columns: 1fr;
     }
 }
 
