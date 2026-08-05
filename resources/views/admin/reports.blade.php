@@ -128,7 +128,7 @@
     </section>
 
     <section class="content-grid report-secondary-grid">
-        <article class="panel wide">
+        <article class="panel report-collapsible-panel wide">
             <details class="report-collapsible">
                 <summary class="report-collapsible-summary">
                     <span>
@@ -167,52 +167,85 @@
             </details>
         </article>
 
-        <article class="panel">
-            <p class="eyebrow">Anual</p>
-            <h2>{{ $year }}</h2>
-            <dl class="rule-list">
-                <div><dt>Vacaciones aprobadas</dt><dd>{{ $yearlyStats['vacation_used'] }} dias</dd></div>
-                <div><dt>Aprobadas</dt><dd>{{ $yearlyStats['approved'] }} solicitudes</dd></div>
-                <div><dt>Pendientes</dt><dd>{{ $yearlyStats['pending'] }} solicitudes</dd></div>
-                <div><dt>Rechazadas</dt><dd>{{ $yearlyStats['rejected'] }} solicitudes</dd></div>
-                <div><dt>Medicas</dt><dd>{{ $yearlyStats['medical_count'] }} solicitudes</dd></div>
-            </dl>
+        <article class="panel report-collapsible-panel">
+            <details class="report-collapsible">
+                <summary class="report-collapsible-summary">
+                    <span>
+                        <small>Anual</small>
+                        <strong>Resumen anual</strong>
+                    </span>
+                    <em>{{ $year }}</em>
+                    <i data-lucide="chevron-down"></i>
+                </summary>
+
+                <div class="report-collapsible-body">
+                    <dl class="rule-list">
+                        <div><dt>Vacaciones aprobadas</dt><dd>{{ $yearlyStats['vacation_used'] }} dias</dd></div>
+                        <div><dt>Aprobadas</dt><dd>{{ $yearlyStats['approved'] }} solicitudes</dd></div>
+                        <div><dt>Pendientes</dt><dd>{{ $yearlyStats['pending'] }} solicitudes</dd></div>
+                        <div><dt>Rechazadas</dt><dd>{{ $yearlyStats['rejected'] }} solicitudes</dd></div>
+                        <div><dt>Medicas</dt><dd>{{ $yearlyStats['medical_count'] }} solicitudes</dd></div>
+                    </dl>
+                </div>
+            </details>
         </article>
 
-        <article class="panel">
-            <p class="eyebrow">Justificantes</p>
-            <h2>Pendientes</h2>
-            <div class="mini-list">
-                @forelse ($pendingJustifications as $leaveRequest)
-                    <a href="{{ route('leave-requests.show', $leaveRequest->id) }}">
-                        <strong>{{ $leaveRequest->employee_name }}</strong>
-                        <span>{{ $leaveRequest->leave_type_name }} &middot; {{ $leaveRequest->start_date->format('d/m/Y') }}</span>
-                    </a>
-                @empty
-                    <div>
-                        <strong>Sin pendientes</strong>
-                        <span>Los justificantes obligatorios estan cubiertos.</span>
+        <article class="panel report-collapsible-panel">
+            <details class="report-collapsible">
+                <summary class="report-collapsible-summary">
+                    <span>
+                        <small>Justificantes</small>
+                        <strong>Pendientes</strong>
+                    </span>
+                    <em>{{ $pendingJustifications->count() }} pendiente(s)</em>
+                    <i data-lucide="chevron-down"></i>
+                </summary>
+
+                <div class="report-collapsible-body">
+                    <div class="mini-list">
+                        @forelse ($pendingJustifications as $leaveRequest)
+                            <a href="{{ route('leave-requests.show', $leaveRequest->id) }}">
+                                <strong>{{ $leaveRequest->employee_name }}</strong>
+                                <span>{{ $leaveRequest->leave_type_name }} &middot; {{ $leaveRequest->start_date->format('d/m/Y') }}</span>
+                            </a>
+                        @empty
+                            <div>
+                                <strong>Sin pendientes</strong>
+                                <span>Los justificantes obligatorios estan cubiertos.</span>
+                            </div>
+                        @endforelse
                     </div>
-                @endforelse
-            </div>
+                </div>
+            </details>
         </article>
 
-        <article class="panel">
-            <p class="eyebrow">Documentos</p>
-            <h2>Recibidos</h2>
-            <div class="mini-list">
-                @forelse ($recentAttachments as $attachment)
-                    <a href="{{ route('leave-requests.show', $attachment->leave_request_id) }}">
-                        <strong>{{ $attachment->original_name }}</strong>
-                        <span>{{ $attachment->justification_label }} &middot; {{ $attachment->created_at->format('d/m/Y') }}</span>
-                    </a>
-                @empty
-                    <div>
-                        <strong>Sin documentos</strong>
-                        <span>No hay adjuntos cargados todavia.</span>
+        <article class="panel report-collapsible-panel">
+            <details class="report-collapsible">
+                <summary class="report-collapsible-summary">
+                    <span>
+                        <small>Documentos</small>
+                        <strong>Recibidos</strong>
+                    </span>
+                    <em>{{ $recentAttachments->count() }} documento(s)</em>
+                    <i data-lucide="chevron-down"></i>
+                </summary>
+
+                <div class="report-collapsible-body">
+                    <div class="mini-list">
+                        @forelse ($recentAttachments as $attachment)
+                            <a href="{{ route('leave-requests.show', $attachment->leave_request_id) }}">
+                                <strong>{{ $attachment->original_name }}</strong>
+                                <span>{{ $attachment->justification_label }} &middot; {{ $attachment->created_at->format('d/m/Y') }}</span>
+                            </a>
+                        @empty
+                            <div>
+                                <strong>Sin documentos</strong>
+                                <span>No hay adjuntos cargados todavia.</span>
+                            </div>
+                        @endforelse
                     </div>
-                @endforelse
-            </div>
+                </div>
+            </details>
         </article>
     </section>
     </div>

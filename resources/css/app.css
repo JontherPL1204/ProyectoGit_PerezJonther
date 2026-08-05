@@ -2109,12 +2109,41 @@ dd {
 
 .report-secondary-grid {
     align-items: start;
-    gap: 14px;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 245px), 1fr));
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
 }
 
 .report-secondary-grid .panel {
     box-shadow: 0 4px 0 var(--line);
+}
+
+.report-secondary-grid .report-collapsible-panel {
+    min-width: 0;
+    overflow: hidden;
+    padding: 0;
+}
+
+.report-secondary-grid .report-collapsible {
+    background: transparent;
+    border: 0;
+    height: 100%;
+}
+
+.report-secondary-grid .report-collapsible-summary {
+    min-height: 82px;
+    padding: 14px 16px;
+}
+
+.report-secondary-grid .report-collapsible-body {
+    background: var(--surface);
+    max-height: 420px;
+    overflow: auto;
+}
+
+.report-secondary-grid .mini-list,
+.report-secondary-grid .rule-list,
+.report-secondary-grid .report-table {
+    gap: 8px;
 }
 
 .report-collapsible {
@@ -2153,8 +2182,19 @@ dd {
     text-transform: uppercase;
 }
 
+.report-collapsible-summary em {
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--ink);
+    padding: 5px 9px;
+    white-space: nowrap;
+}
+
 .report-collapsible-summary strong {
     font-size: 18px;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
 }
 
 .report-collapsible-summary svg {
