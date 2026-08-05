@@ -129,6 +129,12 @@ class LeaveRequestFlowTest extends TestCase
         $this->assertDatabaseHas('request_events', ['action' => 'REQUEST_CREATED']);
         $this->assertDatabaseHas('notification_outbox', ['event' => 'REQUEST_CREATED']);
 
+        $this->actingAs($employee)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Ver detalle')
+            ->assertSee('Cancelar');
+
         $this->actingAs($admin)
             ->get(route('dashboard'))
             ->assertOk()
@@ -149,6 +155,11 @@ class LeaveRequestFlowTest extends TestCase
             'recipient_email' => $employee->email,
             'status' => 'sent',
         ]);
+
+        $this->actingAs($employee)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Solicitar cancelacion');
     }
 
     public function test_all_employee_request_types_receive_admin_responses(): void
@@ -251,6 +262,12 @@ class LeaveRequestFlowTest extends TestCase
             ->assertOk()
             ->assertSee('Aprobada')
             ->assertSee('Aprobado por cobertura disponible.');
+
+        $this->actingAs($employee)
+            ->get(route('history'))
+            ->assertOk()
+            ->assertSee('Ver detalle')
+            ->assertSee('Solicitar cancelacion');
 
         $this->actingAs($employee)
             ->get(route('leave-requests.show', $requests['PERSONAL']))

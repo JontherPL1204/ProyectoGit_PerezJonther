@@ -238,6 +238,15 @@ class OrganizationDataCache
     {
         Cache::forget($this->key($organizationId, 'request-status-counts'));
         Cache::forget($this->key($organizationId, 'notification-events'));
+        Cache::forever(
+            $this->key($organizationId, 'request-data-version'),
+            $this->requestDataVersion($organizationId) + 1,
+        );
+    }
+
+    public function requestDataVersion(int $organizationId): int
+    {
+        return (int) Cache::get($this->key($organizationId, 'request-data-version'), 1);
     }
 
     private function key(int $organizationId, string $name): string

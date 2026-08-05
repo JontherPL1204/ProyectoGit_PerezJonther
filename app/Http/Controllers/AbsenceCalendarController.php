@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\EmployeeCalendarAssignment;
 use App\Models\Holiday;
 use App\Models\LeaveRequest;
+use App\Services\OrganizationDataCache;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Carbon\CarbonPeriod;
@@ -14,10 +15,13 @@ use Illuminate\View\View;
 
 class AbsenceCalendarController extends Controller
 {
+    public function __construct(private readonly OrganizationDataCache $dataCache) {}
+
     public function __invoke(Request $request): View
     {
         $user = $request->user();
         $profileId = $this->currentEmployeeProfileId($request);
+        $requestDataVersion = $this->dataCache->requestDataVersion($user->organization_id);
         $month = $this->monthFrom($request->query('mes'));
         $monthStart = $month->startOfMonth();
         $monthEnd = $month->endOfMonth();
@@ -25,7 +29,7 @@ class AbsenceCalendarController extends Controller
         $gridEnd = $monthEnd->endOfWeek(CarbonInterface::SUNDAY);
 
         $days = Cache::remember(
-            $this->calendarCacheKey($user->organization_id, $user->id, $profileId, $user->isAdmin(), $monthStart),
+            $this->calendarCacheKey($user->organization_id, $user->id, $profileId, $user->isAdmin(), $monthStart, $requestDataVersion),
             60,
             fn (): array => $this->calendarDays(
                 $request,
@@ -116,9 +120,9 @@ class AbsenceCalendarController extends Controller
         ]);
     }
 
-    private function calendarCacheKey(int $organizationId, int $userId, int $profileId, bool $isAdmin, CarbonImmutable $month): string
+    private function calendarCacheKey(int $organizationId, int $userId, int $profileId, bool $isAdmin, CarbonImmutable $month, int $requestDataVersion): string
     {
-        return 'calendar:'.$organizationId.':'.$userId.':'.$profileId.':'.($isAdmin ? 'admin' : 'user').':'.$month->format('Y-m').':v1';
+        return 'calendar:'.$organizationId.':'.$userId.':'.$profileId.':'.($isAdmin ? 'admin' : 'user').':'.$month->format('Y-m').':v2:'.$requestDataVersion;
     }
 
     private function monthFrom(mixed $value): CarbonImmutable
