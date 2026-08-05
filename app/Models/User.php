@@ -24,6 +24,10 @@ class User extends Authenticatable
 
     public const ROLE_DEVELOPER = 'developer';
 
+    public const STATUS_ACTIVE = 'active';
+
+    public const STATUS_INACTIVE = 'inactive';
+
     /**
      * @var list<string>
      */
@@ -63,7 +67,7 @@ class User extends Authenticatable
 
     public function isActive(): bool
     {
-        return $this->status === 'active' && $this->deactivated_at === null;
+        return $this->status === self::STATUS_ACTIVE && $this->deactivated_at === null;
     }
 
     public function canManageCompanyRules(): bool

@@ -76,6 +76,7 @@ Route::middleware('auth')->group(function (): void {
         Route::post('/equipo/promover', [AdminUserController::class, 'promoteByEmail'])->name('users.promote');
         Route::post('/equipo/{user}/permisos', [AdminUserController::class, 'update'])->name('users.update');
         Route::post('/equipo/{user}/puestos', [AdminManagementController::class, 'updateUserPositions'])->name('users.positions.update');
+        Route::post('/equipo/{user}/ocultar', [AdminUserController::class, 'deactivate'])->name('users.deactivate');
         Route::get('/reglas', [AdminRuleController::class, 'edit'])->name('rules.edit');
         Route::post('/reglas', [AdminRuleController::class, 'update'])->name('rules.update');
         Route::post('/reglas/tipos', [AdminRuleController::class, 'storeLeaveType'])->name('rules.leave-types.store');
