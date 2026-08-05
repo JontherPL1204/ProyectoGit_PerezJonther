@@ -75,38 +75,85 @@
         </article>
     </section>
 
+    <section class="panel">
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">Equipo</p>
+                <h2>Vacaciones por integrante</h2>
+            </div>
+        </div>
+
+        <div class="vacation-balance-list">
+            @forelse ($vacationBalances as $row)
+                <article class="vacation-balance-row">
+                    <div class="vacation-balance-person">
+                        <strong>{{ $row['name'] }}</strong>
+                        <span>{{ $row['assigned'] }} dias asignados</span>
+                    </div>
+
+                    <div class="vacation-balance-chart" aria-label="{{ $row['used'] }} dias usados y {{ $row['remaining'] }} dias disponibles">
+                        <div class="vacation-balance-bar">
+                            <span class="vacation-balance-used" style="width: {{ $row['used_percent'] }}%"></span>
+                            <span class="vacation-balance-remaining" style="width: {{ $row['remaining_percent'] }}%"></span>
+                        </div>
+                        <div class="vacation-balance-legend">
+                            <span>{{ $row['used'] }} usados</span>
+                            <span>{{ $row['remaining'] }} disponibles</span>
+                        </div>
+                    </div>
+
+                    <div class="vacation-balance-total">
+                        <strong>{{ $row['remaining'] }}</strong>
+                        <span>dias quedan</span>
+                    </div>
+                </article>
+            @empty
+                <div class="empty-state">
+                    <i data-lucide="bar-chart-3"></i>
+                    <p>No hay saldos de vacaciones registrados.</p>
+                </div>
+            @endforelse
+        </div>
+    </section>
+
     <section class="content-grid">
         <article class="panel wide">
-            <div class="section-head">
-                <div>
-                    <p class="eyebrow">Tipos</p>
-                    <h2>Balance mensual</h2>
-                </div>
-            </div>
+            <details class="report-collapsible">
+                <summary class="report-collapsible-summary">
+                    <span>
+                        <small>Tipos</small>
+                        <strong>Balance mensual</strong>
+                    </span>
+                    <em>{{ $byType->count() }} motivo(s)</em>
+                    <i data-lucide="chevron-down"></i>
+                </summary>
 
-            <div class="report-table">
-                <div class="report-table-head">
-                    <span>Motivo</span>
-                    <span>Total</span>
-                    <span>Aprobadas</span>
-                    <span>Pendientes</span>
-                    <span>Unidades</span>
+                <div class="report-collapsible-body">
+                    <div class="report-table">
+                        <div class="report-table-head">
+                            <span>Motivo</span>
+                            <span>Total</span>
+                            <span>Aprobadas</span>
+                            <span>Pendientes</span>
+                            <span>Unidades</span>
+                        </div>
+                        @forelse ($byType as $row)
+                            <div class="report-table-row">
+                                <strong>{{ $row['name'] }}</strong>
+                                <span>{{ $row['total'] }}</span>
+                                <span>{{ $row['approved'] }}</span>
+                                <span>{{ $row['pending'] }}</span>
+                                <span>{{ $row['units'] }}</span>
+                            </div>
+                        @empty
+                            <div class="empty-state">
+                                <i data-lucide="bar-chart-3"></i>
+                                <p>No hay actividad en este periodo.</p>
+                            </div>
+                        @endforelse
+                    </div>
                 </div>
-                @forelse ($byType as $row)
-                    <div class="report-table-row">
-                        <strong>{{ $row['name'] }}</strong>
-                        <span>{{ $row['total'] }}</span>
-                        <span>{{ $row['approved'] }}</span>
-                        <span>{{ $row['pending'] }}</span>
-                        <span>{{ $row['units'] }}</span>
-                    </div>
-                @empty
-                    <div class="empty-state">
-                        <i data-lucide="bar-chart-3"></i>
-                        <p>No hay actividad en este periodo.</p>
-                    </div>
-                @endforelse
-            </div>
+            </details>
         </article>
 
         <article class="panel">

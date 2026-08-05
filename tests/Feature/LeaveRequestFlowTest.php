@@ -418,6 +418,49 @@ class LeaveRequestFlowTest extends TestCase
             ->assertDontSee('Formacion &middot;', false);
     }
 
+    public function test_admin_review_respects_request_submission_order(): void
+    {
+        Carbon::setTestNow('2026-07-30 10:00:00');
+        $this->seed();
+
+        $employee = $this->employeeUser();
+        $admin = $this->adminUser();
+        $vacations = LeaveType::where('code', 'VACATIONS')->firstOrFail();
+        $training = LeaveType::where('code', 'TRAINING')->firstOrFail();
+
+        LeaveRequest::create([
+            'organization_id' => $employee->organization_id,
+            'employee_profile_id' => $employee->employeeProfile->id,
+            'leave_type_id' => $training->id,
+            'unit' => 'DAYS',
+            'start_date' => '2026-11-03',
+            'end_date' => '2026-11-03',
+            'requested_units' => 1,
+            'status' => LeaveRequest::STATUS_PENDING,
+            'created_at' => '2026-07-30 10:01:00',
+            'updated_at' => '2026-07-30 10:01:00',
+        ]);
+
+        LeaveRequest::create([
+            'organization_id' => $employee->organization_id,
+            'employee_profile_id' => $employee->employeeProfile->id,
+            'leave_type_id' => $vacations->id,
+            'unit' => 'DAYS',
+            'start_date' => '2026-09-01',
+            'end_date' => '2026-09-01',
+            'requested_units' => 1,
+            'status' => LeaveRequest::STATUS_PENDING,
+            'created_at' => '2026-07-30 10:02:00',
+            'updated_at' => '2026-07-30 10:02:00',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('Solicitada')
+            ->assertSeeInOrder(['03/11/2026', '01/09/2026']);
+    }
+
     public function test_history_reports_and_notification_resend_work(): void
     {
         Carbon::setTestNow('2026-07-30 10:00:00');
@@ -467,6 +510,9 @@ class LeaveRequestFlowTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.reports', ['mes' => 9, 'anio' => 2026]))
             ->assertOk()
+            ->assertSee('Vacaciones por integrante')
+            ->assertSee('15 dias asignados')
+            ->assertSee('disponibles')
             ->assertSee('Balance mensual')
             ->assertSee('Vacaciones usadas')
             ->assertSee('5');

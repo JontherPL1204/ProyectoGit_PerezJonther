@@ -1914,6 +1914,142 @@ dd {
     padding: 12px;
 }
 
+.vacation-balance-list {
+    display: grid;
+    gap: 10px;
+}
+
+.vacation-balance-row {
+    align-items: center;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    display: grid;
+    gap: 14px;
+    grid-template-columns: minmax(180px, 0.85fr) minmax(240px, 1.5fr) minmax(110px, auto);
+    padding: 14px;
+}
+
+.vacation-balance-person,
+.vacation-balance-total {
+    display: grid;
+    gap: 4px;
+}
+
+.vacation-balance-person strong,
+.vacation-balance-total strong {
+    display: block;
+    line-height: 1.1;
+}
+
+.vacation-balance-person span,
+.vacation-balance-total span,
+.vacation-balance-legend span {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.vacation-balance-chart {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+}
+
+.vacation-balance-bar {
+    background: var(--surface);
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    display: flex;
+    height: 20px;
+    overflow: hidden;
+}
+
+.vacation-balance-used,
+.vacation-balance-remaining {
+    display: block;
+    min-width: 0;
+}
+
+.vacation-balance-used {
+    background: var(--ink);
+}
+
+.vacation-balance-remaining {
+    background: var(--accent);
+}
+
+.vacation-balance-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    justify-content: space-between;
+}
+
+.vacation-balance-total {
+    justify-items: end;
+    text-align: right;
+}
+
+.vacation-balance-total strong {
+    font-size: 30px;
+}
+
+.report-collapsible {
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+}
+
+.report-collapsible-summary {
+    align-items: center;
+    cursor: pointer;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    list-style: none;
+    min-height: 64px;
+    padding: 12px 14px;
+}
+
+.report-collapsible-summary::-webkit-details-marker {
+    display: none;
+}
+
+.report-collapsible-summary span {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+}
+
+.report-collapsible-summary small,
+.report-collapsible-summary em {
+    color: var(--muted);
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.report-collapsible-summary strong {
+    font-size: 18px;
+}
+
+.report-collapsible-summary svg {
+    height: 18px;
+    transition: transform 0.15s ease;
+    width: 18px;
+}
+
+.report-collapsible[open] .report-collapsible-summary svg {
+    transform: rotate(180deg);
+}
+
+.report-collapsible-body {
+    border-top: 1.5px solid var(--line);
+    padding: 12px;
+}
+
 .report-table {
     display: grid;
     gap: 8px;
@@ -2180,6 +2316,7 @@ dd {
     .row-meta,
     .request-row-side,
     .request-row-actions,
+    .vacation-balance-row,
     .form-actions,
     .admin-actions form,
     .calendar-nav,
@@ -2201,6 +2338,24 @@ dd {
         flex-direction: column;
         grid-template-columns: 1fr;
         justify-content: flex-start;
+    }
+
+    .vacation-balance-total {
+        justify-items: start;
+        text-align: left;
+    }
+
+    .report-collapsible-summary {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .report-collapsible-summary em {
+        grid-column: 1 / -1;
+    }
+
+    .report-collapsible-summary svg {
+        grid-column: 2;
+        grid-row: 1;
     }
 
     .request-row-actions form,

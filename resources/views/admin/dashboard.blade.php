@@ -77,6 +77,7 @@
                     <div>
                         <span class="status status-{{ strtolower($leaveRequest->status) }}">{{ $leaveRequest->status_label }}</span>
                         <h3>{{ $leaveRequest->employee_name }}</h3>
+                        <p>Solicitada {{ auth()->user()->formatDateTime($leaveRequest->created_at) }}</p>
                         <p>{{ $leaveRequest->leave_type_name }} &middot; {{ $leaveRequest->start_date->format('d/m/Y') }} - {{ $leaveRequest->end_date->format('d/m/Y') }} &middot; {{ $leaveRequest->requested_units }} {{ $leaveRequest->unit === 'DAYS' ? 'dias' : 'min' }}</p>
                         @if (($leaveRequest->approval_total ?? 1) > 1)
                             <div class="approval-progress">
