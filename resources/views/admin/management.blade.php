@@ -214,41 +214,53 @@
                     </button>
                 </form>
 
-                <div class="position-admin-list">
-                    @foreach ($positions as $position)
-                        <div class="position-admin-card">
-                            @if ($position->is_system)
-                                <div class="position-row-summary">
-                                    <strong>{{ $position->name }}</strong>
-                                    <span>Inicial &middot; {{ $position->employee_profiles_count }} integrante(s)</span>
-                                </div>
-                                <span class="position-lock">
-                                    <i data-lucide="lock"></i>
-                                    Base
-                                </span>
-                            @else
-                                <form class="position-row-form" method="POST" action="{{ route('admin.management.positions.update', $position->id) }}">
-                                    @csrf
-                                    <label>
-                                        <span>Personalizado &middot; {{ $position->employee_profiles_count }} integrante(s)</span>
-                                        <input type="text" name="name" value="{{ $position->name }}" maxlength="120" required>
-                                    </label>
-                                    <button class="ghost-button compact" type="submit">
-                                        <i data-lucide="save"></i>
-                                        <span>Guardar</span>
-                                    </button>
-                                </form>
-                                <form method="POST" action="{{ route('admin.management.positions.destroy', $position->id) }}" data-confirm="Eliminar este puesto lo quitara de {{ $position->employee_profiles_count }} integrante(s).">
-                                    @csrf
-                                    <button class="danger-button compact" type="submit">
-                                        <i data-lucide="trash-2"></i>
-                                        <span>Eliminar puesto</span>
-                                    </button>
-                                </form>
-                            @endif
-                        </div>
-                    @endforeach
-                </div>
+                <details class="position-admin-dropdown">
+                    <summary class="position-admin-summary">
+                        <span>
+                            <small>Puestos creados</small>
+                            <strong>{{ $positions->count() }} disponibles</strong>
+                        </span>
+                        <i data-lucide="chevron-down"></i>
+                    </summary>
+
+                    <div class="position-admin-list position-admin-list-menu">
+                        @forelse ($positions as $position)
+                            <div class="position-admin-card">
+                                @if ($position->is_system)
+                                    <div class="position-row-summary">
+                                        <strong>{{ $position->name }}</strong>
+                                        <span>Inicial &middot; {{ $position->employee_profiles_count }} integrante(s)</span>
+                                    </div>
+                                    <span class="position-lock">
+                                        <i data-lucide="lock"></i>
+                                        Base
+                                    </span>
+                                @else
+                                    <form class="position-row-form" method="POST" action="{{ route('admin.management.positions.update', $position->id) }}">
+                                        @csrf
+                                        <label>
+                                            <span>Personalizado &middot; {{ $position->employee_profiles_count }} integrante(s)</span>
+                                            <input type="text" name="name" value="{{ $position->name }}" maxlength="120" required>
+                                        </label>
+                                        <button class="ghost-button compact" type="submit">
+                                            <i data-lucide="save"></i>
+                                            <span>Guardar</span>
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ route('admin.management.positions.destroy', $position->id) }}" data-confirm="Eliminar este puesto lo quitara de {{ $position->employee_profiles_count }} integrante(s).">
+                                        @csrf
+                                        <button class="danger-button compact" type="submit">
+                                            <i data-lucide="trash-2"></i>
+                                            <span>Eliminar puesto</span>
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                        @empty
+                            <p class="empty-inline">Aun no hay puestos creados.</p>
+                        @endforelse
+                    </div>
+                </details>
             </article>
         </aside>
     </section>

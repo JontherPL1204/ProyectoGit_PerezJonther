@@ -36,7 +36,9 @@ class TeamManagementTest extends TestCase
             ->get(route('admin.management.index'))
             ->assertOk()
             ->assertSee('permission-dropdown', false)
-            ->assertSee('Crear puesto');
+            ->assertSee('Crear puesto')
+            ->assertSee('position-admin-dropdown', false)
+            ->assertSee('Puestos creados');
 
         $this->actingAs($admin)
             ->post(route('admin.management.positions.store'), ['name' => 'QA Analyst'])
