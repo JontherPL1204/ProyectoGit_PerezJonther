@@ -887,6 +887,8 @@ class LeaveRequestFlowTest extends TestCase
             ->assertOk()
             ->assertSee('Reglas de notificacion')
             ->assertSee('Nueva solicitud')
+            ->assertSee('Avisa al administrador que hay una nueva solicitud pendiente de revisar.')
+            ->assertDontSee('{{request_id}}', false)
             ->assertSee('class="status-select', false)
             ->assertSee('name="notification_rules['.$rule->id.'][is_active]"', false);
 

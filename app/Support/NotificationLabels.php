@@ -40,4 +40,16 @@ class NotificationLabels
     {
         return self::statuses()[$status] ?? 'Estado no reconocido';
     }
+
+    public static function ruleMessage(string $event): string
+    {
+        return [
+            'REQUEST_CREATED' => 'Avisa al administrador que hay una nueva solicitud pendiente de revisar.',
+            'REQUEST_APPROVED' => 'Avisa al empleado cuando su solicitud fue aprobada.',
+            'REQUEST_REJECTED' => 'Avisa al empleado cuando su solicitud fue rechazada.',
+            'CANCELLATION_REQUESTED' => 'Avisa al administrador cuando un empleado pide cancelar una ausencia.',
+            'CANCELLATION_ACCEPTED' => 'Avisa al empleado cuando su cancelacion fue aceptada.',
+            'CANCELLATION_REJECTED' => 'Avisa al empleado cuando su cancelacion fue rechazada.',
+        ][$event] ?? 'Describe un correo automatico de la aplicacion.';
+    }
 }

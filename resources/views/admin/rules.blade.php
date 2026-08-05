@@ -323,13 +323,14 @@
                                 $ruleKey = "notification_rules.$rule->id";
                                 $ruleStatusValue = (string) old($ruleKey.'.is_active', $rule->is_active ? '1' : '0');
                                 $eventLabel = \App\Support\NotificationLabels::event($rule->event);
+                                $messagePreview = \App\Support\NotificationLabels::ruleMessage($rule->event);
                                 $recipientLabel = $rule->recipient_type === 'admin' ? 'Administradores' : 'Empleado solicitante';
                             @endphp
 
                             <div class="notification-rule-row">
                                 <div class="notification-rule-main">
                                     <strong>{{ $eventLabel }}</strong>
-                                    <span>{{ $recipientLabel }} · {{ $rule->subject_template }}</span>
+                                    <span>{{ $recipientLabel }} · {{ $messagePreview }}</span>
                                 </div>
 
                                 <label class="notification-status-field">
