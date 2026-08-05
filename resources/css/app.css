@@ -939,8 +939,35 @@ dd {
 .team-promote-panel {
     align-items: end;
     display: grid;
-    gap: 10px;
-    grid-template-columns: minmax(220px, 1.25fr) minmax(160px, 0.75fr) minmax(240px, 1fr) auto;
+    gap: 12px;
+    grid-template-columns: minmax(240px, 1.2fr) minmax(180px, 0.85fr) minmax(260px, 1fr) minmax(180px, auto);
+}
+
+.invite-form > label,
+.team-promote-panel > label {
+    display: grid;
+    gap: 8px;
+}
+
+.invite-form input,
+.invite-form select,
+.team-promote-panel input,
+.team-promote-panel select {
+    min-height: 60px;
+}
+
+.invite-form > .primary-button,
+.team-promote-panel > .primary-button {
+    align-self: end;
+    min-height: 60px;
+    min-width: 180px;
+    padding-inline: 16px;
+    white-space: nowrap;
+}
+
+.invite-form > .primary-button span,
+.team-promote-panel > .primary-button span {
+    white-space: nowrap;
 }
 
 .permission-card {
@@ -967,7 +994,7 @@ dd {
     gap: 12px;
     justify-content: space-between;
     list-style: none;
-    min-height: 58px;
+    min-height: 60px;
     padding: 10px 12px;
 }
 
