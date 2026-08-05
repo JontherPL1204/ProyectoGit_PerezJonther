@@ -66,17 +66,27 @@
                         </select>
                     </label>
 
-                    <div class="permission-card">
-                        <label class="check-row">
-                            <input type="checkbox" name="can_manage_company_rules" value="1" checked data-admin-only-permission>
-                            <span>Gestiona reglas</span>
-                        </label>
+                    <details class="permission-dropdown">
+                        <summary class="permission-dropdown-summary">
+                            <span>
+                                <small>Permisos avanzados</small>
+                                <strong>Reglas y medicos</strong>
+                            </span>
+                            <i data-lucide="chevron-down"></i>
+                        </summary>
 
-                        <label class="check-row">
-                            <input type="checkbox" name="can_view_medical_attachments" value="1" checked data-admin-only-permission>
-                            <span>Ve documentos medicos</span>
-                        </label>
-                    </div>
+                        <div class="permission-dropdown-body">
+                            <label class="check-row">
+                                <input type="checkbox" name="can_manage_company_rules" value="1" checked data-admin-only-permission>
+                                <span>Gestiona reglas</span>
+                            </label>
+
+                            <label class="check-row">
+                                <input type="checkbox" name="can_view_medical_attachments" value="1" checked data-admin-only-permission>
+                                <span>Ve documentos medicos</span>
+                            </label>
+                        </div>
+                    </details>
 
                     <button class="primary-button compact" type="submit">
                         <i data-lucide="users"></i>

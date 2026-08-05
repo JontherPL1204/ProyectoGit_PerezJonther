@@ -26,6 +26,7 @@ class TeamManagementTest extends TestCase
             ->assertOk()
             ->assertSee('team-member-card', false)
             ->assertSee('Frontend Developer')
+            ->assertSee('permission-dropdown', false)
             ->assertSee('position-dropdown', false)
             ->assertSee('position-options', false)
             ->assertSee('Guardar puestos')
@@ -34,6 +35,7 @@ class TeamManagementTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.management.index'))
             ->assertOk()
+            ->assertSee('permission-dropdown', false)
             ->assertSee('Crear puesto');
 
         $this->actingAs($admin)

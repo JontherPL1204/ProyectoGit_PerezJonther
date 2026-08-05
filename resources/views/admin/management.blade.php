@@ -79,17 +79,27 @@
                         </select>
                     </label>
 
-                    <div class="permission-card">
-                        <label class="check-row">
-                            <input type="checkbox" name="can_manage_company_rules" value="1" @checked(old('can_manage_company_rules')) data-admin-only-permission>
-                            <span>Gestiona reglas y equipo</span>
-                        </label>
+                    <details class="permission-dropdown" @if (old('can_manage_company_rules') || old('can_view_medical_attachments')) open @endif>
+                        <summary class="permission-dropdown-summary">
+                            <span>
+                                <small>Permisos avanzados</small>
+                                <strong>Reglas y documentos</strong>
+                            </span>
+                            <i data-lucide="chevron-down"></i>
+                        </summary>
 
-                        <label class="check-row">
-                            <input type="checkbox" name="can_view_medical_attachments" value="1" @checked(old('can_view_medical_attachments')) data-admin-only-permission>
-                            <span>Puede ver adjuntos medicos</span>
-                        </label>
-                    </div>
+                        <div class="permission-dropdown-body">
+                            <label class="check-row">
+                                <input type="checkbox" name="can_manage_company_rules" value="1" @checked(old('can_manage_company_rules')) data-admin-only-permission>
+                                <span>Gestiona reglas y equipo</span>
+                            </label>
+
+                            <label class="check-row">
+                                <input type="checkbox" name="can_view_medical_attachments" value="1" @checked(old('can_view_medical_attachments')) data-admin-only-permission>
+                                <span>Puede ver adjuntos medicos</span>
+                            </label>
+                        </div>
+                    </details>
 
                     <button class="primary-button compact" type="submit">
                         <i data-lucide="user-plus"></i>
