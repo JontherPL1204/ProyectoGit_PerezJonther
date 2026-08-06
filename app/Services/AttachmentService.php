@@ -6,8 +6,11 @@ use App\Models\LeaveRequest;
 use App\Models\RequestAttachment;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use RuntimeException;
+use Throwable;
 
 class AttachmentService
 {
@@ -20,10 +23,21 @@ class AttachmentService
             $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension());
             $storedName = (string) Str::uuid().($extension ? '.'.$extension : '');
             $path = 'request-attachments/'.$leaveRequest->organization_id.'/'.$leaveRequest->id.'/'.$storedName;
+            $content = file_get_contents($file->getRealPath());
 
-            Storage::disk('local')->put($path, file_get_contents($file->getRealPath()));
+            if (! is_string($content)) {
+                throw new RuntimeException('No se pudo leer el archivo adjunto.');
+            }
 
-            RequestAttachment::create([
+            try {
+                Storage::disk('local')->put($path, $content);
+            } catch (Throwable $exception) {
+                if (! Schema::hasColumn('request_attachments', 'file_content')) {
+                    throw $exception;
+                }
+            }
+
+            $data = [
                 'organization_id' => $leaveRequest->organization_id,
                 'leave_request_id' => $leaveRequest->id,
                 'uploaded_by' => $actor->id,
@@ -35,8 +49,14 @@ class AttachmentService
                 'size_bytes' => $file->getSize() ?: 0,
                 'is_medical' => $leaveRequest->leaveType->is_medical,
                 'justification_status' => 'received',
-                'checksum' => hash_file('sha256', $file->getRealPath()),
-            ]);
+                'checksum' => hash('sha256', $content),
+            ];
+
+            if (Schema::hasColumn('request_attachments', 'file_content')) {
+                $data['file_content'] = $content;
+            }
+
+            RequestAttachment::create($data);
         }
     }
 }

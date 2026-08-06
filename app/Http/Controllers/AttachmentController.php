@@ -8,6 +8,7 @@ use App\Services\AuditService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Throwable;
@@ -125,6 +126,14 @@ class AttachmentController extends Controller
 
     private function attachmentContent(RequestAttachment $requestAttachment, LeaveRequest $leaveRequest): ?string
     {
+        if (Schema::hasColumn('request_attachments', 'file_content')) {
+            $content = $requestAttachment->fileContent();
+
+            if ($content !== null) {
+                return $content;
+            }
+        }
+
         try {
             $disk = Storage::disk($requestAttachment->storage_disk);
 
